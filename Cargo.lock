@@ -13765,6 +13765,8 @@ dependencies = [
 name = "webapp"
 version = "0.1.0"
 dependencies = [
+ "serde 1.0.216",
+ "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-fs",
