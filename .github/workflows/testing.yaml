@@ -1,8 +1,7 @@
 name: "test-on-pr"
 
-on: [ pull_request ]
-
-# This workflow will build your tauri app without uploading it anywhere.
+on:
+  pull_request:
 
 jobs:
   test-tauri:
@@ -31,7 +30,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          # Those targets are only used on macOS runners so it's in an `if` to slightly speed up windows and Linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
@@ -44,10 +43,16 @@ jobs:
         run: npm install --force # change this to npm, pnpm or bun depending on which one you use.
         working-directory: ./crates/webapp/
 
-      # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
-      - uses: tauri-apps/tauri-action@v0
+      - name: build tauri app
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: ${{ matrix.args }}
           projectPath: "./crates/webapp/"
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-app-${{ matrix.platform }}
+          path: ./crates/webapp/src-tauri/target/release/
