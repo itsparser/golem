@@ -22,7 +22,8 @@ members = [
     "wasm-ast",
     "wasm-rpc",
     "wasm-rpc-stubgen",
-    "wasm-rpc-stubgen/tests-integration"
+    "wasm-rpc-stubgen/tests-integration",
+    "crates/app/src-tauri"
 ]
 
 exclude = [
@@ -180,7 +181,7 @@ testcontainers-modules = { version = "0.11.4", features = [
     "redis",
     "minio",
 ] }
-test-r = { version = "1.1.0", default-features = true }
+test-r = { version = "1.2.0", default-features = true }
 thiserror = "2.0.6"
 tokio = { version = "1.42", features = [
     "macros",
@@ -212,15 +213,15 @@ tracing-test = "0.2.5"
 typed-path = "0.10.0"
 url = "2.5.4"
 uuid = { version = "1.11.0", features = ["serde", "v4", "v5"] }
-wasm-wave = "=0.6.0"
-wasmtime = { version = "=21.0.1", features = ["component-model"] }
-wasmtime-wasi = { version = "=21.0.1" }
-wasmtime-wasi-http = { version = "=21.0.1" }
+wasm-wave = "0.222.0"
+wasmtime = { version = "=27.0.0", features = ["component-model"] }
+wasmtime-wasi = { version = "=27.0.0" }
+wasmtime-wasi-http = { version = "=27.0.0" }
 webpki-roots = { version = "0.26.7" }
 xdg = "2.5.2"
 
 [patch.crates-io]
 redis-protocol = { git = "https://github.com/golemcloud/redis-protocol.rs.git", branch = "unpin-cookie-factory" }
-wasmtime = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v21.0.1" }
-wasmtime-wasi = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v21.0.1" }
-wasmtime-wasi-http = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v21.0.1" }
+wasmtime = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v27.0.0" }
+wasmtime-wasi = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v27.0.0" }
+wasmtime-wasi-http = { git = "https://github.com/golemcloud/wasmtime.git", branch = "golem-wasmtime-v27.0.0" }
