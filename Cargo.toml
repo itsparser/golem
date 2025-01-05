@@ -23,7 +23,7 @@ members = [
     "wasm-rpc",
     "wasm-rpc-stubgen",
     "wasm-rpc-stubgen/tests-integration",
-    "crates/webapp/src-tauri"
+    "crates/app/src-tauri"
 ]
 
 exclude = [
