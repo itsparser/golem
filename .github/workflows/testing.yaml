@@ -54,5 +54,5 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: built-app-${{ matrix.platform }}
-          path: ./target/release/
+          name: golem-app-${{ matrix.platform }}
+          path: ./target/release/bundle/
