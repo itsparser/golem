@@ -15,13 +15,14 @@
 use crate::clients::component::ComponentClient;
 use crate::clients::file_download::FileDownloadClient;
 use crate::model::app_ext::InitialComponentFile;
-use crate::model::component::{Component, ComponentView};
-use crate::model::text::component::{ComponentAddView, ComponentGetView, ComponentUpdateView};
+use crate::model::component::{Component, ComponentUpsertResult, ComponentView};
+use crate::model::text::component::ComponentGetView;
 use crate::model::{ComponentName, Format, GolemError, GolemResult, PathBufOrStdin};
 use async_trait::async_trait;
 use async_zip::base::write::ZipFileWriter;
 use async_zip::{Compression, ZipEntryBuilder};
-use golem_client::model::ComponentType;
+use colored::Colorize;
+use golem_client::model::{ComponentType, DynamicLinking};
 use golem_common::model::{
     ComponentFilePath, ComponentFilePathWithPermissions, ComponentFilePathWithPermissionsList,
 };
@@ -53,7 +54,8 @@ pub trait ComponentService {
         non_interactive: bool,
         format: Format,
         files: Vec<InitialComponentFile>,
-    ) -> Result<Component, GolemError>;
+        dynamic_linking: Option<DynamicLinking>,
+    ) -> Result<ComponentUpsertResult, GolemError>;
 
     async fn update(
         &self,
@@ -64,7 +66,8 @@ pub trait ComponentService {
         non_interactive: bool,
         format: Format,
         files: Vec<InitialComponentFile>,
-    ) -> Result<GolemResult, GolemError>;
+        dynamic_linking: Option<DynamicLinking>,
+    ) -> Result<ComponentUpsertResult, GolemError>;
 
     async fn list(
         &self,
@@ -289,7 +292,8 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
         non_interactive: bool,
         format: Format,
         files: Vec<InitialComponentFile>,
-    ) -> Result<Component, GolemError> {
+        dynamic_linking: Option<DynamicLinking>,
+    ) -> Result<ComponentUpsertResult, GolemError> {
         let files_archive = if !files.is_empty() {
             Some(self.build_files_archive(files).await?)
         } else {
@@ -308,10 +312,11 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
                 component_type,
                 files_archive_path,
                 files_archive_properties,
+                dynamic_linking.clone(),
             )
             .await;
 
-        let can_fallback = format == Format::Text;
+        let can_fallback = format == Format::Text || non_interactive;
         let result = match result {
             Err(GolemError(message))
                 if message.starts_with("Component already exists") && can_fallback =>
@@ -320,29 +325,31 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
                     if non_interactive {
                         Ok(true)
                     } else {
-                        inquire::Confirm::new("Would you like to update the existing component?")
-                            .with_default(false)
-                            .with_help_message(&message)
-                            .prompt()
+                        inquire::Confirm::new(&format!(
+                            "Would you like to update the existing component: {}?",
+                            component_name.0.bold()
+                        ))
+                        .with_default(false)
+                        .with_help_message(&message)
+                        .prompt()
                     }
                 };
 
                 match answer {
-                    Ok(true) => {
-                        let component_uri = ComponentUri::URL(ComponentUrl {
-                            name: component_name.0.clone(),
-                        });
-                        let urn = self.resolve_uri(component_uri, &project).await?;
-                        self.client.update(urn, component_file, Some(component_type), files_archive_path,
-                                           files_archive_properties).await
-
+                        Ok(true) => {
+                            let component_uri = ComponentUri::URL(ComponentUrl {
+                                name: component_name.0.clone(),
+                            });
+                            let urn = self.resolve_uri(component_uri, &project).await?;
+                            self.client.update(urn, component_file, Some(component_type), files_archive_path,
+                                               files_archive_properties, dynamic_linking).await.map(ComponentUpsertResult::Updated)
+                        }
+                        Ok(false) => Ok(ComponentUpsertResult::Skipped),
+                        Err(error) => Err(GolemError(format!("Error while asking for confirmation: {}; Use the --non-interactive (-y) flag to bypass it.", error))),
                     }
-                    Ok(false) => Err(GolemError(message)),
-                    Err(error) => Err(GolemError(format!("Error while asking for confirmation: {}; Use the --non-interactive (-y) flag to bypass it.", error))),
-                }
             }
             Err(other) => Err(other),
-            Ok(component) => Ok(component),
+            Ok(component) => Ok(ComponentUpsertResult::Added(component)),
         }?;
 
         // We need to keep the files archive open until the client is done uploading it
@@ -360,7 +367,8 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
         non_interactive: bool,
         format: Format,
         files: Vec<InitialComponentFile>,
-    ) -> Result<GolemResult, GolemError> {
+        dynamic_linking: Option<DynamicLinking>,
+    ) -> Result<ComponentUpsertResult, GolemError> {
         let result = self.resolve_uri(component_uri.clone(), &project).await;
 
         let files_archive = if !files.is_empty() {
@@ -372,8 +380,8 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
         let files_archive_path = files_archive.as_ref().map(|fa| fa.archive_path.as_path());
         let files_archive_properties = files_archive.as_ref().map(|fa| &fa.properties);
 
-        let can_fallback =
-            format == Format::Text && matches!(component_uri, ComponentUri::URL { .. });
+        let can_fallback = (format == Format::Text || non_interactive)
+            && matches!(component_uri, ComponentUri::URL { .. });
         let result = match result {
             Err(GolemError(message))
                 if message.starts_with("Can't find component") && can_fallback =>
@@ -390,19 +398,16 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
                 };
 
                 match answer {
-                        Ok(true) => {
+                    Ok(true) => {
                             let component_name = match &component_uri {
                                 ComponentUri::URL(ComponentUrl { name }) => ComponentName(name.clone()),
                                 _ => unreachable!(),
                             };
-                            self.client.add(component_name, component_file, &project, component_type.unwrap_or(ComponentType::Durable), files_archive_path, files_archive_properties).await.map(|component| {
-                                GolemResult::Ok(Box::new(ComponentAddView(component.into())))
-                            })
-
-                        }
-                        Ok(false) => Err(GolemError(message)),
-                        Err(error) => Err(GolemError(format!("Error while asking for confirmation: {}; Use the --non-interactive (-y) flag to bypass it.", error))),
+                            self.client.add(component_name, component_file, &project, component_type.unwrap_or(ComponentType::Durable), files_archive_path, files_archive_properties, dynamic_linking).await.map(ComponentUpsertResult::Added)
                     }
+                    Ok(false) => Ok(ComponentUpsertResult::Skipped),
+                    Err(error) => Err(GolemError(format!("Error while asking for confirmation: {}; Use the --non-interactive (-y) flag to bypass it.", error))),
+                }
             }
             Err(other) => Err(other),
             Ok(urn) => self
@@ -413,9 +418,10 @@ impl<ProjectContext: Display + Send + Sync> ComponentService
                     component_type,
                     files_archive_path,
                     files_archive_properties,
+                    dynamic_linking,
                 )
                 .await
-                .map(|component| GolemResult::Ok(Box::new(ComponentUpdateView(component.into())))),
+                .map(ComponentUpsertResult::Updated),
         }?;
 
         // We need to keep the files archive open until the client is done uploading it
