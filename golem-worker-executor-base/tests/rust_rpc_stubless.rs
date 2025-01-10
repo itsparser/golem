@@ -17,6 +17,7 @@ use test_r::{inherit_test_dep, test};
 use crate::common::{start, TestContext};
 use crate::{LastUniqueId, Tracing, WorkerExecutorTestDependencies};
 use assert2::check;
+use golem_common::model::component_metadata::{DynamicLinkedInstance, DynamicLinkedWasmRpc};
 use golem_test_framework::dsl::{worker_error_message, TestDslUnsafe};
 use golem_wasm_rpc::Value;
 use std::collections::HashMap;
@@ -29,7 +30,6 @@ inherit_test_dep!(Tracing);
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn auction_example_1(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -38,7 +38,23 @@ async fn auction_example_1(
     let context = TestContext::new(last_unique_id);
     let executor = start(deps, &context).await.unwrap();
 
-    let registry_component_id = executor.store_component("auction_registry").await;
+    let registry_component_id = executor
+        .store_component_with_dynamic_linking(
+            "auction_registry",
+            &[(
+                "auction:auction-client/auction-client",
+                DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                    target_interface_name: HashMap::from_iter(vec![
+                        ("api".to_string(), "auction:auction-exports/api".to_string()),
+                        (
+                            "running-auction".to_string(),
+                            "auction:auction-exports/api".to_string(),
+                        ),
+                    ]),
+                }),
+            )],
+        )
+        .await;
     let auction_component_id = executor.store_component("auction").await;
 
     let mut env = HashMap::new();
@@ -59,7 +75,7 @@ async fn auction_example_1(
     let create_auction_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{create-auction}",
+            "auction:registry-exports/api.{create-auction}",
             vec![
                 Value::String("test-auction".to_string()),
                 Value::String("this is a test".to_string()),
@@ -72,7 +88,7 @@ async fn auction_example_1(
     let get_auctions_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{get-auctions}",
+            "auction:registry-exports/api.{get-auctions}",
             vec![],
         )
         .await;
@@ -99,7 +115,6 @@ async fn auction_example_1(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn auction_example_2(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -108,7 +123,23 @@ async fn auction_example_2(
     let context = TestContext::new(last_unique_id);
     let executor = start(deps, &context).await.unwrap();
 
-    let registry_component_id = executor.store_component("auction_registry").await;
+    let registry_component_id = executor
+        .store_component_with_dynamic_linking(
+            "auction_registry",
+            &[(
+                "auction:auction-client/auction-client",
+                DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                    target_interface_name: HashMap::from_iter(vec![
+                        ("api".to_string(), "auction:auction-exports/api".to_string()),
+                        (
+                            "running-auction".to_string(),
+                            "auction:auction-exports/api".to_string(),
+                        ),
+                    ]),
+                }),
+            )],
+        )
+        .await;
     let auction_component_id = executor.store_component("auction").await;
 
     let mut env = HashMap::new();
@@ -129,7 +160,7 @@ async fn auction_example_2(
     let create_auction_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{create-auction-res}",
+            "auction:registry-exports/api.{create-auction-res}",
             vec![
                 Value::String("test-auction".to_string()),
                 Value::String("this is a test".to_string()),
@@ -142,7 +173,7 @@ async fn auction_example_2(
     let get_auctions_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{get-auctions}",
+            "auction:registry-exports/api.{get-auctions}",
             vec![],
         )
         .await;
@@ -169,7 +200,6 @@ async fn auction_example_2(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_1(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -179,7 +209,34 @@ async fn counter_resource_test_1(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -191,7 +248,11 @@ async fn counter_resource_test_1(
         .await;
 
     let result = executor
-        .invoke_and_await(&caller_worker_id, "test1", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test1}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -208,7 +269,6 @@ async fn counter_resource_test_1(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_2(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -218,7 +278,34 @@ async fn counter_resource_test_2(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -230,10 +317,18 @@ async fn counter_resource_test_2(
         .await;
 
     let result1 = executor
-        .invoke_and_await(&caller_worker_id, "test2", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test2}",
+            vec![],
+        )
         .await;
     let result2 = executor
-        .invoke_and_await(&caller_worker_id, "test2", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test2}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -244,7 +339,6 @@ async fn counter_resource_test_2(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_2_with_restart(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -254,7 +348,34 @@ async fn counter_resource_test_2_with_restart(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -266,14 +387,22 @@ async fn counter_resource_test_2_with_restart(
         .await;
 
     let result1 = executor
-        .invoke_and_await(&caller_worker_id, "test2", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test2}",
+            vec![],
+        )
         .await;
 
     drop(executor);
     let executor = start(deps, &context).await.unwrap();
 
     let result2 = executor
-        .invoke_and_await(&caller_worker_id, "test2", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test2}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -284,7 +413,6 @@ async fn counter_resource_test_2_with_restart(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_3(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -294,7 +422,34 @@ async fn counter_resource_test_3(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -306,10 +461,18 @@ async fn counter_resource_test_3(
         .await;
 
     let result1 = executor
-        .invoke_and_await(&caller_worker_id, "test3", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test3}",
+            vec![],
+        )
         .await;
     let result2 = executor
-        .invoke_and_await(&caller_worker_id, "test3", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test3}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -320,7 +483,6 @@ async fn counter_resource_test_3(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_3_with_restart(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -330,7 +492,34 @@ async fn counter_resource_test_3_with_restart(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -342,14 +531,22 @@ async fn counter_resource_test_3_with_restart(
         .await;
 
     let result1 = executor
-        .invoke_and_await(&caller_worker_id, "test3", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test3}",
+            vec![],
+        )
         .await;
 
     drop(executor);
     let executor = start(deps, &context).await.unwrap();
 
     let result2 = executor
-        .invoke_and_await(&caller_worker_id, "test3", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test3}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -360,7 +557,6 @@ async fn counter_resource_test_3_with_restart(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn context_inheritance(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -370,7 +566,34 @@ async fn context_inheritance(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -388,7 +611,11 @@ async fn context_inheritance(
         .await;
 
     let result = executor
-        .invoke_and_await(&caller_worker_id, "test4", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test4}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -447,7 +674,6 @@ async fn context_inheritance(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_5(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -457,7 +683,34 @@ async fn counter_resource_test_5(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -471,7 +724,11 @@ async fn counter_resource_test_5(
     executor.log_output(&caller_worker_id).await;
 
     let result = executor
-        .invoke_and_await(&caller_worker_id, "test5", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test5}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -488,7 +745,6 @@ async fn counter_resource_test_5(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn counter_resource_test_5_with_restart(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -499,7 +755,34 @@ async fn counter_resource_test_5_with_restart(
 
     // using store_unique_component to avoid collision with counter_resource_test_5
     let counters_component_id = executor.store_unique_component("counters").await;
-    let caller_component_id = executor.store_unique_component("caller").await;
+    let caller_component_id = executor
+        .store_unique_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -513,7 +796,11 @@ async fn counter_resource_test_5_with_restart(
     executor.log_output(&caller_worker_id).await;
 
     let result1 = executor
-        .invoke_and_await(&caller_worker_id, "test5", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test5}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -521,7 +808,11 @@ async fn counter_resource_test_5_with_restart(
     let executor = start(deps, &context).await.unwrap();
 
     let result2 = executor
-        .invoke_and_await(&caller_worker_id, "test5", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{test5}",
+            vec![],
+        )
         .await;
 
     drop(executor);
@@ -547,7 +838,6 @@ async fn counter_resource_test_5_with_restart(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn wasm_rpc_bug_32_test(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -557,7 +847,34 @@ async fn wasm_rpc_bug_32_test(
     let executor = start(deps, &context).await.unwrap();
 
     let counters_component_id = executor.store_component("counters").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -571,7 +888,7 @@ async fn wasm_rpc_bug_32_test(
     let result = executor
         .invoke_and_await(
             &caller_worker_id,
-            "bug-wasm-rpc-i32",
+            "rpc:caller-exports/caller-inline-functions.{bug-wasm-rpc-i32}",
             vec![Value::Variant {
                 case_idx: 0,
                 case_value: None,
@@ -592,7 +909,6 @@ async fn wasm_rpc_bug_32_test(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn error_message_invalid_uri(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -601,7 +917,23 @@ async fn error_message_invalid_uri(
     let context = TestContext::new(last_unique_id);
     let executor = start(deps, &context).await.unwrap();
 
-    let registry_component_id = executor.store_component("auction_registry").await;
+    let registry_component_id = executor
+        .store_component_with_dynamic_linking(
+            "auction_registry",
+            &[(
+                "auction:auction-client/auction-client",
+                DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                    target_interface_name: HashMap::from_iter(vec![
+                        ("api".to_string(), "auction:auction-exports/api".to_string()),
+                        (
+                            "running-auction".to_string(),
+                            "auction:auction-exports/api".to_string(),
+                        ),
+                    ]),
+                }),
+            )],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -626,7 +958,7 @@ async fn error_message_invalid_uri(
     let create_auction_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{create-auction}",
+            "auction:registry-exports/api.{create-auction}",
             vec![
                 Value::String("test-auction".to_string()),
                 Value::String("this is a test".to_string()),
@@ -648,7 +980,6 @@ async fn error_message_invalid_uri(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn error_message_non_existing_target_component(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -657,7 +988,23 @@ async fn error_message_non_existing_target_component(
     let context = TestContext::new(last_unique_id);
     let executor = start(deps, &context).await.unwrap();
 
-    let registry_component_id = executor.store_component("auction_registry").await;
+    let registry_component_id = executor
+        .store_component_with_dynamic_linking(
+            "auction_registry",
+            &[(
+                "auction:auction-client/auction-client",
+                DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                    target_interface_name: HashMap::from_iter(vec![
+                        ("api".to_string(), "auction:auction-exports/api".to_string()),
+                        (
+                            "running-auction".to_string(),
+                            "auction:auction-exports/api".to_string(),
+                        ),
+                    ]),
+                }),
+            )],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -682,7 +1029,7 @@ async fn error_message_non_existing_target_component(
     let create_auction_result = executor
         .invoke_and_await(
             &registry_worker_id,
-            "auction:registry/api.{create-auction}",
+            "auction:registry-exports/api.{create-auction}",
             vec![
                 Value::String("test-auction".to_string()),
                 Value::String("this is a test".to_string()),
@@ -700,7 +1047,6 @@ async fn error_message_non_existing_target_component(
 
 #[test]
 #[tracing::instrument]
-#[ignore]
 async fn ephemeral_worker_invocation_via_rpc1(
     last_unique_id: &LastUniqueId,
     deps: &WorkerExecutorTestDependencies,
@@ -710,7 +1056,34 @@ async fn ephemeral_worker_invocation_via_rpc1(
     let executor = start(deps, &context).await.unwrap();
 
     let ephemeral_component_id = executor.store_ephemeral_component("ephemeral").await;
-    let caller_component_id = executor.store_component("caller").await;
+    let caller_component_id = executor
+        .store_component_with_dynamic_linking(
+            "caller",
+            &[
+                (
+                    "rpc:counters-client/counters-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![
+                            ("api".to_string(), "rpc:counters-exports/api".to_string()),
+                            (
+                                "counter".to_string(),
+                                "rpc:counters-exports/api".to_string(),
+                            ),
+                        ]),
+                    }),
+                ),
+                (
+                    "rpc:ephemeral-client/ephemeral-client",
+                    DynamicLinkedInstance::WasmRpc(DynamicLinkedWasmRpc {
+                        target_interface_name: HashMap::from_iter(vec![(
+                            "api".to_string(),
+                            "rpc:ephemeral-exports/api".to_string(),
+                        )]),
+                    }),
+                ),
+            ],
+        )
+        .await;
 
     let mut env = HashMap::new();
     env.insert(
@@ -722,7 +1095,11 @@ async fn ephemeral_worker_invocation_via_rpc1(
         .await;
 
     let result = executor
-        .invoke_and_await(&caller_worker_id, "ephemeral-test1", vec![])
+        .invoke_and_await(
+            &caller_worker_id,
+            "rpc:caller-exports/caller-inline-functions.{ephemeral-test1}",
+            vec![],
+        )
         .await
         .unwrap();
 
