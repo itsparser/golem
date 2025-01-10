@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ impl ComponentPropertiesExtensions for GolemComponentExtensions {
         source: &Path,
         validation: &mut ValidationBuilder,
         overrides: Self::Raw,
-    ) -> serde_json::Result<(Option<Self>, bool)> {
+    ) -> serde_json::Result<Option<(Self, bool)>> {
         let mut any_errors = false;
         let mut any_overrides = false;
 
@@ -87,9 +87,9 @@ impl ComponentPropertiesExtensions for GolemComponentExtensions {
         }
 
         if any_errors {
-            Ok((None, false))
+            Ok(None)
         } else {
-            Ok((Some(self), any_overrides))
+            Ok(Some((self, any_overrides)))
         }
     }
 }

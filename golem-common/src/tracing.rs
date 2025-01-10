@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -579,7 +579,7 @@ pub(crate) mod format {
                 .write_str(s)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
 
-            Ok(s.as_bytes().len())
+            Ok(s.len())
         }
 
         fn flush(&mut self) -> io::Result<()> {

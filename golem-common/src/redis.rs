@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ pub struct RedisLabelledApi<'a> {
     connected: &'a AtomicBool,
 }
 
-impl<'a> RedisLabelledApi<'a> {
+impl RedisLabelledApi<'_> {
     pub async fn ensure_connected(&self) -> Result<(), RedisError> {
         if !self.connected.swap(true, atomic::Ordering::Relaxed) {
             let _connection = self.pool.connect();

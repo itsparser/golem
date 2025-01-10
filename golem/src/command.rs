@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ impl<Ctx> CliCommand<Ctx> for SingleExecutableCommand {
                 })
                 .await
                 {
-                    Ok(_) => Ok(GolemResult::Str("".to_string())),
+                    Ok(_) => Ok(GolemResult::Empty),
                     Err(e) => Err(GolemError(format!("{e:#}"))),
                 }
             }

@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ pub struct SpecificIncludedMigrationsDir<'a> {
     sub_dir_name: String,
 }
 
-impl<'a> SpecificIncludedMigrationsDir<'a> {
+impl SpecificIncludedMigrationsDir<'_> {
     async fn resolve_impl(self) -> Result<Vec<Migration>, BoxDynError> {
         let temp_dir = tempfile::tempdir().map_err(Box::new)?;
         let sub_dir = temp_dir.path().join(self.sub_dir_name);

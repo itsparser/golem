@@ -1,4 +1,4 @@
-// Copyright 2024 Golem Cloud
+// Copyright 2024-2025 Golem Cloud
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use std::io::Read;
 
 use async_trait::async_trait;
-use golem_client::model::ComponentFilePathWithPermissionsList;
+use golem_client::model::{ComponentFilePathWithPermissionsList, DynamicLinking};
 
 use crate::clients::component::ComponentClient;
 use crate::model::component::Component;
@@ -88,14 +88,18 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
         component_type: golem_client::model::ComponentType,
         files_archive: Option<&Path>,
         files_permissions: Option<&ComponentFilePathWithPermissionsList>,
+        dynamic_linking: Option<DynamicLinking>,
     ) -> Result<Component, GolemError> {
         info!("Adding component {name:?} from {path:?}");
 
         let files_archive_file = match files_archive {
             Some(fa) => {
-                let file = File::open(fa)
-                    .await
-                    .map_err(|e| GolemError(format!("Can't open component files archive: {e}")))?;
+                let file = File::open(fa).await.map_err(|e| {
+                    GolemError(format!(
+                        "Can't open component files archive ({}): {e}",
+                        fa.to_string_lossy()
+                    ))
+                })?;
                 Some(file)
             }
             None => None,
@@ -103,9 +107,12 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
 
         let component = match path {
             PathBufOrStdin::Path(path) => {
-                let file = File::open(path)
-                    .await
-                    .map_err(|e| GolemError(format!("Can't open component file: {e}")))?;
+                let file = File::open(&path).await.map_err(|e| {
+                    GolemError(format!(
+                        "Can't open component file ({}): {e}",
+                        path.to_string_lossy()
+                    ))
+                })?;
 
                 self.client
                     .create_component(
@@ -114,6 +121,7 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
                         file,
                         files_permissions,
                         files_archive_file,
+                        dynamic_linking.as_ref(),
                     )
                     .await?
             }
@@ -131,6 +139,7 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
                         bytes,
                         files_permissions,
                         files_archive_file,
+                        dynamic_linking.as_ref(),
                     )
                     .await?
             }
@@ -146,14 +155,18 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
         component_type: Option<golem_client::model::ComponentType>,
         files_archive: Option<&Path>,
         files_permissions: Option<&ComponentFilePathWithPermissionsList>,
+        dynamic_linking: Option<DynamicLinking>,
     ) -> Result<Component, GolemError> {
         info!("Updating component {urn} from {path:?}");
 
         let files_archive_file = match files_archive {
             Some(fa) => {
-                let file = File::open(fa)
-                    .await
-                    .map_err(|e| GolemError(format!("Can't open component files archive: {e}")))?;
+                let file = File::open(fa).await.map_err(|e| {
+                    GolemError(format!(
+                        "Can't open component files archive ({}): {e}",
+                        fa.to_string_lossy()
+                    ))
+                })?;
                 Some(file)
             }
             None => None,
@@ -161,9 +174,12 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
 
         let component = match path {
             PathBufOrStdin::Path(path) => {
-                let file = File::open(path)
-                    .await
-                    .map_err(|e| GolemError(format!("Can't open component file: {e}")))?;
+                let file = File::open(&path).await.map_err(|e| {
+                    GolemError(format!(
+                        "Can't open component file ({}): {e}",
+                        path.to_string_lossy()
+                    ))
+                })?;
 
                 self.client
                     .update_component(
@@ -172,6 +188,7 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
                         file,
                         files_permissions,
                         files_archive_file,
+                        dynamic_linking.as_ref(),
                     )
                     .await?
             }
@@ -189,6 +206,7 @@ impl<C: golem_client::api::ComponentClient + Sync + Send> ComponentClient
                         bytes,
                         files_permissions,
                         files_archive_file,
+                        dynamic_linking.as_ref(),
                     )
                     .await?
             }
