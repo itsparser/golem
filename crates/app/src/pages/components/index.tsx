@@ -29,26 +29,35 @@ const Components = () => {
   );
 
   useEffect(() => {
-    API.getComponentByIdAsKey().then(async (response) => {
-      setComponentApiList(response);
-      setComponentList(response);
-      const componentStatus: { [key: string]: WorkerStatus } = {};
-      Object.values(response).map((comp) => {
-        if (comp.componentId) {
-          API.findWorker(comp.componentId!, {
-            count: 100,
-            precise: true,
-          }).then((worker) => {
+    const fetchComponentsAndMetrics = async () => {
+      try {
+        const response = await API.getComponentByIdAsKey();
+        setComponentApiList(response);
+        setComponentList(response);
+
+        const componentStatus: { [key: string]: WorkerStatus } = {};
+        const workerPromises = Object.values(response).map(async (comp) => {
+          if (comp.componentId) {
+            const worker = await API.findWorker(comp.componentId, {
+              count: 100,
+              precise: true,
+            });
             const status: Record<string, number> = {};
             worker.workers.forEach((worker: Worker) => {
               status[worker.status] = (status[worker.status] || 0) + 1;
             });
-            componentStatus[comp.componentId!] = status;
-            setWorkerList(componentStatus);
-          });
-        }
-      });
-    });
+            componentStatus[comp.componentId] = status;
+          }
+        });
+
+        await Promise.all(workerPromises);
+        setWorkerList(componentStatus);
+      } catch (error) {
+        console.error("Error fetching components or metrics:", error);
+      }
+    };
+
+    fetchComponentsAndMetrics();
   }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -38,11 +38,30 @@ export default function ComponentInfo() {
     if (componentId) {
       API.getComponentByIdAsKey().then((response) => {
         setVersionList(response[componentId].versionId || []);
-        setComponent(response[componentId]);
       });
 
       API.getComponents().then((response) => {
         setComponentList(response);
+        const selectedComponentList = response.filter(
+          (component: Component) =>
+            component.versionedComponentId?.componentId === componentId
+        );
+        let mostRecentComponent = {} as Component;
+        selectedComponentList.forEach((component: Component) => {
+          if (component.createdAt) {
+            const currentDate = new Date(component.createdAt);
+            if (
+              !mostRecentComponent.createdAt ||
+              currentDate > new Date(mostRecentComponent.createdAt)
+            ) {
+              mostRecentComponent = component;
+            }
+          }
+        });
+        setComponent(mostRecentComponent);
+        setVersionChange(
+          mostRecentComponent?.versionedComponentId?.version?.toString() || ""
+        );
       });
     }
   }, [componentId]);
@@ -114,7 +133,7 @@ export default function ComponentInfo() {
                       onValueChange={(version) => handleVersionChange(version)}
                     >
                       <SelectTrigger className="w-[80px]">
-                        <SelectValue />
+                        <SelectValue> v{versionChange}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {versionList.map((version: any) => (
@@ -137,7 +156,7 @@ export default function ComponentInfo() {
                       Component ID
                     </div>
                     <div className="font-mono text-sm">
-                      {component.componentId}
+                      {component.versionedComponentId?.componentId}
                     </div>
                   </div>
                   <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3 border-b">
