@@ -452,6 +452,24 @@ impl<Ctx: WorkerCtx> Worker<Ctx> {
         }
     }
 
+    pub async fn resume_replay(&self) -> Result<(), GolemError> {
+        match &*self.instance.lock().await {
+            WorkerInstance::Running(running) => {
+                running
+                    .sender
+                    .send(WorkerCommand::ResumeReplay)
+                    .expect("Failed to send resume command");
+
+                Ok(())
+            }
+            WorkerInstance::Unloaded | WorkerInstance::WaitingForPermit(_) => {
+                Err(GolemError::invalid_request(
+                    "Explicit resume is not supported for uninitialized workers",
+                ))
+            }
+        }
+    }
+
     pub async fn invoke(
         &self,
         idempotency_key: IdempotencyKey,
@@ -666,6 +684,10 @@ impl<Ctx: WorkerCtx> Worker<Ctx> {
     pub async fn store_invocation_resuming(&self, key: &IdempotencyKey) {
         let mut map = self.invocation_results.write().unwrap();
         map.remove(key);
+    }
+
+    pub fn component_type(&self) -> ComponentType {
+        self.execution_status.read().unwrap().component_type()
     }
 
     pub async fn update_status(&self, status_value: WorkerStatusRecord) {
@@ -1481,6 +1503,28 @@ impl RunningWorker {
                 while let Some(cmd) = receiver.recv().await {
                     waiting_for_command.store(false, Ordering::Release);
                     match cmd {
+                        WorkerCommand::ResumeReplay => {
+                            let mut store = store.lock().await;
+
+                            let resume_replay_result =
+                                Ctx::resume_replay(&mut *store, &instance).await;
+
+                            match resume_replay_result {
+                                Ok(decision) => {
+                                    final_decision = decision;
+                                }
+
+                                Err(err) => {
+                                    warn!("Failed to resume replay: {err}");
+                                    if let Err(err2) = store.data_mut().set_suspended().await {
+                                        warn!("Additional error during resume of replay of worker: {err2}");
+                                    }
+
+                                    parent.stop_internal(true, Some(err)).await;
+                                    break;
+                                }
+                            }
+                        }
                         WorkerCommand::Invocation => {
                             let message = active
                                 .write()
@@ -1985,6 +2029,7 @@ pub enum RetryDecision {
 #[derive(Debug)]
 enum WorkerCommand {
     Invocation,
+    ResumeReplay,
     Interrupt(InterruptKind),
 }
 
@@ -2020,6 +2065,7 @@ where
         .unwrap_or_default();
 
     let last_oplog_index = this.oplog_service().get_last_index(owned_worker_id).await;
+
     if last_known.oplog_idx == last_oplog_index {
         Ok(last_known)
     } else {
