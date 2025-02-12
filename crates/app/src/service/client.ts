@@ -2,7 +2,7 @@
 import {Component, ComponentList} from "@/types/component.ts";
 import {ENDPOINT} from "@/service/endpoints.ts";
 import {Api} from "@/types/api.ts";
-import {fetch} from "@tauri-apps/plugin-http";
+import { fetchData } from "@/lib/tauri&web.ts";
 import {toast} from "@/hooks/use-toast";
 import {Plugin} from "@/types/plugin";
 import {parseErrorResponse} from "@/service/error-handler.ts";
@@ -38,7 +38,7 @@ export class Service {
 
     public createComponent = async (form: FormData) => {
         try {
-            const response = await fetch(`${this.baseUrl}/v1/components`, {
+            const response = await fetchData(`${this.baseUrl}/v1/components`, {
                 method: "POST",
                 body: form,
             });
@@ -65,7 +65,7 @@ export class Service {
 
     public updateComponent = async (componenetId: string, form: FormData) => {
         try {
-            const response = await fetch(
+            const response = await fetchData(
                 `${this.baseUrl}/v1/components/${componenetId}/updates`,
                 {
                     method: "POST",
@@ -348,7 +348,7 @@ export class Service {
         headers = {"Content-Type": "application/json"}
     ): Promise<any> => {
         try {
-            const response = await fetch(`${this.baseUrl}${url}`, {
+            const response = await fetchData(`${this.baseUrl}${url}`, {
                 method: method,
                 body: data,
                 headers: headers,
@@ -413,7 +413,7 @@ export class Service {
         data: FormData | string | null = null,
         headers = {"Content-Type": "application/json"}
     ): Promise<any> => {
-        const resp = await fetch(`${this.baseUrl}${url}`, {
+        const resp = await fetchData(`${this.baseUrl}${url}`, {
             method: method,
             body: data,
             headers: headers,

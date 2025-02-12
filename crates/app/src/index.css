@@ -37,6 +37,8 @@
         --sidebar-accent-foreground: 240 5.9% 10%;
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --toast-success: 142 76% 36%;
+        --toast-error: 0 84.2% 60.2%;
     }
 
     .dark {
@@ -73,6 +75,8 @@
         --sidebar-accent-foreground: 240 4.8% 95.9%;
         --sidebar-border: 240 3.7% 15.9%;
         --sidebar-ring: 217.2 91.2% 59.8%;
+        --toast-success: 142 76% 36%;
+        --toast-error: 0 84.2% 60.2%;
     }
 }
 
@@ -85,3 +89,25 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer components {
+    .toast-success {
+      @apply border-[#34C759] bg-white;
+    }
+    
+    .toast-success .toast-icon {
+      @apply text-[#34C759];
+    }
+    
+    .toast-error {
+      @apply border-[#ea384c] bg-white;
+    }
+    
+    .toast-error .toast-icon {
+      @apply text-[#ea384c];
+    }
+  
+    .toast-close {
+      @apply absolute right-2 top-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground;
+    }
+  }
