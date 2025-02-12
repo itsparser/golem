@@ -45,8 +45,8 @@ const HTTP_METHODS = [
 
 const BIND_TYPE = [
     "default",
-    // "file-server",
-    // "http-handler"
+    "file-server",
+    "cors-preflight",
 ] as const;
 
 const interpolations = [

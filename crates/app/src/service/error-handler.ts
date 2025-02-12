@@ -101,7 +101,8 @@ export function parseErrorResponse(response: any): ErrorResponse {
                     break;
             }
         } else {
-            parsedError.description = parseErrorMessage(response);
+            console.log("elese", response);
+            parsedError.description = parseErrorMessage(String(response));
         }
     }
     toast({

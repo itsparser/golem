@@ -27,7 +27,7 @@ export default function WorkerManage() {
     const [workerDetails, setWorkerDetails] = useState({} as Worker);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showWorkerUpgrade, setShowWorkerUpgrade] = useState(false);
-    const [upgradeTo, setUpgradeTo] = useState("");
+    const [upgradeTo, setUpgradeTo] = useState("0");
     const [upgradeType, setUpgradeType] = useState("Automatic");
 
     const [componentList, setComponentList] = useState<ComponentList>({});
@@ -39,7 +39,7 @@ export default function WorkerManage() {
             });
             API.getParticularWorker(componentId, workerName).then((response) => {
                 setWorkerDetails(response);
-                setUpgradeTo(`${workerDetails?.componentVersion}`);
+                setUpgradeTo(`${response?.componentVersion}`);
             });
         }
     }, [componentId, workerName]);

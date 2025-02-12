@@ -70,6 +70,7 @@ const createMenuItems = (
         title: "Settings",
         url: `/components/${componentId}/settings`,
         icon: Settings,
+        isHidden: componentType === "Ephemeral",
     },
 ];
 
