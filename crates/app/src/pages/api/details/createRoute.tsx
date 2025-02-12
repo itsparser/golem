@@ -43,6 +43,12 @@ const HTTP_METHODS = [
     "Connect",
 ] as const;
 
+const BIND_TYPE = [
+    "default",
+    // "file-server",
+    // "http-handler"
+] as const;
+
 const interpolations = [
     {label: "Path Parameters", expression: "${request.path.<PATH_PARAM_NAME>}"},
     {
@@ -55,6 +61,10 @@ const interpolations = [
 ];
 
 const routeSchema = z.object({
+    componentId: z.string().min(1, "Component is required"),
+    version: z.string().min(0, "Version is required"),
+    bindType: z.enum(BIND_TYPE),
+
     method: z.enum(HTTP_METHODS),
     path: z
         .string()
@@ -64,13 +74,14 @@ const routeSchema = z.object({
             /^[a-zA-Z0-9/\-_<>{}]+$/,
             "Path can only contain letters, numbers, slashes, hyphens, underscores, and path parameters in <>"
         ),
-    componentId: z.string().min(1, "Component is required"),
-    version: z.string().min(0, "Version is required"),
     workerName: z
         .string()
         .min(1, "Worker Name is required")
         .max(100, "Worker Name cannot exceed 100 characters"),
     response: z.string().optional(),
+    allowMethods: z.string().optional(),
+    allowOrigin: z.string().optional(),
+    allowHeaders: z.string().optional(),
 });
 
 type RouteFormValues = z.infer<typeof routeSchema>;
@@ -116,8 +127,12 @@ const CreateRoute = () => {
             path: "",
             componentId: "",
             version: "",
+            bindType: "default",
             workerName: "",
             response: "",
+            allowMethods: "",
+            allowOrigin: "",
+            allowHeaders: "",
         },
     });
 
@@ -146,6 +161,7 @@ const CreateRoute = () => {
                         "componentId",
                         route?.binding?.componentId?.componentId || ""
                     );
+                    form.setValue("bindType", "default");
                     form.setValue(
                         "version",
                         String(route?.binding?.componentId?.version ?? "")
@@ -188,6 +204,7 @@ const CreateRoute = () => {
                 method: values.method,
                 path: values.path,
                 binding: {
+                    binding_type: values.bindType,
                     componentId: {
                         componentId: values.componentId,
                         version: Number.parseInt(values.version),
@@ -426,61 +443,6 @@ const CreateRoute = () => {
                                 className="space-y-8"
                             >
                                 <div>
-                                    <h3 className="text-lg font-medium">HTTP Endpoint</h3>
-                                    <FormDescription>
-                                        Each API Route must have a unique Method + Path combination.
-                                    </FormDescription>
-                                    <div className="space-y-4 mt-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="method"
-                                            render={({field}) => (
-                                                <FormItem>
-                                                    <FormLabel>Method</FormLabel>
-                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                        {HTTP_METHODS.map((m) => (
-                                                            <Button
-                                                                type="button"
-                                                                key={m}
-                                                                variant={
-                                                                    field.value === m ? "default" : "outline"
-                                                                }
-                                                                size="sm"
-                                                                onClick={() => field.onChange(m)}
-                                                            >
-                                                                {m}
-                                                            </Button>
-                                                        ))}
-                                                    </div>
-                                                    <FormMessage/>
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <FormField
-                                            control={form.control}
-                                            name="path"
-                                            render={({field}) => (
-                                                <FormItem>
-                                                    <FormLabel>Path</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            placeholder="/api/v1/resource/<param>"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>
-                                                        Define path variables with angle brackets (e.g.,
-                                                        /users/id)
-                                                    </FormDescription>
-                                                    <FormMessage/>
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
                                     <h3 className="text-lg font-medium">Worker Binding</h3>
                                     <FormDescription>
                                         Bind this endpoint to a specific worker function.
@@ -491,7 +453,7 @@ const CreateRoute = () => {
                                             name="componentId"
                                             render={({field}) => (
                                                 <FormItem>
-                                                    <FormLabel>Component</FormLabel>
+                                                    <FormLabel required>Component</FormLabel>
                                                     <Select
                                                         onValueChange={onComponentChange}
                                                         value={field.value}
@@ -524,7 +486,7 @@ const CreateRoute = () => {
                                             name="version"
                                             render={({field}) => (
                                                 <FormItem>
-                                                    <FormLabel>Version</FormLabel>
+                                                    <FormLabel required>Version</FormLabel>
                                                     <Select
                                                         onValueChange={onVersionChange}
                                                         value={field.value}
@@ -554,13 +516,210 @@ const CreateRoute = () => {
                                             )}
                                         />
                                     </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-medium">HTTP Endpoint</h3>
+                                    <FormDescription>
+                                        Each API Route must have a unique Method + Path combination.
+                                    </FormDescription>
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="bindType"
+                                            render={({field}) => (
+                                                <FormItem>
+                                                    <FormLabel required>Bind type</FormLabel>
+                                                    <Select
+                                                        onValueChange={(v) => form.setValue("bindType", v)}
+                                                        value={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a component"/>
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {BIND_TYPE.map(
+                                                                (data: string) => (
+                                                                    <SelectItem
+                                                                        value={data}
+                                                                        key={data}
+                                                                    >
+                                                                        {data}
+                                                                    </SelectItem>
+                                                                )
+                                                            )}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage/>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="method"
+                                            render={({field}) => (
+                                                <FormItem>
+                                                    <FormLabel required>Method</FormLabel>
+                                                    <Select
+                                                        onValueChange={(v) => form.setValue("method", v)}
+                                                        value={field.value}
+                                                        disabled={!form.watch("bindType")}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select version">
+                                                                    {" "}
+                                                                    {field.value}{" "}
+                                                                </SelectValue>
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {form.watch("bindType") &&
+                                                                HTTP_METHODS.map((v: string) => (
+                                                                    <SelectItem value={v} key={v}>
+                                                                        {v}
+                                                                    </SelectItem>
+                                                                ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage/>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="space-y-4 mt-4">
+                                        {/*<FormField*/}
+                                        {/*    control={form.control}*/}
+                                        {/*    name="method"*/}
+                                        {/*    render={({field}) => (*/}
+                                        {/*        <FormItem>*/}
+                                        {/*            <FormLabel>Method</FormLabel>*/}
+                                        {/*            <div className="flex flex-wrap gap-2 mt-2">*/}
+                                        {/*                {HTTP_METHODS.map((m) => (*/}
+                                        {/*                    <Button*/}
+                                        {/*                        type="button"*/}
+                                        {/*                        key={m}*/}
+                                        {/*                        variant={*/}
+                                        {/*                            field.value === m ? "default" : "outline"*/}
+                                        {/*                        }*/}
+                                        {/*                        size="sm"*/}
+                                        {/*                        onClick={() => field.onChange(m)}*/}
+                                        {/*                    >*/}
+                                        {/*                        {m}*/}
+                                        {/*                    </Button>*/}
+                                        {/*                ))}*/}
+                                        {/*            </div>*/}
+                                        {/*            <FormMessage/>*/}
+                                        {/*        </FormItem>*/}
+                                        {/*    )}*/}
+                                        {/*/>*/}
+
+                                        <FormField
+                                            control={form.control}
+                                            name="path"
+                                            render={({field}) => (
+                                                <FormItem>
+                                                    <FormLabel required>Path</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="/api/v1/resource/<param>"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormDescription>
+                                                        Define path variables with angle brackets (e.g.,
+                                                        /users/id)
+                                                    </FormDescription>
+                                                    <FormMessage/>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {/*<h3 className="text-lg font-medium">Worker Binding</h3>*/}
+                                    {/*<FormDescription>*/}
+                                    {/*    Bind this endpoint to a specific worker function.*/}
+                                    {/*</FormDescription>*/}
+                                    {/*<div className="grid grid-cols-2 gap-4 mt-4">*/}
+                                    {/*    <FormField*/}
+                                    {/*        control={form.control}*/}
+                                    {/*        name="componentId"*/}
+                                    {/*        render={({field}) => (*/}
+                                    {/*            <FormItem>*/}
+                                    {/*                <FormLabel>Component</FormLabel>*/}
+                                    {/*                <Select*/}
+                                    {/*                    onValueChange={onComponentChange}*/}
+                                    {/*                    value={field.value}*/}
+                                    {/*                >*/}
+                                    {/*                    <FormControl>*/}
+                                    {/*                        <SelectTrigger>*/}
+                                    {/*                            <SelectValue placeholder="Select a component"/>*/}
+                                    {/*                        </SelectTrigger>*/}
+                                    {/*                    </FormControl>*/}
+                                    {/*                    <SelectContent>*/}
+                                    {/*                        {Object.values(componentList).map(*/}
+                                    {/*                            (data: ComponentList) => (*/}
+                                    {/*                                <SelectItem*/}
+                                    {/*                                    value={data.componentId || ""}*/}
+                                    {/*                                    key={data.componentName}*/}
+                                    {/*                                >*/}
+                                    {/*                                    {data.componentName}*/}
+                                    {/*                                </SelectItem>*/}
+                                    {/*                            )*/}
+                                    {/*                        )}*/}
+                                    {/*                    </SelectContent>*/}
+                                    {/*                </Select>*/}
+                                    {/*                <FormMessage/>*/}
+                                    {/*            </FormItem>*/}
+                                    {/*        )}*/}
+                                    {/*    />*/}
+
+                                    {/*    <FormField*/}
+                                    {/*        control={form.control}*/}
+                                    {/*        name="version"*/}
+                                    {/*        render={({field}) => (*/}
+                                    {/*            <FormItem>*/}
+                                    {/*                <FormLabel>Version</FormLabel>*/}
+                                    {/*                <Select*/}
+                                    {/*                    onValueChange={onVersionChange}*/}
+                                    {/*                    value={field.value}*/}
+                                    {/*                    disabled={!form.watch("componentId")}*/}
+                                    {/*                >*/}
+                                    {/*                    <FormControl>*/}
+                                    {/*                        <SelectTrigger>*/}
+                                    {/*                            <SelectValue placeholder="Select version">*/}
+                                    {/*                                {" "}*/}
+                                    {/*                                v{field.value}{" "}*/}
+                                    {/*                            </SelectValue>*/}
+                                    {/*                        </SelectTrigger>*/}
+                                    {/*                    </FormControl>*/}
+                                    {/*                    <SelectContent>*/}
+                                    {/*                        {form.watch("componentId") &&*/}
+                                    {/*                            componentList[*/}
+                                    {/*                                form.watch("componentId")*/}
+                                    {/*                                ]?.versionList?.map((v: number) => (*/}
+                                    {/*                                <SelectItem value={String(v)} key={v}>*/}
+                                    {/*                                    v{v}*/}
+                                    {/*                                </SelectItem>*/}
+                                    {/*                            ))}*/}
+                                    {/*                    </SelectContent>*/}
+                                    {/*                </Select>*/}
+                                    {/*                <FormMessage/>*/}
+                                    {/*            </FormItem>*/}
+                                    {/*        )}*/}
+                                    {/*    />*/}
+                                    {/*</div>*/}
 
                                     <FormField
                                         control={form.control}
                                         name="workerName"
                                         render={({field}) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Worker Name</FormLabel>
+                                                <FormLabel required>Worker Name</FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
                                                         <Textarea
@@ -601,7 +760,8 @@ const CreateRoute = () => {
                                                                     className="p-1 hover:bg-muted rounded-full transition-colors"
                                                                     aria-label="Show interpolation info"
                                                                 >
-                                                                    <Info className="w-4 h-4 text-muted-foreground"/>
+                                                                    <Info
+                                                                        className="w-4 h-4 text-muted-foreground"/>
                                                                 </button>
                                                             </PopoverTrigger>
                                                             <PopoverContent
@@ -645,8 +805,8 @@ const CreateRoute = () => {
                                     name="response"
                                     render={({field}) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                <div className="flex gap-1 items-center">
+                                            <FormLabel required>
+                                                <span className="">
                                                     Response
                                                     <Popover
                                                         open={isPopoverOpen}
@@ -708,7 +868,7 @@ const CreateRoute = () => {
                                                             )}
                                                         </PopoverContent>
                                                     </Popover>
-                                                </div>
+                                                </span>
                                             </FormLabel>
                                             <FormControl>
                                                 <div className="relative">
@@ -743,6 +903,66 @@ const CreateRoute = () => {
                                                     )}
                                                 </div>
                                             </FormControl>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="allowOrigin"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Allow Origin</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="*"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Value of the Access-Control-Allow-Origin header. Defaults to "*" if not
+                                                provided.
+                                            </FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="allowMethods"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Allow Methods</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="GET, POST, PUT, DELETE, OPTIONS"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Value of the Access-Control-Allow-Methods header. Defaults to "GET,
+                                                POST, PUT, DELETE, OPTIONS" if not provided.
+                                            </FormDescription>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="allowHeaders"
+                                    render={({field}) => (
+                                        <FormItem>
+                                            <FormLabel>Allow Methods</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Content-Type, Authorization"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Value of the Access-Control-Allow-Headers header. Defaults to
+                                                "Content-Type, Authorization" if not provided.
+                                            </FormDescription>
                                             <FormMessage/>
                                         </FormItem>
                                     )}

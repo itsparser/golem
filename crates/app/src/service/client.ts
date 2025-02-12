@@ -52,6 +52,7 @@ export class Service {
             return await response.json(); // Return JSON response if successful
         } catch (error) {
             console.error("Error in createComponent:", error);
+            parseErrorResponse(error);
         }
     };
 

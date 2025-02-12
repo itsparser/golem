@@ -114,7 +114,7 @@ export const parseErrorMessage = (error: string): string => {
     for (const pattern of patterns) {
         const match = error.match(pattern);
         if (match) {
-            return match[0];
+            return match.join(" , ");
         }
     }
     return "An unknown error occurred.";

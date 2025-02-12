@@ -2,14 +2,14 @@ import {API} from "@/service";
 import {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -28,6 +28,7 @@ export default function WorkerManage() {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showWorkerUpgrade, setShowWorkerUpgrade] = useState(false);
     const [upgradeTo, setUpgradeTo] = useState("");
+    const [upgradeType, setUpgradeType] = useState("Automatic");
 
     const [componentList, setComponentList] = useState<ComponentList>({});
 
@@ -206,6 +207,27 @@ export default function WorkerManage() {
                                             className="col-span-3"
                                             disabled={true}
                                         />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <Label htmlFor="upgradeTo" className="text-right">
+                                            Upgrade To
+                                        </Label>
+                                        <Select
+                                            defaultValue={"Automatic"}
+                                            onValueChange={setUpgradeType}
+                                        >
+                                            <SelectTrigger id="upgradeTo" className="col-span-3">
+                                                <SelectValue>{upgradeType}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {["Automatic", "Manual"]
+                                                    .map((version) => (
+                                                        <SelectItem key={version} value={version}>
+                                                            {version}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
                                         <Label htmlFor="upgradeTo" className="text-right">

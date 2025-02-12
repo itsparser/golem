@@ -15,12 +15,15 @@ export function parseErrorResponse(response: any): ErrorResponse {
         description: "Something went wrong. Please try again later.",
         payload: response,
     };
-    console.log("response", response)
+    console.log("response", response, typeof response)
     if (typeof response === "string") {
         parsedError.description = parseErrorMessage(response);
     } else if (typeof response === "object") {
+        console.log("object", JSON.stringify(response), String(response))
         if (response?.error) {
             parsedError.description = response?.error;
+        } else if (response?.Error) {
+            parsedError.description = response?.Error;
         } else if (response?.errors) {
             parsedError.description = response?.errors.join(", ");
         } else if (response?.golemError) {
@@ -97,6 +100,8 @@ export function parseErrorResponse(response: any): ErrorResponse {
                     parsedError.description = response.golemError.reason || "An unspecified Golem error occurred.";
                     break;
             }
+        } else {
+            parsedError.description = parseErrorMessage(response);
         }
     }
     toast({
