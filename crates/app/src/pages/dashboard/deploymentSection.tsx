@@ -33,7 +33,7 @@ export function DeploymentSection() {
 
     return (
         <ErrorBoundary>
-            <Card className={"rounded-lg max-h-[250px]"}>
+            <Card className={"rounded-lg max-h-[275px]"}>
                 <CardHeader>
                     <div className="flex justify-between items-center mb-6">
                         <CardTitle>Deployments</CardTitle>

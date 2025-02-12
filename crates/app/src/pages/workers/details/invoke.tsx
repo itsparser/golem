@@ -9,6 +9,7 @@ import {cn, sanitizeInput} from "@/lib/utils";
 import ReactJson from "react-json-view";
 import {Textarea} from "@/components/ui/textarea";
 import {parseToApiPayload, parseToJsonEditor, safeFormatJSON,} from "@/lib/worker";
+import type {ErrorResponse} from "@/service/error-handler.ts";
 
 export default function WorkerInvoke() {
     const {componentId = "", workerName = ""} = useParams();
@@ -112,9 +113,9 @@ export default function WorkerInvoke() {
 
             const newValue = JSON.stringify(response?.result?.value, null, 2);
             setResultValue(newValue);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                setError(error.message);
+        } catch (error: ErrorResponse | unknown) {
+            if (error?.description) {
+                setError(error?.description);
             } else {
                 setError("Invalid JSON data. Please correct it before invoking.");
             }
