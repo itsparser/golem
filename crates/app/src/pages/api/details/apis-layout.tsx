@@ -41,47 +41,47 @@ const MenuItems = (apiName: string, version: string) => [
 ];
 
 export const ApiLayout = () => {
-  const { apiName, version } = useParams();
-  const [queryParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [apiDetails, setApiDetails] = useState([] as Api[]);
+    const {apiName, version} = useParams();
+    const [queryParams] = useSearchParams();
+    const navigate = useNavigate();
+    const [apiDetails, setApiDetails] = useState([] as Api[]);
 
-  const [currentApiDetails, setCurrentApiDetails] = useState({} as Api);
-  const [currentMenu, setCurrentMenu] = useState("Overview");
+    const [currentApiDetails, setCurrentApiDetails] = useState({} as Api);
+    const [currentMenu, setCurrentMenu] = useState("Overview");
 
-  const basePath = useLocation().pathname.replace(
-    `/apis/${apiName}/version/${version}`,
-    ""
-  );
-  const path = queryParams.get("path");
-  const method = queryParams.get("method");
-  const sortedVersions = useMemo(() => {
-    return [...apiDetails].sort((a, b) =>
-      b.version.localeCompare(a.version, undefined, { numeric: true })
+    const basePath = useLocation().pathname.replace(
+        `/apis/${apiName}/version/${version}`,
+        ""
     );
-  }, [apiDetails]);
+    const path = queryParams.get("path");
+    const method = queryParams.get("method");
+    const sortedVersions = useMemo(() => {
+        return [...apiDetails].sort((a, b) =>
+            b.version.localeCompare(a.version, undefined, {numeric: true})
+        );
+    }, [apiDetails]);
 
-  useEffect(() => {
-    API.getApi(apiName!).then(async (response) => {
-      setApiDetails(response);
-      const selectedApi = response.find((api) => api.version === version);
-      if (selectedApi) {
-        setCurrentApiDetails(selectedApi);
-      }
-    });
-    if (location.pathname.includes("settings")) setCurrentMenu("Settings");
-    else if (location.pathname.includes("routes/add"))
-      setCurrentMenu("Add New Route");
-    else if (path) setCurrentMenu(path);
-    else if (location.pathname.includes("newversion"))
-      setCurrentMenu("New Version");
-    else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
-  }, [apiName, version, path, method]);
+    useEffect(() => {
+        API.getApi(apiName!).then(async (response) => {
+            setApiDetails(response);
+            const selectedApi = response.find((api) => api.version === version);
+            if (selectedApi) {
+                setCurrentApiDetails(selectedApi);
+            }
+        });
+        if (location.pathname.includes("settings")) setCurrentMenu("Settings");
+        else if (location.pathname.includes("routes/add"))
+            setCurrentMenu("Add New Route");
+        else if (path) setCurrentMenu(path);
+        else if (location.pathname.includes("newversion"))
+            setCurrentMenu("New Version");
+        else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
+    }, [apiName, version, path, method]);
 
-  const handleNavigateHome = useCallback(() => {
-    navigate(`/apis/${apiName}/version/${version}`);
-    setCurrentMenu("Overview");
-  }, [navigate, apiName, version]);
+    const handleNavigateHome = useCallback(() => {
+        navigate(`/apis/${apiName}/version/${version}`);
+        setCurrentMenu("Overview");
+    }, [navigate, apiName, version]);
 
     return (
         <ErrorBoundary>
@@ -182,7 +182,7 @@ export const ApiLayout = () => {
                                 variant="default"
                                 onClick={() => {
                                     navigate(`/apis/${apiName}/version/${version}/routes/add?`);
-                                    setCurrentMenu("Routes");
+                                    setCurrentMenu("Add New Route");
                                 }}
                             >
                                 <Plus className="h-5 w-5"/>
