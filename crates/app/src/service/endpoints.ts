@@ -93,4 +93,7 @@ export const ENDPOINT = {
     createDeployment: () => {
         return `/v1/api/deployments/deploy`;
     },
+    getOplog: (componentId: string, workerName: string, count: number, searchQuery: string) => {
+        return `/v1/components/${componentId}/workers/${workerName}/oplog?count=${count}&query=${searchQuery}`;
+    },
 };

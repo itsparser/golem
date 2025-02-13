@@ -271,6 +271,14 @@ export class Service {
         return r;
     };
 
+    public getOplog = async (componentId: string, workerName: string, count: number, searchQuery: string) => {
+      const r = await this.callApi(
+          ENDPOINT.getOplog(componentId, workerName, count, searchQuery),
+          "GET"
+      );
+      return r;
+  };
+
     public getComponentByIdAsKey = async (): Promise<
         Record<string, ComponentList>
     > => {
