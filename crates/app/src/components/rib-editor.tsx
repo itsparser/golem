@@ -1,63 +1,32 @@
-import type React from "react"
-import {useEffect, useState} from "react"
-import Editor, {type EditorProps, useMonaco} from "@monaco-editor/react"
-import {cn} from "@/lib/utils"
-import {useTheme} from "./theme-provider"
-
+import type React from "react";
+import {useEffect, useState} from "react";
+import Editor, {type EditorProps, useMonaco} from "@monaco-editor/react";
+import {cn} from "@/lib/utils";
+import {useTheme} from "@/components/theme-provider.tsx";
 
 interface MonacoEditorProps extends EditorProps {
-    value?: string
-    language?: string
-    height?: string
-    scriptKeys?: string[]
+    value?: string;
+    language?: string;
+    height?: string;
+    scriptKeys?: string[];
 }
 
 export const RibEditor: React.FC<MonacoEditorProps> = ({
-                                                           value, onChange, className,
+                                                           value,
+                                                           onChange,
+                                                           className,
                                                            scriptKeys,
                                                            ...props
                                                        }) => {
-    const {theme} = useTheme()
-    const [isFocused, setIsFocused] = useState(false)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [scriptKeywords, _] = useState<string[]>(scriptKeys || [])
-    const monacoInstance = useMonaco()
-
+    const {theme} = useTheme();
+    const [isFocused, setIsFocused] = useState(false);
+    const [scriptKeywords, _] = useState<string[]>(scriptKeys || []);
+    const monacoInstance = useMonaco();
 
     useEffect(() => {
         if (monacoInstance) {
             // Register Rib language
-            monacoInstance.languages.register({id: "rib"})
-
-            monacoInstance.languages.registerCompletionItemProvider("rib", {
-                triggerCharacters: ["$", "{"], // Trigger suggestions inside strings
-                provideCompletionItems: (model, position) => {
-                    const wordUntilPosition = model.getWordUntilPosition(position)
-                    const range = {
-                        startLineNumber: position.lineNumber,
-                        endLineNumber: position.lineNumber,
-                        startColumn: wordUntilPosition.startColumn,
-                        endColumn: wordUntilPosition.endColumn,
-                    }
-
-                    const code = model.getValue() // Get entire editor content
-                    const variablePattern = /\b(let|const|var)\s+([a-zA-Z_]\w*)/g
-                    const variables = [...code.matchAll(variablePattern)].map((match) => match[2]) // Extract variable names
-
-                    // console.log("Extracted local variables:", variables)
-
-                    const suggestions = [
-                        ...variables.map((variable) => ({
-                            label: variable,
-                            kind: monacoInstance.languages.CompletionItemKind.Variable,
-                            insertText: variable,
-                            range: range,
-                        }))
-                    ]
-
-                    return {suggestions}
-                },
-            })
+            monacoInstance.languages.register({id: "rib"});
 
             monacoInstance.languages.setLanguageConfiguration("rib", {
                 comments: {
@@ -83,92 +52,22 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                     {open: '"', close: '"'},
                     {open: "'", close: "'"},
                 ],
-            })
+            });
+
             monacoInstance.languages.setMonarchTokensProvider("rib", {
                 defaultToken: "",
                 tokenPostfix: ".rib",
 
                 keywords: [
-                    "let",
-                    "const",
-                    "fn",
-                    "use",
-                    "type",
-                    "struct",
-                    "enum",
-                    "trait",
-                    "impl",
-                    "pub",
-                    "mut",
-                    "return",
-                    "if",
-                    "else",
-                    "for",
-                    "while",
-                    "match",
-                    "as",
-                    "in",
-                    "export",
-                    "import",
-                    "interface",
-                    "resource",
+                    "let", "if", "then", "else", "for", "in", "yield", "reduce", "from", "true", "false", "some", "none", "ok", "error"
                 ],
 
                 typeKeywords: [
-                    "u8",
-                    "u16",
-                    "u32",
-                    "u64",
-                    "i8",
-                    "i16",
-                    "i32",
-                    "i64",
-                    "f32",
-                    "f64",
-                    "bool",
-                    "char",
-                    "str",
-                    "string",
+                    "bool", "s8", "u8", "s16", "u16", "s32", "u32", "s64", "u64", "f32", "f64", "char", "string", "list", "tuple", "option", "result"
                 ],
 
                 operators: [
-                    "=",
-                    ">",
-                    "<",
-                    "!",
-                    "~",
-                    "?",
-                    ":",
-                    "==",
-                    "<=",
-                    ">=",
-                    "!=",
-                    "&&",
-                    "||",
-                    "++",
-                    "--",
-                    "+",
-                    "-",
-                    "*",
-                    "/",
-                    "&",
-                    "|",
-                    "^",
-                    "%",
-                    "<<",
-                    ">>",
-                    ">>>",
-                    "+=",
-                    "-=",
-                    "*=",
-                    "/=",
-                    "&=",
-                    "|=",
-                    "^=",
-                    "%=",
-                    "<<=",
-                    ">>=",
-                    ">>>=",
+                    ">=", "<=", "==", "<", ">", "&&", "||", "+", "-", "*", "/"
                 ],
 
                 symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -178,16 +77,13 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                 tokenizer: {
                     root: [
                         // Identifiers and keywords
-                        [
-                            /[a-z_$][\w$]*/,
-                            {
-                                cases: {
-                                    "@typeKeywords": "keyword.type",
-                                    "@keywords": "keyword",
-                                    "@default": "identifier",
-                                },
-                            },
-                        ],
+                        [/[a-z_$][\w$]*/, {
+                            cases: {
+                                "@typeKeywords": "keyword.type",
+                                "@keywords": "keyword",
+                                "@default": "identifier"
+                            }
+                        }],
 
                         // Whitespace
                         {include: "@whitespace"},
@@ -195,15 +91,12 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         // Delimiters and operators
                         [/[{}()[\]]/, "@brackets"],
                         [/[<>](?!@symbols)/, "@brackets"],
-                        [
-                            /@symbols/,
-                            {
-                                cases: {
-                                    "@operators": "operator",
-                                    "@default": "",
-                                },
-                            },
-                        ],
+                        [/@symbols/, {
+                            cases: {
+                                "@operators": "operator",
+                                "@default": ""
+                            }
+                        }],
 
                         // Numbers
                         [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
@@ -244,21 +137,21 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         [/\/\/.*$/, "comment"],
                     ],
                 },
-            })
+            });
 
             // Add custom completions
             monacoInstance.languages.registerCompletionItemProvider("rib", {
                 triggerCharacters: ["."],
                 provideCompletionItems: (model: any, position: any) => {
-                    const lineContent = model.getLineContent(position.lineNumber)
-                    const wordUntilPosition = model.getWordUntilPosition(position)
+                    const lineContent = model.getLineContent(position.lineNumber);
+                    const wordUntilPosition = model.getWordUntilPosition(position);
                     const range = {
                         startLineNumber: position.lineNumber,
                         endLineNumber: position.lineNumber,
                         startColumn: wordUntilPosition.startColumn,
                         endColumn: wordUntilPosition.endColumn,
-                    }
-                    console.log("Triggered completion", {lineContent, wordUntilPosition})
+                    };
+                    console.log("Triggered completion", {lineContent, wordUntilPosition});
 
                     return {
                         suggestions: scriptKeywords.map(key => ({
@@ -267,12 +160,11 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                             insertText: key,
                             range: range
                         }))
-                    }
+                    };
                 },
-            })
+            });
         }
-    }, [monacoInstance])
-
+    }, [monacoInstance]);
 
     return (
         <div
@@ -302,12 +194,11 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                     },
                 }}
                 onMount={(editor) => {
-                    editor.onDidFocusEditorWidget(() => setIsFocused(true))
-                    editor.onDidBlurEditorWidget(() => setIsFocused(false))
+                    editor.onDidFocusEditorWidget(() => setIsFocused(true));
+                    editor.onDidBlurEditorWidget(() => setIsFocused(false));
                 }}
                 {...props}
             />
         </div>
-    )
-}
-
+    );
+};
