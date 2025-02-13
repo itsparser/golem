@@ -8,45 +8,51 @@ interface ProcessedData {
 }
 
 const processData = (data: Invocation[]): ProcessedData[] => {
-  return data.reduce((acc, curr) => {
+  const groupedData: Record<string, ProcessedData> = {};
+  const functionSet = new Set<string>();
+
+  // Group data by date and collect unique function names
+  data.forEach((curr) => {
     const date = new Date(curr.timestamp);
     const dateKey = date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
-    const functionName = curr.function.split(".")[1].replace(/[{}]/g, "");
+    const functionName = curr.function.match(/{(.*)}/)?.[1];
 
-    const existingDate = acc.find((item) => item.date === dateKey);
-    if (existingDate) {
-      existingDate[functionName] =
-        ((existingDate[functionName] ?? 0) as number) + 1;
-    } else {
-      acc.push({
-        date: dateKey,
-        [functionName]: 1,
-      });
+    if (!functionName) return;
+
+    functionSet.add(functionName);
+
+    if (!groupedData[dateKey]) {
+      groupedData[dateKey] = { date: dateKey };
     }
-    return acc;
-  }, [] as ProcessedData[]);
+
+    groupedData[dateKey][functionName] =
+      ((groupedData[dateKey][functionName] ?? 0) as number) + 1;
+  });
+
+  // Normalize data: Ensure all functions exist on all dates with 0 if missing
+  return Object.values(groupedData).map((entry) => {
+    functionSet.forEach((func) => {
+      if (!(func in entry)) {
+        entry[func] = 0; // Fill missing function data with 0
+      }
+    });
+    return entry;
+  });
 };
 
 export function InvocationsChart({ data = [] as Invocation[] }) {
   const chartData = processData(data);
 
+  const functionList =
+    chartData.length > 0
+      ? Object.keys(chartData[0]).filter((key) => key !== "date")
+      : [];
+
   return (
-    <ChartContainer
-      config={{
-        "initialize-cart": {
-          label: "Initialize Cart",
-          color: "hsl(var(--success))",
-        },
-        "add-item": {
-          label: "Add Item",
-          color: "hsl(var(--primary))",
-        },
-      }}
-      className="h-[400px]"
-    >
+    <ChartContainer config={{}} className="h-[400px]">
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="date" className="text-muted-foreground" />
@@ -80,12 +86,15 @@ export function InvocationsChart({ data = [] as Invocation[] }) {
             return null;
           }}
         />
-        <Bar
-          dataKey="initialize-cart"
-          fill="var(--success)"
-          radius={[4, 4, 0, 0]}
-        />
-        <Bar dataKey="add-item" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+        {functionList.map((functionName, index) => (
+          <Bar
+            key={functionName}
+            dataKey={functionName}
+            fill={`hsl(${index * 50}, 70%, 50%)`} // Different colors
+            stackId="a"
+            radius={[4, 4, 0, 0]}
+          />
+        ))}
       </BarChart>
     </ChartContainer>
   );

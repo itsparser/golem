@@ -129,7 +129,7 @@ export default function WorkerDetails() {
             <CardTitle>Invocations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="w-full">
+            <div className="w-full min-h-[150px]">
               {invocationData.length > 0 ? (
                 <InvocationsChart data={invocationData} />
               ) : (
@@ -144,7 +144,7 @@ export default function WorkerDetails() {
             <CardTitle>Log</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-background border rounded-md p-4 font-mono text-sm space-y-2">
+            <div className="bg-background border rounded-md p-4 font-mono text-sm space-y-2 min-h-[150px]">
               {terminal.length > 0 ? (
                 terminal.map((message) => (
                   <div key={message.timestamp} className="border-b">

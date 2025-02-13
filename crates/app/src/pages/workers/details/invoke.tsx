@@ -8,7 +8,13 @@ import {
 } from "@/types/component.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy } from "lucide-react";
+import {
+  ClipboardCopy,
+  TimerReset,
+  Play,
+  TableIcon,
+  Presentation,
+} from "lucide-react";
 import { cn, sanitizeInput } from "@/lib/utils";
 import ReactJson from "react-json-view";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +22,7 @@ import {
   parseToApiPayload,
   parseToJsonEditor,
   safeFormatJSON,
+  parseTypesData,
 } from "@/lib/worker";
 
 export default function WorkerInvoke() {
@@ -34,6 +41,7 @@ export default function WorkerInvoke() {
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
+  const [viewMode, setViewMode] = useState("form");
 
   /** Fetch function details based on URL params. */
   const fetchFunctionDetails = useCallback(async () => {
@@ -192,22 +200,96 @@ export default function WorkerInvoke() {
               </h3>
             </header>
 
-            <div className="p-10 space-y-6 mx-auto overflow-auto h-[80vh] w-[60%]">
+            <div className="p-10 space-y-6 mx-auto overflow-auto h-[82vh]">
               <main className="flex-1 p-6 space-y-6">
-                <SectionCard
-                  title="Preview"
-                  description="Preview the current function invocation arguments"
-                  value={value}
-                  onValueChange={handleValueChange}
-                  copyToClipboard={copyToClipboard}
-                  error={error}
-                />
+                <header className="flex gap-4 items-center mb-4">
+                  <div className="flex-1 flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setViewMode("form")}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "form"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <ClipboardCopy className="h-4 w-4 mr-1" />
+                      Form view
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setViewMode("preview")}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "preview"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <Presentation className="h-4 w-4 mr-1" />
+                      Json View
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setViewMode("types")}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "types"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <TableIcon className="h-4 w-4 mr-1" />
+                      Types
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (functionDetails) {
+                          const initialJson =
+                            parseToJsonEditor(functionDetails);
+                          setValue(JSON.stringify(initialJson, null, 2));
+                        }
+                      }}
+                      className="text-primary hover:bg-primary/10 hover:text-primary"
+                    >
+                      <TimerReset className="h-4 w-4 mr-1" />
+                      Reset
+                    </Button>
+                    <Button onClick={onInvoke}>
+                      <Play className="h-4 w-4 mr-1" />
+                      Invoke
+                    </Button>
+                  </div>
+                </header>
+                {viewMode === "preview" && (
+                  <SectionCard
+                    title="Preview"
+                    description="Preview the current function invocation arguments"
+                    value={value}
+                    onValueChange={handleValueChange}
+                    copyToClipboard={copyToClipboard}
+                    error={error}
+                  />
+                )}
 
-                <div className="flex justify-end">
-                  <Button onClick={onInvoke} className="px-6">
-                    Invoke
-                  </Button>
-                </div>
+                {viewMode === "types" && functionDetails && (
+                  <SectionCard
+                    title="Types"
+                    description="Types of the function arguments"
+                    value={JSON.stringify(
+                      parseTypesData(functionDetails),
+                      null,
+                      2
+                    )}
+                    copyToClipboard={() => {
+                      navigator.clipboard.writeText(
+                        JSON.stringify(parseTypesData(functionDetails), null, 2)
+                      );
+                    }}
+                    readOnly={true}
+                  />
+                )}
 
                 {resultValue && (
                   <SectionCard

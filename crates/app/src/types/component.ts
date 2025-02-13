@@ -24,6 +24,7 @@ export interface Function {
 }
 
 export interface Parameter {
+    type: string;
     name: string;
     typ: Typ;
 }
