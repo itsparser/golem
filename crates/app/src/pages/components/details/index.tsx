@@ -76,42 +76,66 @@ export const ComponentDetails = () => {
   return (
     <div className="flex">
       <div className="flex-1 p-8">
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-          {/* Metrics Row */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {component.componentType === "Durable" ? (
+          <div className="p-6 max-w-7xl mx-auto space-y-6">
+            {/* Metrics Row */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <MetricCard
+                title="Latest Component Version"
+                value={`v${latestVersion}`}
+                type="version"
+              />
+              <MetricCard
+                title="Active Workers"
+                value={activeWorkers}
+                type="active"
+              />
+              <MetricCard
+                title="Running Workers"
+                value={workerStatus.Running || 0}
+                type="running"
+              />
+              <MetricCard
+                title="Failed Workers"
+                value={workerStatus.Failed || 0}
+                type="failed"
+              />
+            </div>
+
+            {/* Exports & Worker Status */}
+            <div
+              className={`grid gap-4 ${
+                component.componentType === "Durable" ? "md:grid-cols-2" : ""
+              }`}
+            >
+              <ExportsList
+                exports={
+                  component.versions?.[component.versions.length - 1]?.metadata
+                    ?.exports || []
+                }
+              />
+              {component.componentType === "Durable" && (
+                <WorkerStatus workerStatus={workerStatus} />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 max-w-3xl mx-auto  space-y-6">
             <MetricCard
               title="Latest Component Version"
               value={`v${latestVersion}`}
               type="version"
             />
-            <MetricCard
-              title="Active Workers"
-              value={activeWorkers}
-              type="active"
-            />
-            <MetricCard
-              title="Running Workers"
-              value={workerStatus.Running || 0}
-              type="running"
-            />
-            <MetricCard
-              title="Failed Workers"
-              value={workerStatus.Failed || 0}
-              type="failed"
-            />
+            <div className={`grid gap-4`}>
+              <ExportsList
+                exports={
+                  component.versions?.[component.versions.length - 1]?.metadata
+                    ?.exports || []
+                }
+              />
+            </div>
           </div>
-
-          {/* Exports & Worker Status */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <ExportsList
-              exports={
-                component.versions?.[component.versions.length - 1]?.metadata
-                  ?.exports || []
-              }
-            />
-            <WorkerStatus workerStatus={workerStatus} />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

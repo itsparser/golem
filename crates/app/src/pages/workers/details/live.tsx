@@ -1,160 +1,242 @@
-import {Invocation, Terminal, WsMessage} from "@/types/worker.ts";
-import {useEffect, useRef, useState} from "react";
-import {useParams} from "react-router-dom";
-import {WSS} from "@/service/wss";
-import {Button} from "@/components/ui/button";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {RotateCw, X} from "lucide-react";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {formatTimestampInDateTimeFormat} from "@/lib/utils";
+import { Invocation, Terminal, WsMessage, OplogEntry } from "@/types/worker.ts";
+import { useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useParams } from "react-router-dom";
+import { WSS } from "@/service/wss";
+import { API } from "@/service";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { RotateCw, X, Search } from "lucide-react";
+import { formatTimestampInDateTimeFormat } from "@/lib/utils";
+import { useDebounce } from "@/hooks/debounce"; // Import the debounce hook
 
 export default function WorkerLive() {
-    const {componentId, workerName} = useParams();
-    const wsRef = useRef<WSS | null>(null);
-    const [messages, setMessages] = useState<WsMessage[]>([]);
-    const [reload, setReload] = useState(false);
+  const { componentId = "", workerName = "" } = useParams();
+  const wsRef = useRef<WSS | null>(null);
+  const [invocationData, setInvocationData] = useState<Invocation[]>([]);
+  const [terminal, setTerminal] = useState<Terminal[]>([]);
+  const [activeTab, setActiveTab] = useState("log");
+  const [count, setCount] = useState("100");
+  const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
-        setMessages([]);
-        const initWebSocket = async () => {
-            try {
-                const ws = await WSS.getConnection(
-                    `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`
-                );
-                wsRef.current = ws;
+  // Debounced values to prevent rapid API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const debouncedActiveTab = useDebounce(activeTab, 500);
 
-                ws.onMessage((data: unknown) => {
-                    const message = data as WsMessage;
-                    setMessages((prev: WsMessage[]) => [...prev, message]);
-                });
-            } catch (error) {
-                console.error("Failed to connect WebSocket:", error);
+  useEffect(() => {
+    async function fetchData() {
+      setInvocationData([]);
+      setTerminal([]);
+      await getopLog(count, debouncedSearchQuery);
+
+      const initWebSocket = async () => {
+        try {
+          const ws = await WSS.getConnection(
+            `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`
+          );
+          wsRef.current = ws;
+
+          ws.onMessage((data: unknown) => {
+            const message = data as WsMessage;
+            if (message["InvocationStart"]) {
+              setInvocationData((prev) => [
+                ...prev,
+                {
+                  timestamp: message.InvocationStart.timestamp,
+                  function: message.InvocationStart.function,
+                },
+              ]);
+            } else if (message["StdOut"]) {
+              const bytes = message.StdOut.bytes || [];
+              setTerminal((prev) => [
+                ...prev,
+                {
+                  timestamp: message.StdOut.timestamp,
+                  message: String.fromCharCode(...bytes),
+                },
+              ]);
             }
-        };
-
-        initWebSocket();
-
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-            }
-        };
-    }, [reload]);
-
-    const invocationData = [] as Invocation[];
-    const terminal = [] as Terminal[];
-    messages.forEach((message) => {
-        const invocationStart = message["InvocationStart"];
-        const stdOut = message["StdOut"];
-        if (invocationStart)
-            invocationData.push({
-                timestamp: invocationStart.timestamp,
-                function: invocationStart.function,
-            });
-        else if (stdOut && stdOut.bytes) {
-            terminal.push({
-                timestamp: stdOut.timestamp,
-                message: String.fromCharCode(...stdOut.bytes),
-            });
+          });
+        } catch (error) {
+          console.error("Failed to connect WebSocket:", error);
         }
+      };
+
+      initWebSocket();
+    }
+
+    fetchData();
+
+    return () => {
+      wsRef.current?.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    getopLog(count, debouncedSearchQuery);
+  }, [debouncedActiveTab, debouncedSearchQuery, count]);
+
+  const getopLog = async (count: string, search: string) => {
+    API.getOplog(
+      componentId,
+      workerName,
+      Number(count),
+      `${
+        debouncedActiveTab === "log" ? "log" : "ExportedFunctionInvoked"
+      } ${search}`
+    ).then((response) => {
+      const terminalData = [] as Terminal[];
+      const invocationList = [] as Invocation[];
+      response.entries.forEach((item: OplogEntry) => {
+        if (item.entry.type === "Log") {
+          terminalData.push({
+            timestamp: item.entry.timestamp,
+            message: item.entry.message,
+          });
+        } else if (item.entry.type === "ExportedFunctionInvoked") {
+          invocationList.push({
+            timestamp: item.entry.timestamp,
+            function: item.entry.function_name,
+          });
+        }
+      });
+      setInvocationData(invocationList);
+      setTerminal(terminalData);
     });
+  };
 
-    return (
-        <div className="flex">
-            <div className="flex-1 flex flex-col">
-                <div className="space-y-6 overflow-scroll h-[70vh]">
-                    <div className="w-full bg-background">
-                        <Tabs defaultValue="terminal" className="w-full">
-                            <div className="flex items-center justify-between border-b border-border/40 px-2">
-                                <TabsList className="h-12 bg-transparent p-0">
-                                    <TabsTrigger
-                                        value="terminal"
-                                        className="relative h-12 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground"
-                                    >
-                                        Terminal
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="invocations"
-                                        className="relative h-12 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground"
-                                    >
-                                        Invocations
-                                    </TabsTrigger>
-                                </TabsList>
-                                <div className="flex gap-2 pr-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                        onClick={() => setMessages([])}
-                                    >
-                                        <X className="h-4 w-4 mr-1.5"/>
-                                        Clear
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 text-primary hover:bg-primary/10 hover:text-primary"
-                                        onClick={() => setReload(!reload)}
-                                    >
-                                        <RotateCw className="h-4 w-4 mr-1.5"/>
-                                        Reload
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <TabsContent value="terminal" className="m-0">
-                                <ScrollArea className="h-[600px] w-full">
-                                    <div className="p-4 font-mono text-sm">
-                                        {terminal.length > 0 ? (
-                                            terminal.map((log) => (
-                                                <div
-                                                    key={log.timestamp}
-                                                    className="group flex py-1 hover:bg-muted/50 border-b"
-                                                >
-                            <span className="shrink-0 text-muted-foreground/70">
-                              {formatTimestampInDateTimeFormat(log.timestamp)}
-                            </span>
-                                                    <span className="ml-4 text-foreground">
-                              {log.message}
-                            </span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="p-4 text-center text-muted-foreground">
-                                                No terminal content
-                                            </div>
-                                        )}
-                                    </div>
-                                </ScrollArea>
-                            </TabsContent>
-
-                            <TabsContent value="invocations" className="m-0">
-                                <div className="p-4 font-mono text-sm">
-                                    {invocationData.length > 0 ? (
-                                        invocationData.map((log) => (
-                                            <div
-                                                key={log.timestamp}
-                                                className="group flex py-1 hover:bg-muted/50 border-b"
-                                            >
-                          <span className="shrink-0 text-muted-foreground/70">
-                            {formatTimestampInDateTimeFormat(log.timestamp)}
-                          </span>
-                                                <span className="ml-4 text-foreground">
-                            {log.function}
-                          </span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="p-4 text-center text-muted-foreground">
-                                            No invocations content
-                                        </div>
-                                    )}
-                                </div>
-                            </TabsContent>
-                        </Tabs>
-                    </div>
+  return (
+    <div className="flex flex-col">
+      <div className="space-y-6 overflow-scroll h-[87vh]">
+        <div className="w-full bg-background">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <div className="flex items-center justify-between border-b border-border/40 px-2">
+              <TabsList className="h-12 bg-transparent p-0">
+                <TabsTrigger
+                  value="log"
+                  className="relative h-12 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground"
+                >
+                  Log
+                </TabsTrigger>
+                <TabsTrigger
+                  value="invocations"
+                  className="relative h-12 rounded-none border-b-2 border-transparent px-4 pb-3 pt-3 font-medium text-muted-foreground hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground"
+                >
+                  Invocations
+                </TabsTrigger>
+              </TabsList>
+              <div className="flex gap-2 pr-2 items-center">
+                <div className="relative flex-1 max-full">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    className="pl-9"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      <X size={18} />
+                    </button>
+                  )}
                 </div>
+                <Select defaultValue={count} onValueChange={(e) => setCount(e)}>
+                  <SelectTrigger className="w-[80px]">{count}</SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={"10"}>10</SelectItem>
+                    <SelectItem value={"25"}>25</SelectItem>
+                    <SelectItem value={"50"}>50</SelectItem>
+                    <SelectItem value={"75"}>75</SelectItem>
+                    <SelectItem value={"100"}>100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => {
+                    setInvocationData([]);
+                    setTerminal([]);
+                  }}
+                >
+                  <X className="h-4 w-4 mr-1.5" />
+                  Clear
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={() => getopLog(count, searchQuery)}
+                >
+                  <RotateCw className="h-4 w-4 mr-1.5" />
+                  Reload
+                </Button>
+              </div>
             </div>
+
+            <TabsContent value="log" className="m-0">
+              <div className="p-4 font-mono text-sm">
+                {terminal.length > 0 ? (
+                  terminal.map((log) => (
+                    <div
+                      key={log.timestamp}
+                      className="group flex py-1 hover:bg-muted/50 border-b"
+                    >
+                      <span className="shrink-0 text-muted-foreground/70">
+                        {formatTimestampInDateTimeFormat(log.timestamp)}
+                      </span>
+                      <span className="ml-4 text-foreground">
+                        {log.message}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No terminal content
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="invocations" className="m-0">
+              <div className="p-4 font-mono text-sm">
+                {invocationData.length > 0 ? (
+                  invocationData.map((log) => (
+                    <div
+                      key={log.timestamp}
+                      className="group flex py-1 hover:bg-muted/50 border-b"
+                    >
+                      <span className="shrink-0 text-muted-foreground/70">
+                        {formatTimestampInDateTimeFormat(log.timestamp)}
+                      </span>
+                      <span className="ml-4 text-foreground">
+                        {log.function}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No invocations content
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

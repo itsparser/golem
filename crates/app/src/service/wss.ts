@@ -1,40 +1,25 @@
-import WebSocket from "@tauri-apps/plugin-websocket";
+import { UniversalWebSocket } from "@/lib/tauri&web.ts";
 
 export class WSS {
-  private ws: WebSocket;
+  private ws: UniversalWebSocket;
 
-  constructor(ws: WebSocket) {
+  private constructor(ws: UniversalWebSocket) {
     this.ws = ws;
   }
 
-  static async getConnection(url: string) {
-    return new WSS(await WebSocket.connect(url));
+  static async getConnection(url: string): Promise<WSS> {
+    return new WSS(await UniversalWebSocket.connect(url));
   }
 
   public send(data: never) {
-    this.ws
-      .send(JSON.stringify(data))
-      .then(() => {})
-      .catch(console.error);
+    this.ws.send(data);
   }
 
   public close() {
-    this.ws
-      .disconnect()
-      .then(() => {})
-      .catch(console.error);
+    this.ws.close();
   }
 
   public onMessage(callback: (data: unknown) => void) {
-    this.ws.addListener((event) => {
-      const message = event.data;
-      try {
-        if (typeof message === "string") {
-          callback(JSON.parse(message));
-        }
-      } catch (e) {
-        console.error("Failed to parse message", e);
-      }
-    });
+    this.ws.onMessage(callback);
   }
 }

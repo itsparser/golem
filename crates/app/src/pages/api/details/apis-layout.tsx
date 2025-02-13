@@ -1,6 +1,6 @@
 import {API} from "@/service";
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
+import {Outlet, useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {SidebarInset, SidebarProvider, SidebarTrigger,} from "@/components/ui/sidebar.tsx";
 import {SidebarMenu} from "@/components/sidebar.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
@@ -41,44 +41,47 @@ const MenuItems = (apiName: string, version: string) => [
 ];
 
 export const ApiLayout = () => {
-    const {apiName, version} = useParams();
-    const navigate = useNavigate();
-    const [apiDetails, setApiDetails] = useState([] as Api[]);
+  const { apiName, version } = useParams();
+  const [queryParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [apiDetails, setApiDetails] = useState([] as Api[]);
 
-    const [currentApiDetails, setCurrentApiDetails] = useState({} as Api);
-    const [currentMenu, setCurrentMenu] = useState("Overview");
+  const [currentApiDetails, setCurrentApiDetails] = useState({} as Api);
+  const [currentMenu, setCurrentMenu] = useState("Overview");
 
-    const basePath = useLocation().pathname.replace(
-        `/apis/${apiName}/version/${version}`,
-        ""
+  const basePath = useLocation().pathname.replace(
+    `/apis/${apiName}/version/${version}`,
+    ""
+  );
+  const path = queryParams.get("path");
+  const method = queryParams.get("method");
+  const sortedVersions = useMemo(() => {
+    return [...apiDetails].sort((a, b) =>
+      b.version.localeCompare(a.version, undefined, { numeric: true })
     );
-    const sortedVersions = useMemo(() => {
-        return [...apiDetails].sort((a, b) =>
-            b.version.localeCompare(a.version, undefined, {numeric: true})
-        );
-    }, [apiDetails]);
+  }, [apiDetails]);
 
-    useEffect(() => {
-        API.getApi(apiName!).then(async (response) => {
-            setApiDetails(response);
-            const selectedApi = response.find((api) => api.version === version);
-            if (selectedApi) {
-                setCurrentApiDetails(selectedApi);
-            }
-        });
-        if (location.pathname.includes("settings")) setCurrentMenu("Settings");
-        else if (location.pathname.includes("routes/add"))
-            setCurrentMenu("Add New Route");
-        else if (location.pathname.includes("routes")) setCurrentMenu("Routes");
-        else if (location.pathname.includes("newversion"))
-            setCurrentMenu("New Version");
-        else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
-    }, [apiName, version]);
+  useEffect(() => {
+    API.getApi(apiName!).then(async (response) => {
+      setApiDetails(response);
+      const selectedApi = response.find((api) => api.version === version);
+      if (selectedApi) {
+        setCurrentApiDetails(selectedApi);
+      }
+    });
+    if (location.pathname.includes("settings")) setCurrentMenu("Settings");
+    else if (location.pathname.includes("routes/add"))
+      setCurrentMenu("Add New Route");
+    else if (path) setCurrentMenu(path);
+    else if (location.pathname.includes("newversion"))
+      setCurrentMenu("New Version");
+    else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
+  }, [apiName, version, path, method]);
 
-    const handleNavigateHome = useCallback(() => {
-        navigate(`/apis/${apiName}/version/${version}`);
-        setCurrentMenu("Overview");
-    }, [navigate, apiName, version]);
+  const handleNavigateHome = useCallback(() => {
+    navigate(`/apis/${apiName}/version/${version}`);
+    setCurrentMenu("Overview");
+  }, [navigate, apiName, version]);
 
     return (
         <ErrorBoundary>

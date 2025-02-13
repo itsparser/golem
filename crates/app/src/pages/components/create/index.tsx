@@ -133,9 +133,9 @@ const CreateComponent = () => {
 
   return (
     <ErrorBoundary>
-      <div className="p-4 bg-background text-foreground mx-auto max-w-7xl px-6 lg:px-8 py-4">
+      <div className="p-4 bg-background text-foreground w-full  px-6 lg:px-8 py-4 overflow-scroll h-[90vh]">
         <Card
-          className="max-w-2xl mx-auto border-0 shadow-none overflow-scroll h-[80vh]"
+          className="max-w-2xl mx-auto border-0 shadow-none "
           key={"component.componentName"}
         >
           <CardTitle>

@@ -48,3 +48,12 @@ export interface WsMessage {
     InvocationStart: Invocation;
     StdOut: Terminal;
 }
+
+export interface OplogEntry {
+    entry: {
+        timestamp: string;
+        message: string;
+        function_name: string;
+        type: "Log" | "ExportedFunctionInvoked";
+    };
+}

@@ -189,3 +189,79 @@ export function getCaretCoordinates(
 
   return coordinates;
 }
+
+function parseType(typ: any) : any {
+  if (!typ) {
+    return "null";
+  }
+
+  const typeMap = {
+    Bool: "bool",
+    S8: "i8",
+    S16: "i16",
+    S32: "i32",
+    S64: "i64",
+    U8: "u8",
+    U16: "u16",
+    U32: "u32",
+    U64: "U64",
+    F32: "f32",
+    F64: "f64",
+    Char: "char",
+    Str: "string"
+  };
+
+  if (typeMap[(typ.type as keyof typeof typeMap)]) {
+    return typeMap[typ.type as keyof typeof typeMap];
+  }
+
+  switch (typ.type) {
+    case "List": {
+      return `List<${parseType(typ.inner)}>`;
+    }
+    case "Option": {
+      return `Option<${JSON.stringify(parseType(typ.inner))}>`;
+    }
+    case "Result": {
+      return {
+        ok: parseType(typ.ok.inner),
+        err: `enum (${typ.err.cases.join(", ")})`
+      };
+    }
+    case "Record": {
+      const result: Record<string | number, any> = {};
+      (typ.fields || []).forEach((field: { name: string | number; typ: any; }) => {
+        result[field.name] = parseType(field.typ);
+      });
+      return result;
+    }
+    case "Enum": {
+      return `enum (${typ.cases.join(", ")})`;
+    }
+    case "Variant": {
+      const variantCases: Record<string | number, any> = {};
+      (typ.cases || []).forEach((variant: { name: string | number; typ: any; }) => {
+        variantCases[variant.name] = parseType(variant.typ);
+      });
+      return variantCases;
+    }
+    default:
+      return "unknown";
+  }
+}
+
+export function parseTypesData(data : ComponentExportFunction) {
+  const result: { name: string; datatype: any }[] = [];
+  
+  data.parameters.forEach(item => {
+    if (item.type === "Result") {
+      result.push(parseType(item));
+    } else if (item.typ.type === "Record") {
+      result.push(parseType(item.typ));
+    } else {
+      result.push(parseType(item.typ));
+    }
+  });
+
+  return result;
+}
