@@ -76,6 +76,27 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
 
                 tokenizer: {
                     root: [
+                        // Function definitions
+                        [/\bfn\s+([a-zA-Z_]\w*)/, ["keyword", "function"]],
+
+                        // Function calls: highlight function name
+                        [/\b([a-zA-Z_]\w*)\s*(?=\()/, "function.call"],
+
+                        // Highlight variables & arguments inside functions
+                        // [/\b([a-zA-Z_]\w*)\b/, {
+                        //     cases: {
+                        //         "@functions": "function.argument",
+                        //         "@default": "identifier",
+                        //     },
+                        // }],
+
+                        {include: "@whitespace"},
+                        [/[{}()[\]]/, "@brackets"],
+                        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
+                        [/0[xX][0-9a-fA-F]+/, "number.hex"],
+                        [/\d+/, "number"],
+                        [/"([^"\\]|\\.)*$/, "string.invalid"],
+                        [/"/, {token: "string.quote", bracket: "@open", next: "@string"}],
                         // Identifiers and keywords
                         [/[a-z_$][\w$]*/, {
                             cases: {
@@ -108,21 +129,26 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         [/"/, {token: "string.quote", bracket: "@open", next: "@string"}],
                     ],
 
-                    comment: [
-                        [/[^/*]+/, "comment"],
-                        [/\/\*/, "comment", "@push"],
-                        ["\\*/", "comment", "@pop"],
-                        [/[/*]/, "comment"],
-                    ],
-
                     string: [
                         [/[^\\"$]+/, "string"],
+                        [/\$\{([a-zA-Z_]\w*)\}/, ["string", "variable", "string"]],
+                        [/""/, "string"],
+                        [/"/, {token: "string.quote", bracket: "@close", next: "@pop"}],
+                        [/\$/, "string"],
+
                         [/@escapes/, "string.escape"],
                         [/\\./, "string.escape.invalid"],
                         [/\$\{/, {token: "delimiter.bracket", next: "@bracketCounting"}],
                         [/""/, "string"],
                         [/"/, {token: "string.quote", bracket: "@close", next: "@pop"}],
                         [/\$/, "string"],
+                    ],
+
+                    comment: [
+                        [/[^/*]+/, "comment"],
+                        [/\/\*/, "comment", "@push"],
+                        ["\\*/", "comment", "@pop"],
+                        [/[/*]/, "comment"],
                     ],
 
                     bracketCounting: [
@@ -142,25 +168,73 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
             // Add custom completions
             monacoInstance.languages.registerCompletionItemProvider("rib", {
                 triggerCharacters: ["."],
-                provideCompletionItems: (model: any, position: any) => {
-                    const lineContent = model.getLineContent(position.lineNumber);
-                    const wordUntilPosition = model.getWordUntilPosition(position);
+                provideCompletionItems: (model, position) => {
+                    // const wordUntilPosition = model.getWordUntilPosition(position);
+                    // const range = {
+                    //     startLineNumber: position.lineNumber,
+                    //     endLineNumber: position.lineNumber,
+                    //     startColumn: wordUntilPosition.startColumn,
+                    //     endColumn: wordUntilPosition.endColumn,
+                    // };
+                    //
+                    // return {
+                    //     suggestions: scriptKeywords.map(key => ({
+                    //         label: key,
+                    //         kind: monacoInstance.languages.CompletionItemKind.Keyword,
+                    //         insertText: key,
+                    //         range: range
+                    //     }))
+                    // };
+                    const code = model.getValue() // Get full code
+                    let requestStructure = {
+                        "path": {
+                            "username": "vasanth",
+                            "nav": "bar"
+                        },
+                        "query": {
+                            "search": "string"
+                        }
+                    }
+
+                    try {
+                        const requestRegex = /request\s*=\s*(\{[\s\S]*?\})/
+                        const match = requestRegex.exec(code)
+                        if (match) {
+                            requestStructure = JSON.parse(match[1].replace(/(\w+)\s*:/g, '"$1":')) // Convert into valid JSON
+                        }
+                    } catch (e) {
+                        console.error("Error parsing object:", e)
+                    }
+
+                    console.log("Extracted object:", requestStructure)
+
+                    const wordUntilPosition = model.getWordUntilPosition(position)
                     const range = {
                         startLineNumber: position.lineNumber,
                         endLineNumber: position.lineNumber,
                         startColumn: wordUntilPosition.startColumn,
                         endColumn: wordUntilPosition.endColumn,
-                    };
-                    console.log("Triggered completion", {lineContent, wordUntilPosition});
+                    }
 
-                    return {
-                        suggestions: scriptKeywords.map(key => ({
-                            label: key,
-                            kind: monacoInstance.languages.CompletionItemKind.Keyword,
-                            insertText: key,
-                            range: range
-                        }))
-                    };
+                    // Extract nested object keys recursively
+                    const getObjectKeys = (obj, prefix = "") =>
+                        Object.entries(obj).flatMap(([key, value]) =>
+                            typeof value === "object"
+                                ? [{
+                                    label: prefix + key,
+                                    insertText: prefix + key,
+                                    kind: monacoInstance.languages.CompletionItemKind.Property
+                                }, ...getObjectKeys(value, `${prefix}${key}.`)]
+                                : [{
+                                    label: prefix + key,
+                                    insertText: prefix + key,
+                                    kind: monacoInstance.languages.CompletionItemKind.Property
+                                }]
+                        )
+
+                    const suggestions = getObjectKeys(requestStructure, "request.")
+
+                    return {suggestions}
                 },
             });
         }
@@ -187,15 +261,24 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                     folding: false,
                     lineDecorationsWidth: 0,
                     lineNumbersMinChars: 0,
+                    renderLineHighlight: "none",
                     glyphMargin: false,
                     scrollbar: {
                         vertical: "hidden",
                         horizontal: "hidden",
                     },
                 }}
-                onMount={(editor) => {
-                    editor.onDidFocusEditorWidget(() => setIsFocused(true));
-                    editor.onDidBlurEditorWidget(() => setIsFocused(false));
+                onMount={(editor, monaco) => {
+                    editor.onDidFocusEditorWidget(() => setIsFocused(true))
+                    editor.onDidBlurEditorWidget(() => setIsFocused(false))
+
+                    // Increase z-index of the suggestion box dynamically
+                    setTimeout(() => {
+                        const suggestWidget = document.querySelector(".suggest-widget")
+                        if (suggestWidget) {
+                            (suggestWidget as HTMLElement).style.zIndex = "10000"
+                        }
+                    }, 500) // Delay to allow Monaco to render first
                 }}
                 {...props}
             />

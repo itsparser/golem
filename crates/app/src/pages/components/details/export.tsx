@@ -125,6 +125,7 @@ function parseTypeForTooltip(typ: Typ | undefined): {
  * and shows the full multiline text in TooltipContent.
  */
 function TypeWithPopover({typ}: { typ: Typ | undefined }) {
+    console.log("typ", JSON.stringify(typ))
     const {short, full} = parseTypeForTooltip(typ);
     const [copied, setCopied] = useState(false);
     const [open, setOpen] = useState(false);
@@ -197,7 +198,7 @@ function generateFunctionInterfacesV1(data: Export[]): ExportResult[] {
             const functionName = func.name.replace(/-([a-z])/g, (_, letter: string) =>
                 letter.toUpperCase()
             );
-
+            console.log("func", JSON.stringify(func.parameters))
             const paramNodes = buildParameterNodes(func.parameters);
 
             const returnNode = func.results?.[0]?.typ ? (

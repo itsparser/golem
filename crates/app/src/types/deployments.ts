@@ -1,12 +1,12 @@
 export interface Deployment {
     apiDefinitions: {
-      id: string;
-      version: string;
+        id: string;
+        version: string;
     }[];
     createdAt: string;
     projectId: string;
     site: {
-      host: string;
-      subdomain: string | null;
+        host: string;
+        subdomain: string | null;
     };
-  }
+}

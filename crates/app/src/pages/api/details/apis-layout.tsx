@@ -5,7 +5,7 @@ import {SidebarInset, SidebarProvider, SidebarTrigger,} from "@/components/ui/si
 import {SidebarMenu} from "@/components/sidebar.tsx";
 import {Separator} from "@/components/ui/separator.tsx";
 import ErrorBoundary from "@/components/errorBoundary.tsx";
-import {CircleFadingPlusIcon, Home, Settings} from "lucide-react";
+import {CircleFadingPlusIcon, Home, Plus, Settings} from "lucide-react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/breadcrumb.tsx";
 import {Api} from "@/types/api.ts";
 import {Select, SelectContent, SelectItem, SelectTrigger,} from "@/components/ui/select.tsx";
-import {NavRoutes} from "@/components/nav-route.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
 import {SelectValue} from "@radix-ui/react-select";
+import YamlUploader from "@/components/yaml-uploader.tsx";
+import {NavRoutes} from "@/components/nav-route.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 const MenuItems = (apiName: string, version: string) => [
     {
@@ -95,7 +97,6 @@ export const ApiLayout = () => {
                                 url: `/apis/${apiName}/version/${version}/routes/?path=${route.path}&method=${route.method}`,
                             };
                         })}
-                        newRouteEndpoint={`/apis/${apiName}/version/${version}/routes/add?`}
                         setActiveItem={(value) => setCurrentMenu(value)}
                         activeItem={currentMenu}
                     />
@@ -171,6 +172,19 @@ export const ApiLayout = () => {
                                     </SelectContent>
                                 </Select>
                             </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-auto px-4">
+                            <YamlUploader/>
+                            <Button
+                                variant="default"
+                                onClick={() => {
+                                    navigate(`/apis/${apiName}/version/${version}/routes/add?`);
+                                    setCurrentMenu("Routes");
+                                }}
+                            >
+                                <Plus className="h-5 w-5"/>
+                                <span>Add</span>
+                            </Button>
                         </div>
                     </header>
                     <ErrorBoundary>
