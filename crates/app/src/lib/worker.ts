@@ -2,7 +2,7 @@
 import { ComponentExportFunction, Field, Typ } from "@/types/component.ts";
 
 function buildJsonSkeleton(field: Field): any {
-  const { type, fields } = field.typ;
+  const { type, fields, cases, names } = field.typ;
   switch (type) {
     case "Str":
     case "Chr":
@@ -44,9 +44,32 @@ function buildJsonSkeleton(field: Field): any {
       return null;
     }
 
-    case "Enum": {
-      return "";
+    case "Flags": {
+      return names ? [names[0]] : [];
     }
+
+
+    case "Enum": {
+      return cases ? [cases[0]] : "";
+    }
+    
+    case "Variant": {
+      if (!cases || cases.length === 0) return null;
+      const selectedCase = cases[0];
+      if (typeof selectedCase !== 'object' || !selectedCase.typ) return null;
+      return { [selectedCase.name]: buildJsonSkeleton(selectedCase) };
+    }
+    
+    case "Result": {
+      return {
+        ok: field.typ && field.typ.ok ? buildJsonSkeleton({
+          ...field.typ.ok, typ: field.typ.ok,
+          name: ""
+        }) : null,
+        err: cases ? `enum (${cases.map((c: any) => c.name).join(", ")})` : ""
+      };
+    }
+    
     default:
       return null;
   }
@@ -190,7 +213,7 @@ export function getCaretCoordinates(
   return coordinates;
 }
 
-function parseType(typ: any) : any {
+function parseType(typ: any): any {
   if (!typ) {
     return "null";
   }
@@ -211,13 +234,16 @@ function parseType(typ: any) : any {
     Str: "string"
   };
 
-  if (typeMap[(typ.type as keyof typeof typeMap)]) {
+  if (typeMap[typ.type as keyof typeof typeMap]) {
     return typeMap[typ.type as keyof typeof typeMap];
   }
 
   switch (typ.type) {
     case "List": {
       return `List<${parseType(typ.inner)}>`;
+    }
+    case "Flags":{
+       return `flags (${typ.names.join(", ")})`;
     }
     case "Option": {
       return `Option<${JSON.stringify(parseType(typ.inner))}>`;
@@ -229,8 +255,8 @@ function parseType(typ: any) : any {
       };
     }
     case "Record": {
-      const result: Record<string | number, any> = {};
-      (typ.fields || []).forEach((field: { name: string | number; typ: any; }) => {
+      const result: Record<string, any> = {};
+      (typ.fields || []).forEach((field: { name: string; typ: any }) => {
         result[field.name] = parseType(field.typ);
       });
       return result;
@@ -250,9 +276,9 @@ function parseType(typ: any) : any {
   }
 }
 
-export function parseTypesData(data : ComponentExportFunction) {
+export function parseTooltipTypesData(data: ComponentExportFunction) {
   const result: { name: string; datatype: any }[] = [];
-  
+
   data.parameters.forEach(item => {
     if (item.type === "Result") {
       result.push(parseType(item));
@@ -264,4 +290,80 @@ export function parseTypesData(data : ComponentExportFunction) {
   });
 
   return result;
+}
+
+export function parseTypesData(input: any): any {
+  function transformType(typ: any): any {
+    if (!typ || typeof typ !== "object") return typ;
+
+    switch (typ.type) {
+      case "Str":
+      case "Bool":
+      case "S8":
+      case "S16":
+      case "S32":
+      case "S64":
+      case "U8":
+      case "U16":
+      case "U32":
+      case "U64":
+      case "F32":
+      case "F64":
+      case "Char":
+        return { type: typ.type };
+
+      case "List":
+        return { type: "List", inner: transformType(typ.inner) };
+
+      case "Option":
+        return { type: "Option", inner: transformType(typ.inner) };
+
+      case "Enum":
+        return { type: "Enum", cases: typ.cases };
+
+      case "Flags":
+        return { type: "Flags", names: typ.names };
+
+      case "Record":
+        return {
+          type: "Record",
+          fields: (typ.fields || []).map((field: any) => ({
+            name: field.name,
+            typ: transformType(field.typ),
+          })),
+        };
+
+      case "Variant":
+        return {
+          type: "Variant",
+          cases: (typ.cases || []).map((variant: any) => ({
+            name: variant.name,
+            typ: transformType(variant.typ),
+          })),
+        };
+
+      case "Result":
+        return {
+          type: "Result",
+          ok: transformType(typ.ok),
+          err: transformType(typ.err),
+        };
+
+      case "Tuple":
+        return {
+          type: "Tuple",
+          items: (typ.items || []).map((item: any) => transformType(item)),
+        };
+
+      default:
+        return { type: "Unknown" };
+    }
+  }
+
+  return {
+    typ: {
+      type: "Tuple",
+      items: input.parameters.map((param: any) => transformType(param.typ)),
+    },
+  };
 }
