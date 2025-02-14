@@ -26,7 +26,6 @@ import { cn, sanitizeInput } from "@/lib/utils";
 import ReactJson from "react-json-view";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  parseToApiPayload,
   parseToJsonEditor,
   parseTypesData,
   safeFormatJSON,
@@ -119,25 +118,32 @@ export default function WorkerInvoke() {
     setResultValue("");
   };
 
-  const onInvoke = async () => {
+  const onInvoke = async (parsedValue: unknown[]) => {
     try {
-      const sanitizedValue = sanitizeInput(value);
-      const parsedValue = JSON.parse(sanitizedValue);
-
       if (!functionDetails) {
         throw new Error("No function details loaded.");
       }
 
-      const apiData = parseToApiPayload(parsedValue, functionDetails);
+      const typeData = parseTypesData(functionDetails);
+
+      const params: { value: unknown; typ: unknown }[] = [];
+      parsedValue.map((value, index) => {
+        params.push({
+          value: value,
+          typ: typeData.typ.items[index],
+        });
+      });
 
       const functionName = `${encodeURIComponent(name)}.${encodeURIComponent(
         `{${urlFn}}`
       )}`;
+
+      console.log(JSON.stringify({ params }));
       const response = await API.invokeWorkerAwait(
         componentId,
         workerName,
         functionName,
-        apiData
+        { params }
       );
 
       const newValue = JSON.stringify(response?.result?.value, null, 2);
@@ -152,13 +158,11 @@ export default function WorkerInvoke() {
         toast({
           title: description ?? "An unknown error occurred.",
           variant: "destructive",
-          duration: Number.POSITIVE_INFINITY,
         });
-      } else {
+      } else if (typeof error === "string" || typeof error === "object") {
         toast({
-          title: "Invalid JSON data. Please correct it before invoking",
+          title: String(error),
           variant: "destructive",
-          duration: Number.POSITIVE_INFINITY,
         });
       }
     }
@@ -228,7 +232,10 @@ export default function WorkerInvoke() {
                   <div className="flex-1 flex items-center gap-2">
                     <Button
                       variant="outline"
-                      onClick={() => setViewMode("form")}
+                      onClick={() => {
+                        setResultValue("");
+                        setViewMode("form");
+                      }}
                       className={`text-primary hover:bg-primary/10 hover:text-primary ${
                         viewMode === "form"
                           ? "bg-primary/20 hover:text-primary "
@@ -240,7 +247,10 @@ export default function WorkerInvoke() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => setViewMode("preview")}
+                      onClick={() => {
+                        setResultValue("");
+                        setViewMode("preview");
+                      }}
                       className={`text-primary hover:bg-primary/10 hover:text-primary ${
                         viewMode === "preview"
                           ? "bg-primary/20 hover:text-primary "
@@ -267,7 +277,10 @@ export default function WorkerInvoke() {
                   </div>
                 </header>
                 {viewMode === "form" && functionDetails && (
-                  <DynamicForm functionDetails={functionDetails} />
+                  <DynamicForm
+                    functionDetails={functionDetails}
+                    onInvoke={(data) => onInvoke(data)}
+                  />
                 )}
                 {viewMode === "preview" && functionDetails && (
                   <SectionCard
@@ -283,7 +296,11 @@ export default function WorkerInvoke() {
                         setValue(JSON.stringify(initialJson, null, 2));
                       }
                     }}
-                    onInvoke={onInvoke}
+                    onInvoke={() => {
+                      const sanitizedValue = sanitizeInput(value);
+                      const parsedValue = JSON.parse(sanitizedValue);
+                      onInvoke(parsedValue);
+                    }}
                   />
                 )}
 

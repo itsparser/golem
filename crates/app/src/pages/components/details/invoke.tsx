@@ -8,18 +8,34 @@ import {
 } from "@/types/component.ts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CodeBlock, dracula } from "react-code-blocks";
+import {
+  ClipboardCopy,
+  Play,
+  Presentation,
+  TableIcon,
+  TimerReset,
+  Info,
+} from "lucide-react";
 import { cn, sanitizeInput } from "@/lib/utils";
 import ReactJson from "react-json-view";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  parseToApiPayload,
   parseToJsonEditor,
+  parseTypesData,
   safeFormatJSON,
+  parseTooltipTypesData,
 } from "@/lib/worker";
+import { toast } from "@/hooks/use-toast";
+import { DynamicForm } from "@/pages/workers/details/dynamic-form.tsx";
 
-export default function ComponentInvoke() {
-  const { componentId = "" } = useParams();
+export default function WorkerInvoke() {
+  const { componentId = "", workerName = "" } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -30,10 +46,10 @@ export default function ComponentInvoke() {
     useState<ComponentExportFunction | null>(null);
   const [value, setValue] = useState<string>("{}");
   const [resultValue, setResultValue] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
+  const [viewMode, setViewMode] = useState("form");
 
   /** Fetch function details based on URL params. */
   const fetchFunctionDetails = useCallback(async () => {
@@ -74,16 +90,23 @@ export default function ComponentInvoke() {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message);
+        toast({
+          title: error.message,
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       } else {
-        setError("Unable to fetch function details.");
+        toast({
+          title: "Unable to fetch function details.",
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       }
     }
   }, [componentId, urlFn, name]);
 
   useEffect(() => {
     if (componentId) {
-      setError(null);
       setResultValue("");
       fetchFunctionDetails();
     }
@@ -93,37 +116,52 @@ export default function ComponentInvoke() {
     const formatted = safeFormatJSON(newValue);
     setValue(formatted);
     setResultValue("");
-    setError(null);
   };
 
-  const onInvoke = async () => {
+  const onInvoke = async (parsedValue: unknown[]) => {
     try {
-      setError(null);
-      const sanitizedValue = sanitizeInput(value);
-      const parsedValue = JSON.parse(sanitizedValue);
-
       if (!functionDetails) {
         throw new Error("No function details loaded.");
       }
 
-      const apiData = parseToApiPayload(parsedValue, functionDetails);
+      const typeData = parseTypesData(functionDetails);
+
+      const params: { value: unknown; typ: unknown }[] = [];
+      parsedValue.map((value, index) => {
+        params.push({
+          value: value,
+          typ: typeData.typ.items[index],
+        });
+      });
 
       const functionName = `${encodeURIComponent(name)}.${encodeURIComponent(
         `{${urlFn}}`
       )}`;
-      const response = await API.invokeEphemeralAwait(
+      const response = await API.invokeWorkerAwait(
         componentId,
+        workerName,
         functionName,
-        apiData
+        { params }
       );
 
       const newValue = JSON.stringify(response?.result?.value, null, 2);
       setResultValue(newValue);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Invalid JSON data. Please correct it before invoking.");
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "description" in error
+      ) {
+        const description = (error as { description?: string }).description;
+        toast({
+          title: description ?? "An unknown error occurred.",
+          variant: "destructive",
+        });
+      } else if (typeof error === "string" || typeof error === "object") {
+        toast({
+          title: String(error),
+          variant: "destructive",
+        });
       }
     }
   };
@@ -138,11 +176,11 @@ export default function ComponentInvoke() {
     ] || {};
 
   return (
-    <div className="flex h-screen">
+    <div className="flex">
       <div className="flex-1 flex flex-col bg-background">
         <div className="flex">
           <div className="border-r px-8 py-4 min-w-[300px]">
-            <div className="flex flex-col gap-4 overflow-scroll h-[80vh]">
+            <div className="flex flex-col gap-4 overflow-scroll h-[85vh]">
               {componentDetails?.metadata?.exports?.map((exportItem) => (
                 <div key={exportItem.name}>
                   <div className="flex items-center justify-between">
@@ -186,29 +224,109 @@ export default function ComponentInvoke() {
               </h3>
             </header>
 
-            <div className="p-10 space-y-6 mx-auto overflow-auto h-[80vh] w-[60%]">
+            <div className="p-10 space-y-6 mx-auto overflow-auto h-[80vh]">
               <main className="flex-1 space-y-6">
-                <SectionCard
-                  title="Preview"
-                  description="Preview the current function invocation arguments"
-                  value={value}
-                  onValueChange={handleValueChange}
-                  copyToClipboard={copyToClipboard}
-                  error={error}
-                />
+                <header className="flex gap-4 items-center mb-4">
+                  <div className="flex-1 flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setResultValue("");
+                        setViewMode("form");
+                      }}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "form"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <ClipboardCopy className="h-4 w-4 mr-1" />
+                      Form Layout
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setResultValue("");
+                        setViewMode("preview");
+                      }}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "preview"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <Presentation className="h-4 w-4 mr-1" />
+                      Json Layout
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setViewMode("types")}
+                      className={`text-primary hover:bg-primary/10 hover:text-primary ${
+                        viewMode === "types"
+                          ? "bg-primary/20 hover:text-primary "
+                          : ""
+                      }`}
+                    >
+                      <TableIcon className="h-4 w-4 mr-1" />
+                      Types
+                    </Button>
+                  </div>
+                </header>
+                {viewMode === "form" && functionDetails && (
+                  <DynamicForm
+                    functionDetails={functionDetails}
+                    onInvoke={(data) => onInvoke(data)}
+                  />
+                )}
+                {viewMode === "preview" && functionDetails && (
+                  <SectionCard
+                    title="Preview"
+                    description="Preview the current function invocation arguments"
+                    value={value}
+                    onValueChange={handleValueChange}
+                    copyToClipboard={copyToClipboard}
+                    functionDetails={functionDetails}
+                    onReset={() => {
+                      if (functionDetails) {
+                        const initialJson = parseToJsonEditor(functionDetails);
+                        setValue(JSON.stringify(initialJson, null, 2));
+                      }
+                    }}
+                    onInvoke={() => {
+                      const sanitizedValue = sanitizeInput(value);
+                      const parsedValue = JSON.parse(sanitizedValue);
+                      onInvoke(parsedValue);
+                    }}
+                  />
+                )}
 
-                <div className="flex justify-end">
-                  <Button onClick={onInvoke} className="px-6">
-                    Invoke
-                  </Button>
-                </div>
-
-                {resultValue && (
+                {viewMode === "types" && functionDetails && (
+                  <SectionCard
+                    title="Types"
+                    description="Types of the function arguments"
+                    value={JSON.stringify(
+                      parseTypesData(functionDetails),
+                      null,
+                      2
+                    )}
+                    functionDetails={functionDetails}
+                    copyToClipboard={() => {
+                      navigator.clipboard.writeText(
+                        JSON.stringify(parseTypesData(functionDetails), null, 2)
+                      );
+                    }}
+                    readOnly={true}
+                  />
+                )}
+                {resultValue && functionDetails && (
                   <SectionCard
                     title="Result"
-                    description="View the result of your latest invocation"
+                    description="View the result of your latest worker invocation"
                     value={resultValue}
-                    readOnly
+                    readOnly={true}
+                    functionDetails={functionDetails}
                   />
                 )}
               </main>
@@ -230,8 +348,10 @@ interface SectionCardProps {
   value: string;
   onValueChange?: (value: string) => void;
   copyToClipboard?: () => void;
-  error?: string | null;
   readOnly?: boolean;
+  functionDetails?: ComponentExportFunction;
+  onInvoke?: () => void;
+  onReset?: () => void;
 }
 
 function SectionCard({
@@ -240,49 +360,90 @@ function SectionCard({
   value,
   onValueChange,
   copyToClipboard,
-  error,
+  functionDetails,
   readOnly = false,
+  onInvoke = () => {},
+  onReset = () => {},
 }: SectionCardProps) {
   return (
-    <Card className="w-full bg-background">
-      <CardHeader className="flex items-center pb-2 flex-row">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <CardTitle className="text-xl font-bold">{title}</CardTitle>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-          {copyToClipboard && (
-            <Button variant="outline" size="sm" onClick={copyToClipboard}>
-              <ClipboardCopy className="h-4 w-4 mr-1" />
-              Copy
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {readOnly ? (
-          <ReactJson
-            src={JSON.parse(value || "{}")}
-            name={null}
-            theme="rjv-default"
-            collapsed={false}
-            enableClipboard={false}
-            displayDataTypes={false}
-            style={{ fontSize: "14px", lineHeight: "1.6" }}
-          />
-        ) : (
-          <Textarea
-            value={value}
-            onChange={(e) => onValueChange?.(e.target.value)}
-            className={cn(
-              "min-h-[200px] font-mono text-sm mt-2",
-              error && "border-red-500"
+    <div>
+      <Card className="w-full bg-background">
+        <CardHeader className="flex items-center pb-2 flex-row">
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-4">
+                <div>{title}</div>
+                {!readOnly && functionDetails && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="p-1 hover:bg-muted rounded-full transition-colors"
+                        aria-label="Show interpolation info"
+                      >
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[500px p-2 text-[13px] bg-gray-800 text-white rounded-lg shadow-lg max-h-[500px] overflow-scroll">
+                      <CodeBlock
+                        text={JSON.stringify(
+                          parseTooltipTypesData(functionDetails),
+                          null,
+                          2
+                        )}
+                        language="json"
+                        theme={dracula}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            {copyToClipboard && (
+              <Button variant="outline" size="sm" onClick={copyToClipboard}>
+                <ClipboardCopy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
             )}
-            placeholder="Enter JSON data..."
-          />
-        )}
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      </CardContent>
-    </Card>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {readOnly ? (
+            <ReactJson
+              src={JSON.parse(value || "{}")}
+              name={null}
+              theme="rjv-default"
+              collapsed={false}
+              enableClipboard={false}
+              displayDataTypes={false}
+              style={{ fontSize: "14px", lineHeight: "1.6" }}
+            />
+          ) : (
+            <Textarea
+              value={value}
+              onChange={(e) => onValueChange?.(e.target.value)}
+              className={cn("min-h-[400px] font-mono text-sm mt-2")}
+              placeholder="Enter JSON data..."
+            />
+          )}
+        </CardContent>
+      </Card>
+      {!readOnly && (
+        <div className="flex gap-4 justify-end mt-4">
+          <Button
+            variant="outline"
+            onClick={onReset}
+            className="text-primary hover:bg-primary/10 hover:text-primary"
+          >
+            <TimerReset className="h-4 w-4 mr-1" />
+            Reset
+          </Button>
+          <Button onClick={onInvoke}>
+            <Play className="h-4 w-4 mr-1" />
+            Invoke
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

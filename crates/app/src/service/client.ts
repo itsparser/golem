@@ -226,8 +226,6 @@ export class Service {
         functionName: string,
         payload: any
     ) => {
-        console.log(" payload", payload)
-        console.log(ENDPOINT.invokeWorker(componentId, workerName, functionName))
         const r = await this.callApi(
             ENDPOINT.invokeWorker(componentId, workerName, functionName),
             "POST",
