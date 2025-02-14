@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   GitBranch,
   Layers,
   Lock as LockIcon,
   Plus,
   Search,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Api } from "@/types/api";
-import { API } from "@/service";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ErrorBoundary from "@/components/errorBoundary";
-import { Badge } from "@/components/ui/badge.tsx";
-import { removeDuplicateApis } from "@/lib/utils";
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Api } from '@/types/api';
+import { API } from '@/service';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ErrorBoundary from '@/components/errorBoundary';
+import { Badge } from '@/components/ui/badge.tsx';
+import { removeDuplicateApis } from '@/lib/utils';
 
 export const APIs = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export const APIs = () => {
   const [searchedApi, setSearchedApi] = useState([] as Api[]);
 
   useEffect(() => {
-    API.getApiList().then((response) => {
+    API.getApiList().then(response => {
       const newData = removeDuplicateApis(response);
       setApis(newData);
       setSearchedApi(newData);
@@ -38,19 +38,19 @@ export const APIs = () => {
             <Input
               type="text"
               placeholder="Search APIs..."
-              onChange={(e) =>
+              onChange={e =>
                 setSearchedApi(
-                  apis.filter((api) =>
+                  apis.filter(api =>
                     api.id
                       .toLocaleLowerCase()
-                      .includes(e.target.value.toLocaleLowerCase())
-                  )
+                      .includes(e.target.value.toLocaleLowerCase()),
+                  ),
                 )
               }
               className="pl-10"
             />
           </div>
-          <Button onClick={() => navigate("/apis/create")} variant="default">
+          <Button onClick={() => navigate('/apis/create')} variant="default">
             <Plus className="h-5 w-5" />
             <span>New</span>
           </Button>
@@ -58,7 +58,7 @@ export const APIs = () => {
 
         {searchedApi.length > 0 ? (
           <div className="grid grid-cols-3 gap-6 overflow-scroll max-h-[75vh]">
-            {searchedApi.map((api) => (
+            {searchedApi.map(api => (
               <APICard
                 key={api.id}
                 name={api.id}

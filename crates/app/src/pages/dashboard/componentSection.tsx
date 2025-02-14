@@ -1,19 +1,17 @@
-import { Layers, PlusCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button.tsx";
-import { useEffect, useState } from "react";
-import { calculateExportFunctions, formatRelativeTime } from "@/lib/utils";
-import { API } from "@/service";
-import { ComponentList } from "@/types/component.ts";
+import { Layers, PlusCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button.tsx';
+import { useEffect, useState } from 'react';
+import { API } from '@/service';
+import { ComponentList } from '@/types/component.ts';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import ErrorBoundary from "@/components/errorBoundary";
+} from '@/components/ui/card.tsx';
+import ErrorBoundary from '@/components/errorBoundary';
+import { ComponentCard } from '../components';
 
 export const ComponentsSection = () => {
   const navigate = useNavigate();
@@ -21,16 +19,16 @@ export const ComponentsSection = () => {
     [key: string]: ComponentList;
   }>({});
   useEffect(() => {
-    API.getComponentByIdAsKey().then((response) => setComponents(response));
+    API.getComponentByIdAsKey().then(response => setComponents(response));
   }, []);
 
   return (
     <ErrorBoundary>
-      <Card className={"rounded-lg lg:col-span-2"}>
+      <Card className={'rounded-lg lg:col-span-2'}>
         <CardHeader>
           <div className="flex justify-between items-center mb-6">
             <CardTitle>Components</CardTitle>
-            <Button variant="outline" onClick={() => navigate("/components")}>
+            <Button variant="outline" onClick={() => navigate('/components')}>
               View All
             </Button>
           </div>
@@ -41,66 +39,13 @@ export const ComponentsSection = () => {
               <div className="p-4 pt-0 md:p-6 md:pt-0 flex-1 w-full">
                 <div className="grid w-full grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
                   {Object.values(components).map((data: ComponentList) => (
-                    <Card
-                      className={
-                        "rounded-lg cursor-pointer text-card-foreground shadow transition-all hover:shadow-lg hover:shadow-border/75 duration-150"
-                      }
+                    <ComponentCard
                       key={data.componentId}
-                      onClick={() =>
+                      data={data}
+                      onCardClick={() =>
                         navigate(`/components/${data.componentId}`)
                       }
-                    >
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="font-medium">
-                            {data.componentName}
-                          </CardTitle>
-                          <Badge variant="outline">
-                            V
-                            {data.versionList?.[data.versionList?.length - 1] ||
-                              "0"}
-                          </Badge>
-                        </div>
-                        <CardDescription
-                          className={"text-xs font-light text-muted-foreground"}
-                        >
-                          {formatRelativeTime(
-                            data.versions?.[data.versions?.length - 1]
-                              .createdAt || new Date()
-                          )}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="mt-2 flex w-full items-center gap-2">
-                          <Badge
-                            variant="outline"
-                            className="font-mono font-extralight transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-accent hover:text-accent-foreground active:bg-accent/50 active:text-accent-foreground text-muted-foreground"
-                          >
-                            {calculateExportFunctions(
-                              data.versions?.[data.versions?.length - 1]
-                                ?.metadata?.exports || []
-                            ).length || 0}{" "}
-                            Exports
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className="font-mono font-extralight transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-accent hover:text-accent-foreground active:bg-accent/50 active:text-accent-foreground text-muted-foreground"
-                          >
-                            {Math.round(
-                              (data.versions?.[data.versions?.length - 1]
-                                ?.componentSize || 0) / 1024
-                            )}{" "}
-                            KB{" "}
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className="font-mono font-extralight transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-accent hover:text-accent-foreground active:bg-accent/50 active:text-accent-foreground text-muted-foreground"
-                          >
-                            {data.componentType}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    />
                   ))}
                 </div>
               </div>
@@ -113,7 +58,7 @@ export const ComponentsSection = () => {
                 </p>
                 <Button
                   onClick={() => {
-                    navigate("/components/create");
+                    navigate('/components/create');
                   }}
                 >
                   <PlusCircle className="mr-2 size-4" />

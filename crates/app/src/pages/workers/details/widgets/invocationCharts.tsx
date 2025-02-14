@@ -1,6 +1,6 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { Invocation } from "@/types/worker";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { Invocation } from '@/types/worker';
 
 interface ProcessedData {
   date: string;
@@ -12,11 +12,11 @@ const processData = (data: Invocation[]): ProcessedData[] => {
   const functionSet = new Set<string>();
 
   // Group data by date and collect unique function names
-  data.forEach((curr) => {
+  data.forEach(curr => {
     const date = new Date(curr.timestamp);
-    const dateKey = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
+    const dateKey = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
     });
     const functionName = curr.function.match(/{(.*)}/)?.[1];
 
@@ -33,8 +33,8 @@ const processData = (data: Invocation[]): ProcessedData[] => {
   });
 
   // Normalize data: Ensure all functions exist on all dates with 0 if missing
-  return Object.values(groupedData).map((entry) => {
-    functionSet.forEach((func) => {
+  return Object.values(groupedData).map(entry => {
+    functionSet.forEach(func => {
       if (!(func in entry)) {
         entry[func] = 0; // Fill missing function data with 0
       }
@@ -48,7 +48,7 @@ export function InvocationsChart({ data = [] as Invocation[] }) {
 
   const functionList =
     chartData.length > 0
-      ? Object.keys(chartData[0]).filter((key) => key !== "date")
+      ? Object.keys(chartData[0]).filter(key => key !== 'date')
       : [];
 
   return (
@@ -71,7 +71,7 @@ export function InvocationsChart({ data = [] as Invocation[] }) {
                         {payload[0].payload.date}
                       </span>
                     </div>
-                    {payload.map((entry) => (
+                    {payload.map(entry => (
                       <div key={entry.name} className="flex flex-col">
                         <span className="text-[0.70rem] uppercase text-muted-foreground">
                           {entry.name}

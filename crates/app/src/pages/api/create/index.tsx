@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { PlusCircle, ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PlusCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -10,27 +10,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { API } from "@/service";
-import ErrorBoundary from "@/components/errorBoundary";
+} from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { API } from '@/service';
+import ErrorBoundary from '@/components/errorBoundary';
 
 const createApiSchema = z.object({
   apiName: z
     .string()
-    .min(3, "API Name must be at least 3 characters")
+    .min(3, 'API Name must be at least 3 characters')
     .regex(
       /^[a-zA-Z][a-zA-Z_]*$/,
-      "API name must contain only letters and underscores"
+      'API name must contain only letters and underscores',
     ),
   version: z
     .string()
-    .min(1, "Version is required")
+    .min(1, 'Version is required')
     .regex(
       /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/,
-      "Version must follow semantic versioning (e.g., 1.0.0)"
+      'Version must follow semantic versioning (e.g., 1.0.0)',
     ),
 });
 
@@ -43,8 +43,8 @@ const CreateAPI = () => {
   const form = useForm<CreateApiFormValues>({
     resolver: zodResolver(createApiSchema),
     defaultValues: {
-      apiName: "",
-      version: "0.1.0",
+      apiName: '',
+      version: '0.1.0',
     },
   });
 
@@ -57,12 +57,12 @@ const CreateAPI = () => {
         routes: [],
         draft: true,
       });
-      navigate(`/apis/${values.apiName}/version/${values.version}`)
+      navigate(`/apis/${values.apiName}/version/${values.version}`);
     } catch (error) {
-      console.error("Failed to create API:", error);
-      form.setError("apiName", {
-        type: "manual",
-        message: "Failed to create API. Please try again.",
+      console.error('Failed to create API:', error);
+      form.setError('apiName', {
+        type: 'manual',
+        message: 'Failed to create API. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
@@ -136,7 +136,7 @@ const CreateAPI = () => {
                 ) : (
                   <PlusCircle className="mr-2 h-5 w-5" />
                 )}
-                {isSubmitting ? "Creating..." : "Create API"}
+                {isSubmitting ? 'Creating...' : 'Create API'}
               </Button>
             </div>
           </form>

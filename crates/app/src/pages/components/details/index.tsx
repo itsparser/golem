@@ -1,15 +1,15 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
-import { API } from "@/service";
-import { MetricCard } from "./widgets/metrixCard";
-import { ExportsList } from "./widgets/exportsList";
-import { WorkerStatus } from "./widgets/workerStatus";
+import { useParams } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { API } from '@/service';
+import { MetricCard } from './widgets/metrixCard';
+import { ExportsList } from './widgets/exportsList';
+import { WorkerStatus } from './widgets/workerStatus';
 
-import { ComponentList } from "@/types/component";
-import { Worker, WorkerStatus as IWorkerStatus } from "@/types/worker";
+import { ComponentList } from '@/types/component';
+import { Worker, WorkerStatus as IWorkerStatus } from '@/types/worker';
 
 export const ComponentDetails = () => {
-  const { componentId = "" } = useParams();
+  const { componentId = '' } = useParams();
   const [component, setComponent] = useState<ComponentList | null>(null);
   const [workerStatus, setWorkerStatus] = useState<IWorkerStatus>({});
   const [error, setError] = useState<Error | null>(null);
@@ -37,8 +37,8 @@ export const ComponentDetails = () => {
         });
         setWorkerStatus(status);
       })
-      .catch((err) => {
-        console.error("Error fetching component/worker data:", err);
+      .catch(err => {
+        console.error('Error fetching component/worker data:', err);
         setError(err);
       });
   }, [componentId]);
@@ -76,7 +76,7 @@ export const ComponentDetails = () => {
   return (
     <div className="flex">
       <div className="flex-1 p-8">
-        {component.componentType === "Durable" ? (
+        {component.componentType === 'Durable' ? (
           <div className="p-6 max-w-7xl mx-auto space-y-6">
             {/* Metrics Row */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -105,7 +105,7 @@ export const ComponentDetails = () => {
             {/* Exports & Worker Status */}
             <div
               className={`grid gap-4 ${
-                component.componentType === "Durable" ? "md:grid-cols-2" : ""
+                component.componentType === 'Durable' ? 'md:grid-cols-2' : ''
               }`}
             >
               <ExportsList
@@ -114,7 +114,7 @@ export const ComponentDetails = () => {
                     ?.exports || []
                 }
               />
-              {component.componentType === "Durable" && (
+              {component.componentType === 'Durable' && (
                 <WorkerStatus workerStatus={workerStatus} />
               )}
             </div>

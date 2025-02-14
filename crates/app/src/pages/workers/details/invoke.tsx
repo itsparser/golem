@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { API } from "@/service";
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { API } from '@/service';
 import {
   ComponentExportFunction,
   ComponentList,
   Export,
-} from "@/types/component.ts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from '@/types/component.ts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { CodeBlock, dracula } from "react-code-blocks";
+} from '@/components/ui/popover';
+import { CodeBlock, dracula } from 'react-code-blocks';
 import {
   ClipboardCopy,
   Play,
@@ -21,35 +21,36 @@ import {
   TableIcon,
   TimerReset,
   Info,
-} from "lucide-react";
-import { cn, sanitizeInput } from "@/lib/utils";
-import ReactJson from "react-json-view";
-import { Textarea } from "@/components/ui/textarea";
+} from 'lucide-react';
+import { cn, sanitizeInput } from '@/lib/utils';
+import ReactJson from 'react-json-view';
+import { Textarea } from '@/components/ui/textarea';
 import {
   parseToJsonEditor,
   parseTypesData,
   safeFormatJSON,
   parseTooltipTypesData,
-} from "@/lib/worker";
-import { toast } from "@/hooks/use-toast";
-import { DynamicForm } from "@/pages/workers/details/dynamic-form.tsx";
+} from '@/lib/worker';
+import { toast } from '@/hooks/use-toast';
+import { DynamicForm } from '@/pages/workers/details/dynamic-form.tsx';
+import { useTheme } from '@/components/theme-provider';
 
 export default function WorkerInvoke() {
-  const { componentId = "", workerName = "" } = useParams();
+  const { componentId = '', workerName = '' } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const name = searchParams.get("name") || "";
-  const urlFn = searchParams.get("fn") || "";
+  const name = searchParams.get('name') || '';
+  const urlFn = searchParams.get('fn') || '';
 
   const [functionDetails, setFunctionDetails] =
     useState<ComponentExportFunction | null>(null);
-  const [value, setValue] = useState<string>("{}");
-  const [resultValue, setResultValue] = useState<string>("");
+  const [value, setValue] = useState<string>('{}');
+  const [resultValue, setResultValue] = useState<string>('');
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
-  const [viewMode, setViewMode] = useState("form");
+  const [viewMode, setViewMode] = useState('form');
 
   /** Fetch function details based on URL params. */
   const fetchFunctionDetails = useCallback(async () => {
@@ -59,21 +60,21 @@ export default function WorkerInvoke() {
       const matchingComponent =
         data?.[componentId].versions?.[data?.[componentId].versions.length - 1];
       if (!matchingComponent) {
-        throw new Error("Component not found.");
+        throw new Error('Component not found.');
       }
       if (name && urlFn) {
         const exportItem = matchingComponent.metadata?.exports?.find(
-          (e: Export) => e.name === name
+          (e: Export) => e.name === name,
         );
         if (!exportItem) {
-          throw new Error("Export item not found.");
+          throw new Error('Export item not found.');
         }
 
         const fnDetails = exportItem.functions?.find(
-          (f: ComponentExportFunction) => f.name === urlFn
+          (f: ComponentExportFunction) => f.name === urlFn,
         );
         if (!fnDetails) {
-          throw new Error("Function details not found.");
+          throw new Error('Function details not found.');
         }
         setFunctionDetails(fnDetails);
         const initialJson = parseToJsonEditor(fnDetails);
@@ -85,29 +86,29 @@ export default function WorkerInvoke() {
         matchingComponent?.metadata?.exports?.[0]?.functions?.[0]
       ) {
         navigate(
-          `/components/${componentId}/workers/${workerName}/invoke?name=${matchingComponent.metadata.exports[0].name}&&fn=${matchingComponent.metadata.exports[0].functions[0].name}`
+          `/components/${componentId}/workers/${workerName}/invoke?name=${matchingComponent.metadata.exports[0].name}&&fn=${matchingComponent.metadata.exports[0].functions[0].name}`,
         );
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast({
           title: error.message,
-          variant: "destructive",
+          variant: 'destructive',
           duration: Number.POSITIVE_INFINITY,
         });
       } else {
         toast({
-          title: "Unable to fetch function details.",
-          variant: "destructive",
+          title: 'Unable to fetch function details.',
+          variant: 'destructive',
           duration: Number.POSITIVE_INFINITY,
         });
       }
     }
-  }, [componentId, urlFn, name]);
+  }, [componentId, urlFn, name, workerName, navigate]);
 
   useEffect(() => {
     if (componentId) {
-      setResultValue("");
+      setResultValue('');
       fetchFunctionDetails();
     }
   }, [componentId, name, urlFn, fetchFunctionDetails]);
@@ -115,13 +116,13 @@ export default function WorkerInvoke() {
   const handleValueChange = (newValue: string) => {
     const formatted = safeFormatJSON(newValue);
     setValue(formatted);
-    setResultValue("");
+    setResultValue('');
   };
 
   const onInvoke = async (parsedValue: unknown[]) => {
     try {
       if (!functionDetails) {
-        throw new Error("No function details loaded.");
+        throw new Error('No function details loaded.');
       }
 
       const typeData = parseTypesData(functionDetails);
@@ -135,32 +136,32 @@ export default function WorkerInvoke() {
       });
 
       const functionName = `${encodeURIComponent(name)}.${encodeURIComponent(
-        `{${urlFn}}`
+        `{${urlFn}}`,
       )}`;
       const response = await API.invokeWorkerAwait(
         componentId,
         workerName,
         functionName,
-        { params }
+        { params },
       );
 
       const newValue = JSON.stringify(response?.result?.value, null, 2);
       setResultValue(newValue);
     } catch (error: unknown) {
       if (
-        typeof error === "object" &&
+        typeof error === 'object' &&
         error !== null &&
-        "description" in error
+        'description' in error
       ) {
         const description = (error as { description?: string }).description;
         toast({
-          title: description ?? "An unknown error occurred.",
-          variant: "destructive",
+          title: description ?? 'An unknown error occurred.',
+          variant: 'destructive',
         });
-      } else if (typeof error === "string" || typeof error === "object") {
+      } else if (typeof error === 'string' || typeof error === 'object') {
         toast({
           title: String(error),
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     }
@@ -181,7 +182,7 @@ export default function WorkerInvoke() {
         <div className="flex">
           <div className="border-r px-8 py-4 min-w-[300px]">
             <div className="flex flex-col gap-4 overflow-scroll h-[85vh]">
-              {componentDetails?.metadata?.exports?.map((exportItem) => (
+              {componentDetails?.metadata?.exports?.map(exportItem => (
                 <div key={exportItem.name}>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 font-bold pb-4">
@@ -197,20 +198,20 @@ export default function WorkerInvoke() {
                               variant="ghost"
                               onClick={() =>
                                 navigate(
-                                  `/components/${componentId}/workers/${workerName}/invoke?name=${exportItem.name}&&fn=${fn.name}`
+                                  `/components/${componentId}/workers/${workerName}/invoke?name=${exportItem.name}&&fn=${fn.name}`,
                                 )
                               }
                               className={cn(
-                                "w-full flex items-center px-3 py-2 rounded-md text-sm font-medium justify-start",
+                                'w-full flex items-center px-3 py-2 rounded-md text-sm font-medium justify-start',
                                 urlFn === fn.name
-                                  ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                  : "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400"
+                                  ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400',
                               )}
                             >
                               <span>{fn.name}</span>
                             </Button>
                           </li>
-                        )
+                        ),
                       )}
                   </ul>
                 </div>
@@ -231,13 +232,13 @@ export default function WorkerInvoke() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setResultValue("");
-                        setViewMode("form");
+                        setResultValue('');
+                        setViewMode('form');
                       }}
                       className={`text-primary hover:bg-primary/10 hover:text-primary ${
-                        viewMode === "form"
-                          ? "bg-primary/20 hover:text-primary "
-                          : ""
+                        viewMode === 'form'
+                          ? 'bg-primary/20 hover:text-primary '
+                          : ''
                       }`}
                     >
                       <ClipboardCopy className="h-4 w-4 mr-1" />
@@ -246,13 +247,13 @@ export default function WorkerInvoke() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setResultValue("");
-                        setViewMode("preview");
+                        setResultValue('');
+                        setViewMode('preview');
                       }}
                       className={`text-primary hover:bg-primary/10 hover:text-primary ${
-                        viewMode === "preview"
-                          ? "bg-primary/20 hover:text-primary "
-                          : ""
+                        viewMode === 'preview'
+                          ? 'bg-primary/20 hover:text-primary '
+                          : ''
                       }`}
                     >
                       <Presentation className="h-4 w-4 mr-1" />
@@ -262,11 +263,11 @@ export default function WorkerInvoke() {
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
-                      onClick={() => setViewMode("types")}
+                      onClick={() => setViewMode('types')}
                       className={`text-primary hover:bg-primary/10 hover:text-primary ${
-                        viewMode === "types"
-                          ? "bg-primary/20 hover:text-primary "
-                          : ""
+                        viewMode === 'types'
+                          ? 'bg-primary/20 hover:text-primary '
+                          : ''
                       }`}
                     >
                       <TableIcon className="h-4 w-4 mr-1" />
@@ -274,14 +275,14 @@ export default function WorkerInvoke() {
                     </Button>
                   </div>
                 </header>
-                {viewMode === "form" && functionDetails && (
+                {viewMode === 'form' && functionDetails && (
                   <DynamicForm
                     functionDetails={functionDetails}
-                    onInvoke={(data) => onInvoke(data)}
-                    resetResult={() => setResultValue("")}
+                    onInvoke={data => onInvoke(data)}
+                    resetResult={() => setResultValue('')}
                   />
                 )}
-                {viewMode === "preview" && functionDetails && (
+                {viewMode === 'preview' && functionDetails && (
                   <SectionCard
                     title="Preview"
                     description="Preview the current function invocation arguments"
@@ -303,19 +304,23 @@ export default function WorkerInvoke() {
                   />
                 )}
 
-                {viewMode === "types" && functionDetails && (
+                {viewMode === 'types' && functionDetails && (
                   <SectionCard
                     title="Types"
                     description="Types of the function arguments"
                     value={JSON.stringify(
                       parseTypesData(functionDetails),
                       null,
-                      2
+                      2,
                     )}
                     functionDetails={functionDetails}
                     copyToClipboard={() => {
                       navigator.clipboard.writeText(
-                        JSON.stringify(parseTypesData(functionDetails), null, 2)
+                        JSON.stringify(
+                          parseTypesData(functionDetails),
+                          null,
+                          2,
+                        ),
                       );
                     }}
                     readOnly={true}
@@ -366,6 +371,7 @@ function SectionCard({
   onInvoke = () => {},
   onReset = () => {},
 }: SectionCardProps) {
+  const { theme } = useTheme();
   return (
     <div>
       <Card className="w-full bg-background">
@@ -389,7 +395,7 @@ function SectionCard({
                         text={JSON.stringify(
                           parseTooltipTypesData(functionDetails),
                           null,
-                          2
+                          2,
                         )}
                         language="json"
                         theme={dracula}
@@ -411,19 +417,19 @@ function SectionCard({
         <CardContent>
           {readOnly ? (
             <ReactJson
-              src={JSON.parse(value || "{}")}
+              src={JSON.parse(value || '{}')}
               name={null}
-              theme="rjv-default"
+              theme={theme == 'dark' ? 'brewer' : 'bright:inverted'}
               collapsed={false}
               enableClipboard={false}
               displayDataTypes={false}
-              style={{ fontSize: "14px", lineHeight: "1.6" }}
+              style={{ fontSize: '14px', lineHeight: '1.6' }}
             />
           ) : (
             <Textarea
               value={value}
-              onChange={(e) => onValueChange?.(e.target.value)}
-              className={cn("min-h-[400px] font-mono text-sm mt-2")}
+              onChange={e => onValueChange?.(e.target.value)}
+              className={cn('min-h-[400px] font-mono text-sm mt-2')}
               placeholder="Enter JSON data..."
             />
           )}

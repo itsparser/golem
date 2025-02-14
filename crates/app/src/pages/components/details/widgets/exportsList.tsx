@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe } from "lucide-react";
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Globe } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -8,9 +8,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { ComponentExportFunction, Export } from "@/types/component";
-import ErrorBoundary from "@/components/errorBoundary";
+} from '@/components/ui/command';
+import { ComponentExportFunction, Export } from '@/types/component';
+import ErrorBoundary from '@/components/errorBoundary';
 
 export function ExportsList({ exports }: { exports: Export[] }) {
   const exportedFunctions = useMemo(
@@ -19,9 +19,9 @@ export function ExportsList({ exports }: { exports: Export[] }) {
         exp.functions.map((func: ComponentExportFunction) => ({
           ...func,
           exportName: exp.name,
-        }))
+        })),
       ),
-    [exports]
+    [exports],
   );
 
   return (
@@ -37,13 +37,15 @@ export function ExportsList({ exports }: { exports: Export[] }) {
             <CommandList>
               <CommandEmpty>No exports found.</CommandEmpty>
               <CommandGroup>
-                {exportedFunctions.map((endpoint) => (
+                {exportedFunctions.map(endpoint => (
                   <CommandItem
                     key={`${endpoint.exportName}-${endpoint.name}`}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm">
-                      {endpoint.exportName}.{endpoint.name}
+                    <span className="font-mono text-sm">
+                      <span className="text-blue-400">
+                        {endpoint.exportName}.{endpoint.name}
+                      </span>
                     </span>
                   </CommandItem>
                 ))}

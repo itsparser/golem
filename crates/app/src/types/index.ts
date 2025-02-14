@@ -1,11 +1,10 @@
 export enum Status {
-    Success = "Success",
-    Error = "Error"
+  Success = 'Success',
+  Error = 'Error',
 }
 
 export interface Response<T> {
-    status: Status;
-    data?: T;
-    error?: string;
+  status: Status;
+  data?: T;
+  error?: string;
 }
-

@@ -1,25 +1,39 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { LayoutGrid, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
-import { API } from "@/service";
-import { ComponentList } from "@/types/component";
-import { Worker } from "@/types/worker";
-import ErrorBoundary from "@/components/errorBoundary";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateExportFunctions } from "@/lib/utils";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { LayoutGrid, PlusCircle } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
+import { API } from '@/service';
+import { ComponentList } from '@/types/component';
+import { Worker } from '@/types/worker';
+import ErrorBoundary from '@/components/errorBoundary';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { calculateExportFunctions, cn, formatRelativeTime } from '@/lib/utils';
 
 /**
  * Worker status metrics used to categorize workers
  */
 const WORKER_STATUS_METRICS = [
-  "Idle",
-  "Running",
-  "Suspended",
-  "Failed",
+  'Idle',
+  'Running',
+  'Suspended',
+  'Failed',
 ] as const;
+
+const WORKER_COLOR_MAPPER = {
+  Idle: 'text-emerald-400 dark:text-emerald-200',
+  Running: 'text-blue-400 dark:text-blue-200',
+  Suspended: 'text-amber-400 dark:text-amber-200',
+  Failed: 'text-rose-400 dark:text-rose-200',
+};
+
 type WorkerStatusType = (typeof WORKER_STATUS_METRICS)[number];
 
 /**
@@ -61,25 +75,25 @@ const DEFAULT_WORKER_STATUS: ComponentWorkerStatus =
 /**
  * Card representing a single component's details and worker status
  */
-const ComponentCard = React.memo(
+export const ComponentCard = React.memo(
   ({
     data,
     workerStatus,
     onCardClick,
   }: {
     data: ComponentList;
-    workerStatus: ComponentWorkerStatus;
+    workerStatus?: ComponentWorkerStatus;
     onCardClick: (componentId: string) => void;
   }) => {
     // Retrieve the latest version from the versions array
     const latestVersion = data.versions?.[data.versions?.length - 1];
     // Count total exports using a helper function
     const exportCount = calculateExportFunctions(
-      latestVersion?.metadata?.exports || []
+      latestVersion?.metadata?.exports || [],
     ).length;
     // Convert component size from bytes to kilobytes
     const componentSize = Math.round(
-      (latestVersion?.componentSize || 0) / 1024
+      (latestVersion?.componentSize || 0) / 1024,
     );
 
     /**
@@ -93,49 +107,91 @@ const ComponentCard = React.memo(
     };
 
     return (
-      <Card className="border shadow-sm cursor-pointer" onClick={handleClick}>
+      <Card
+        className={cn(
+          'w-full max-w-2xl from-background to-muted border-border cursor-pointer',
+          workerStatus && 'bg-gradient-to-br',
+        )}
+        onClick={handleClick}
+      >
         <CardHeader>
-          <CardTitle>{data.componentName || "Unnamed Component"}</CardTitle>
+          <CardTitle className="text-foreground">
+            {data.componentName || 'Unnamed Component'}
+          </CardTitle>
+          <CardDescription
+            className={'text-xs font-light text-muted-foreground'}
+          >
+            {formatRelativeTime(
+              data.versions?.[data.versions?.length - 1].createdAt ||
+                new Date(),
+            )}
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           {/* Worker Status Grid */}
           {/*
             Removed the extra ":grid-cols-4" class which appeared to be a typo.
             Adjust classes to a responsive 2-column (mobile) to 4-column (desktop) layout.
           */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {WORKER_STATUS_METRICS.map((metric) => (
-              <div key={metric} className="flex flex-col items-start space-y-1">
-                <span className="text-sm text-muted-foreground">{metric}</span>
-                <span className="text-lg font-medium">
-                  {workerStatus[metric]}
-                </span>
-              </div>
-            ))}
-          </div>
+          {workerStatus && (
+            <div className="grid grid-cols-4 gap-4">
+              {WORKER_STATUS_METRICS.map(metric => (
+                <div key={metric} className="space-y-2">
+                  <h3
+                    className={cn(
+                      'text-sm font-medium',
+                      WORKER_COLOR_MAPPER[metric],
+                    )}
+                  >
+                    {metric}
+                  </h3>
+                  <p
+                    className={cn(
+                      'text-4xl font-bold',
+                      WORKER_COLOR_MAPPER[metric],
+                    )}
+                  >
+                    {workerStatus[metric]}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Component Metadata Badges */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="rounded-md">
-              V{data.versionList?.[data.versionList?.length - 1] || "0"}
+          <div className="flex flex-wrap gap-2">
+            <Badge
+              variant="secondary"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
+            >
+              V{data.versionList?.[data.versionList?.length - 1] || '0'}
             </Badge>
-            <Badge variant="secondary" className="rounded-md">
-              {exportCount} Exports
+            <Badge
+              variant="secondary"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
+            >
+              {exportCount || 0} Exports
             </Badge>
-            <Badge variant="secondary" className="rounded-md">
-              {componentSize} KB
+            <Badge
+              variant="secondary"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
+            >
+              {Math.round((componentSize || 0) / 1024)} KB{' '}
             </Badge>
-            <Badge variant="secondary" className="rounded-md">
-              {latestVersion?.componentType || "Unknown"}
+            <Badge
+              variant="secondary"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
+            >
+              {data.componentType}
             </Badge>
           </div>
         </CardContent>
       </Card>
     );
-  }
+  },
 );
 
-ComponentCard.displayName = "ComponentCard";
+ComponentCard.displayName = 'ComponentCard';
 
 /**
  * Main component for listing and searching project components
@@ -144,10 +200,10 @@ const Components = () => {
   const navigate = useNavigate();
   const [componentList, setComponentList] = useState<ComponentMap>({});
   const [filteredComponents, setFilteredComponents] = useState<ComponentMap>(
-    {}
+    {},
   );
   const [workerList, setWorkerList] = useState<WorkerStatusMap>({});
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   /**
    * Fetch all components, then fetch worker status for each component in parallel
@@ -161,7 +217,7 @@ const Components = () => {
       const componentStatus: WorkerStatusMap = {};
 
       // Map over each component to fetch worker info
-      const workerPromises = Object.values(response).map(async (comp) => {
+      const workerPromises = Object.values(response).map(async comp => {
         if (comp.componentId) {
           const worker = await API.findWorker(comp.componentId, {
             count: 100,
@@ -186,7 +242,7 @@ const Components = () => {
       await Promise.all(workerPromises);
       setWorkerList(componentStatus);
     } catch (error) {
-      console.error("Error fetching components or metrics:", error);
+      console.error('Error fetching components or metrics:', error);
     }
   }, []);
 
@@ -210,13 +266,13 @@ const Components = () => {
       // Filter matches where the component name includes the user’s search text
       const filtered = Object.entries(componentList).reduce(
         (acc, [key, component]) => {
-          const componentName = component.componentName?.toLowerCase() || "";
+          const componentName = component.componentName?.toLowerCase() || '';
           if (componentName.includes(searchQuery.toLowerCase())) {
             acc[key] = component;
           }
           return acc;
         },
-        {} as ComponentMap
+        {} as ComponentMap,
       );
 
       setFilteredComponents(filtered);
@@ -242,7 +298,7 @@ const Components = () => {
         </p>
       </div>
     ),
-    []
+    [],
   );
 
   /**
@@ -252,7 +308,7 @@ const Components = () => {
     (componentId: string) => {
       navigate(`/components/${componentId}`);
     },
-    [navigate]
+    [navigate],
   );
 
   return (
@@ -268,12 +324,12 @@ const Components = () => {
                 type="text"
                 placeholder="Search components..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="w-full"
               />
             </div>
             {/* Create Component Button */}
-            <Button onClick={() => navigate("/components/create")}>
+            <Button onClick={() => navigate('/components/create')}>
               <PlusCircle className="h-4 w-4 mr-2" />
               Create Component
             </Button>
@@ -285,12 +341,12 @@ const Components = () => {
           EmptyState
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-scroll max-h-[78vh]">
-            {Object.values(filteredComponents).map((data) => (
+            {Object.values(filteredComponents).map(data => (
               <ComponentCard
                 key={data.componentId}
                 data={data}
                 workerStatus={
-                  workerList[data.componentId || ""] || DEFAULT_WORKER_STATUS
+                  workerList[data.componentId || ''] || DEFAULT_WORKER_STATUS
                 }
                 onCardClick={handleCardClick}
               />

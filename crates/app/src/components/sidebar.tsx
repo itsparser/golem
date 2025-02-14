@@ -1,14 +1,14 @@
-import { type LucideIcon } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarRail } from "@/components/ui/sidebar";
-import { NavMain, SidebarMenuProps } from "@/components/nav-main.tsx";
+import { type LucideIcon } from 'lucide-react';
+import { Sidebar, SidebarContent, SidebarRail } from '@/components/ui/sidebar';
+import { NavMain, SidebarMenuProps } from '@/components/nav-main.tsx';
 
 export interface SidebarProps {
   headers?: SidebarHeaderProps[];
   menus: SidebarMenuProps[];
   footer?: { name: string; url: string }[];
-  side?: "left" | "right";
-  variant?: "sidebar" | "floating" | "inset";
-  collapsible?: "offcanvas" | "icon" | "none";
+  side?: 'left' | 'right';
+  variant?: 'sidebar' | 'floating' | 'inset';
+  collapsible?: 'offcanvas' | 'icon' | 'none';
   className?: string;
   setActiveItem?: (item: string) => void;
   activeItem?: string;
