@@ -1,13 +1,15 @@
-export interface Typ {
+export interface  Typ {
     type: string;
     fields?: Field[];
     cases?: Case[] | string[];
     inner?: Typ;
     ok?: Typ;
     err?: Typ;
+    names?: string[];
+
 }
 
-export interface Field {
+export interface  Field {
     name: string;
     typ: Typ;
 }
