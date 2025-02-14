@@ -5,13 +5,13 @@ import {Api} from "@/types/api";
 import {Button} from "@/components/ui/button";
 import {Card} from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import {API} from "@/service";
 import {Deployment} from "@/types/deployments";
@@ -38,7 +38,7 @@ const RoutesCard = ({
 
     const copyToClipboard = (endpoint: { path: string; method: string }) => {
         const fullUrl = `${host}${endpoint.path}`;
-        const curlCommand = `curl -X ${endpoint.method} ${fullUrl} -H "Content-Type: application/json" -d '{}'`;
+        const curlCommand = `curl --location ${endpoint.method} http://${fullUrl} --header "Content-Type: application/json" -d '{}'`;
         navigator.clipboard
             .writeText(curlCommand)
             .then(() => {

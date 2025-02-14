@@ -106,6 +106,7 @@ export const removeDuplicateApis = (data: Api[]) => {
 
 export const parseErrorMessage = (error: string): string => {
     const patterns = [
+        /([^"]*Component already exists: [a-f0-9-]+)/,
         /(?<=: ).*?(?=\s\(occurred)/, // Extract message before "(occurred"
         /(?<=error: ).*?(?=:|$)/i, // Extract message after "error: "
         /Invalid value for the key [^:]+/, // Extract key-specific error
@@ -114,7 +115,8 @@ export const parseErrorMessage = (error: string): string => {
     for (const pattern of patterns) {
         const match = error.match(pattern);
         if (match) {
-            return match.join(" , ");
+            console.log("match", match);
+            return match[0];
         }
     }
     return "An unknown error occurred.";

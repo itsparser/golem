@@ -19,7 +19,7 @@ const APIs = lazy(() =>
 const CreateAPI = lazy(() => import("@/pages/api/create"));
 const APIDetails = lazy(() => import("@/pages/api/details"));
 const APISettings = lazy(() => import("@/pages/api/details/settings"));
-const CreateRoute = lazy(() => import("@/pages/api/details/createRoute"));
+const CreateRoute = lazy(() => import("@/pages/api/details/createRoute.tsx"));
 const Deployments = lazy(() => import("@/pages/deployment"));
 const ComponentDetails = lazy(() =>
     import("@/pages/components/details").then((module) => ({

@@ -2,7 +2,7 @@ export interface Api {
     createdAt?: string;
     draft: boolean;
     id: string;
-    routes: Route[];
+    routes: RouteRequestData[];
     version: string;
     count?: number;
 }
@@ -38,3 +38,39 @@ export type HttpMethod =
     | "Options"
     | "Trace"
     | "Connect";
+
+export type MethodPattern = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS" | "TRACE" | "CONNECT"
+export type GatewayBindingType = "default" | "file-server" | "http-handler" | "cors-preflight"
+
+export interface RouteRequestData {
+    method: MethodPattern
+    path: string
+    binding: GatewayBindingData
+    cors?: HttpCors
+    security?: string
+}
+
+export interface GatewayBindingData {
+    bindingType: GatewayBindingType
+    componentId?: string
+    workerName?: string
+    idempotencyKey?: string
+    response?: string
+}
+
+export interface HttpCors {
+    allowOrigin: string
+    allowMethods: string
+    allowHeaders: string
+    exposeHeaders?: string
+    maxAge?: number
+    allowCredentials?: boolean
+}
+
+export interface HttpApiDefinitionRequest {
+    id: string
+    version: string
+    security?: string[]
+    routes: RouteRequestData[]
+    draft: boolean
+}
