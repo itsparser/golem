@@ -16,6 +16,7 @@ import type {Component, ComponentList} from "@/types/component";
 import ErrorBoundary from "@/components/errorBoundary";
 import {toast} from "@/hooks/use-toast";
 import {RibEditor} from "@/components/rib-editor.tsx";
+import {parseTypeForTooltip} from "@/lib/utils.ts";
 
 const MethodPattern = z.enum([
     "Get",
@@ -141,7 +142,6 @@ const CreateRoute = () => {
                     version: 0,
                 },
                 workerName: "",
-                idempotencyKey: "",
                 response: "",
             },
         },
@@ -181,7 +181,7 @@ const CreateRoute = () => {
         };
 
         fetchData();
-    }, [apiName, version, path, method]);
+    }, [apiName, version, path, method, form]);
 
     const onSubmit = async (values: RouteFormValues) => {
         if (!activeApiDetails) return;
@@ -203,9 +203,7 @@ const CreateRoute = () => {
             selectedApi.routes = selectedApi.routes.filter(
                 (route) => !(route.path === path && route.method === method),
             );
-            selectedApi.routes = [values];
-            console.log("selectedApi", selectedApi)
-            console.log("values", values)
+            selectedApi.routes.push(values);
             await API.putApi(
                 activeApiDetails.id,
                 activeApiDetails.version,
@@ -231,166 +229,30 @@ const CreateRoute = () => {
         extractDynamicParams(value);
     };
 
-    //
-    // const handleSuggestionClick = (suggestion: string) => {
-    //     const currentValue = form.getValues("workerName");
-    //     const textBeforeCursor = currentValue.slice(0, cursorPosition);
-    //     const pattern = "request.path.";
-    //     const startIndex = textBeforeCursor.lastIndexOf(pattern);
-    //
-    //     let newValue: string;
-    //     let newCursorPosition: number;
-    //
-    //     if (startIndex !== -1) {
-    //         // Replace any text after "request.path." with the suggestion
-    //         newValue =
-    //             currentValue.slice(0, startIndex) +
-    //             pattern +
-    //             suggestion +
-    //             currentValue.slice(cursorPosition);
-    //         newCursorPosition = startIndex + pattern.length + suggestion.length;
-    //     } else {
-    //         // If the pattern isn't found, insert it along with the suggestion at the cursor position
-    //         newValue =
-    //             currentValue.slice(0, cursorPosition) +
-    //             pattern +
-    //             suggestion +
-    //             currentValue.slice(cursorPosition);
-    //         newCursorPosition = cursorPosition + pattern.length + suggestion.length;
-    //     }
-    //
-    //     form.setValue("workerName", newValue);
-    //     // setShowSuggestions(false);
-    //
-    //     if (textareaRef.current) {
-    //         textareaRef.current.focus();
-    //         textareaRef.current.setSelectionRange(
-    //             newCursorPosition,
-    //             newCursorPosition,
-    //         );
-    //         setCursorPosition(newCursorPosition);
-    //     }
-    // };
-
-    const onVersionChange = (version: string) => {
-        form.setValue("binding.componentId.version", Number(version));
-        const componentId = form.getValues("binding.componentId.componentId");
-        // @ts-ignore
+    const loadResponseSuggestions = async (componentId: string, version: string) => {
         const exportedFunctions = componentList?.[componentId]?.versions?.find(
             (data: Component) =>
                 data.versionedComponentId?.version?.toString() === version,
         );
         const data = exportedFunctions?.metadata?.exports || [];
         const output = data.flatMap((item) =>
-            item.functions.map((func) => `${item.name}.{${func.name}}`),
+            item.functions.map((func) => {
+                const param = func.parameters.map(p => {
+                    const {short} = parseTypeForTooltip(p.typ);
+                    return `${p.name}: ${short}`;
+                }).join(", ");
+                return `${item.name}.{${func.name}}(${param})`;
+            }),
         );
         setResponseSuggestions(output);
+    }
+
+    const onVersionChange = (version: string) => {
+        form.setValue("binding.componentId.version", Number(version));
+        const componentId = form.getValues("binding.componentId.componentId");
+        loadResponseSuggestions(componentId, version);
+
     };
-
-    // const handleWorkerNameChange = (
-    //     e: React.ChangeEvent<HTMLTextAreaElement>,
-    // ) => {
-    //     const value = e.target.value;
-    //     form.setValue("workerName", value);
-    //     const cursorPos = e.target.selectionStart || 0;
-    //     setCursorPosition(cursorPos);
-    //
-    //     const textBeforeCursor = value.slice(0, cursorPos);
-    //     // Look for the last occurrence of "request.path."
-    //     const pattern = "request.path.";
-    //     const startIndex = textBeforeCursor.lastIndexOf(pattern);
-    //
-    //     // if (startIndex !== -1) {
-    //     //     // Extract the token typed after "request.path."
-    //     //     const token = textBeforeCursor.slice(startIndex + pattern.length);
-    //     //     // Retrieve the dynamic parameters (or suggestion candidates)
-    //     //     const dynamicParams = extractDynamicParams(form.getValues("path"));
-    //     //
-    //     //     // If token is empty, show all dynamicParams; otherwise filter them
-    //     //     // const filteredSuggestions =
-    //     //     //     token.trim().length > 0
-    //     //     //         ? dynamicParams.filter((param) =>
-    //     //     //             param.toLowerCase().startsWith(token.toLowerCase()),
-    //     //     //         )
-    //     //     //         : dynamicParams;
-    //     //
-    //     //     // if (filteredSuggestions.length > 0) {
-    //     //     //     // setSuggestions(filteredSuggestions);
-    //     //     //     // updateMenuPosition();
-    //     //     //     // setShowSuggestions(true);
-    //     //     // } else {
-    //     //     //     setShowSuggestions(false);
-    //     //     // }
-    //     // } else {
-    //     //     // setShowSuggestions(false);
-    //     // }
-    // };
-
-    // const updateMenuPosition = () => {
-    //     if (textareaRef.current) {
-    //         const {selectionStart} = textareaRef.current;
-    //         const coords = getCaretCoordinates(textareaRef.current, selectionStart);
-    //         // setMenuPosition({
-    //         //     top: coords.top + coords.height - textareaRef.current.scrollTop,
-    //         //     left: coords.left - textareaRef.current.scrollLeft,
-    //         // });
-    //     }
-    // };
-
-    // const handleResponseSuggestionClick = (suggestion: string) => {
-    //     const currentValue = form.getValues("response") ?? "";
-    //     // Get text before the current cursor position.
-    //     const textBeforeCursor = currentValue.slice(0, responseCursorPosition);
-    //     // Find the last contiguous non-space token
-    //     const tokenMatch = textBeforeCursor.match(/(\S+)$/);
-    //     let tokenStart = responseCursorPosition;
-    //     if (tokenMatch) {
-    //         tokenStart = responseCursorPosition - tokenMatch[1].length;
-    //     }
-    //     // Replace the token with the suggestion.
-    //     const newValue =
-    //         currentValue.slice(0, tokenStart) +
-    //         suggestion +
-    //         currentValue.slice(responseCursorPosition);
-    //     form.setValue("response", newValue);
-    //     // setShowResponseSuggestions(false);
-    //
-    //     if (responseTextareaRef.current) {
-    //         responseTextareaRef.current.focus();
-    //         const newCursorPosition = tokenStart + suggestion.length;
-    //         responseTextareaRef.current.setSelectionRange(
-    //             newCursorPosition,
-    //             newCursorPosition,
-    //         );
-    //         setResponseCursorPosition(newCursorPosition);
-    //     }
-    // };
-
-    // const handleResponseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    //     const value = e.target.value;
-    //     form.setValue("response", value);
-    //     const cursorPos = e.target.selectionStart || 0;
-    //     setResponseCursorPosition(cursorPos);
-    //
-    //     // Extract the last "word" (non-whitespace sequence) before the cursor.
-    //     const textBeforeCursor = value.slice(0, cursorPos);
-    //     const match = textBeforeCursor.match(/(\S+)$/); // captures last token
-    //     const token = match ? match[1] : "";
-    //
-    //     // Filter responseSuggestions to only those that match the token (case-insensitive)
-    //     // const filtered = responseSuggestions.filter((item) =>
-    //     //     item.toLowerCase().startsWith(token.toLowerCase()),
-    //     // );
-    //     //
-    //     // // If there are any matches and the token is not empty, show the dropdown.
-    //     // if (filtered.length > 0 && token.length > 0) {
-    //     //     // updateResponseMenuPosition();
-    //     //     // setFilteredResponseSuggestions(filtered);
-    //     //     // setShowResponseSuggestions(true);
-    //     // } else {
-    //     //     // setShowResponseSuggestions(false);
-    //     // }
-    // };
 
     const togglePopover = () => {
         setIsPopoverOpen((prev) => !prev);
@@ -437,12 +299,13 @@ const CreateRoute = () => {
                                                 <FormItem>
                                                     <FormLabel required>Component</FormLabel>
                                                     <Select
-                                                        onValueChange={(componentId) =>
+                                                        onValueChange={(componentId) => {
                                                             form.setValue(
                                                                 "binding.componentId.componentId",
                                                                 componentId,
-                                                            )
-                                                        }
+                                                            );
+                                                            loadResponseSuggestions(componentId, "0");
+                                                        }}
                                                         value={field.value}
                                                     >
                                                         <FormControl>
@@ -755,179 +618,8 @@ const CreateRoute = () => {
                                                 </FormItem>
                                             )}
                                         />
-                                        {/*<FormField*/}
-                                        {/*  control={form.control}*/}
-                                        {/*  name="response"*/}
-                                        {/*  render={({ field }) => (*/}
-                                        {/*    <FormItem>*/}
-                                        {/*      <FormLabel required>*/}
-                                        {/*        <span className="">*/}
-                                        {/*          Response*/}
-                                        {/*          <Popover*/}
-                                        {/*            open={isPopoverOpen}*/}
-                                        {/*            onOpenChange={setIsPopoverOpen}*/}
-                                        {/*          >*/}
-                                        {/*            <PopoverTrigger asChild>*/}
-                                        {/*              <button*/}
-                                        {/*                className="p-1 hover:bg-muted rounded-full transition-colors"*/}
-                                        {/*                aria-label="Show interpolation info"*/}
-                                        {/*                onClick={togglePopover}*/}
-                                        {/*              >*/}
-                                        {/*                <Info className="w-4 h-4 text-muted-foreground" />*/}
-                                        {/*              </button>*/}
-                                        {/*            </PopoverTrigger>*/}
-                                        {/*            <PopoverContent*/}
-                                        {/*              className={`${*/}
-                                        {/*                responseSuggestions.length === 0*/}
-                                        {/*                  ? "max-w-[450px]"*/}
-                                        {/*                  : "w-[450px]"*/}
-                                        {/*              }  p-4`}*/}
-                                        {/*              align="start"*/}
-                                        {/*              sideOffset={5}*/}
-                                        {/*            >*/}
-                                        {/*              {responseSuggestions.length > 0 ? (*/}
-                                        {/*                <div>*/}
-                                        {/*                  <h3 className="text-[13px] font-medium text-card-foreground mb-4 border-b pb-2">*/}
-                                        {/*                    Available Functions*/}
-                                        {/*                  </h3>*/}
-                                        {/*                  <div className="space-y-3 overflow-y-auto max-h-[300px]">*/}
-                                        {/*                    {responseSuggestions.map((row) => (*/}
-                                        {/*                      <div*/}
-                                        {/*                        key={row}*/}
-                                        {/*                        className="flex items-center justify-between"*/}
-                                        {/*                        onClick={(e) => {*/}
-                                        {/*                          e.stopPropagation();*/}
-                                        {/*                          navigator.clipboard.writeText(*/}
-                                        {/*                            `${row} `,*/}
-                                        {/*                          );*/}
-                                        {/*                          toast({*/}
-                                        {/*                            title: "Copied to clipboard",*/}
-                                        {/*                            duration: 3000,*/}
-                                        {/*                          });*/}
-                                        {/*                          setIsPopoverOpen(false);*/}
-                                        {/*                        }}*/}
-                                        {/*                      >*/}
-                                        {/*                        <span className="text-[12px] min-h-[20px] font-mono text-muted-foreground hover:border-b cursor-pointer">*/}
-                                        {/*                          {row}*/}
-                                        {/*                        </span>*/}
-                                        {/*                      </div>*/}
-                                        {/*                    ))}*/}
-                                        {/*                  </div>*/}
-                                        {/*                </div>*/}
-                                        {/*              ) : (*/}
-                                        {/*                <div className="text-center text-muted-foreground">*/}
-                                        {/*                  No component version selected*/}
-                                        {/*                </div>*/}
-                                        {/*              )}*/}
-                                        {/*            </PopoverContent>*/}
-                                        {/*          </Popover>*/}
-                                        {/*        </span>*/}
-                                        {/*      </FormLabel>*/}
-                                        {/*      <FormControl>*/}
-                                        {/*        <div className="relative">*/}
-                                        {/*          <Textarea*/}
-                                        {/*            placeholder="Define the HTTP response template"*/}
-                                        {/*            className="min-h-[130px]"*/}
-                                        {/*            {...field}*/}
-                                        {/*            onChange={handleResponseChange}*/}
-                                        {/*            ref={responseTextareaRef}*/}
-                                        {/*          />*/}
-                                        {/*          {showResponseSuggestions && (*/}
-                                        {/*            <Card*/}
-                                        {/*              className="absolute z-10 p-1 space-y-1 shadow-lg min-w-[200px]"*/}
-                                        {/*              style={{*/}
-                                        {/*                top: `${responseMenuPosition.top}px`,*/}
-                                        {/*                left: `${responseMenuPosition.left}px`,*/}
-                                        {/*                width: "max-content",*/}
-                                        {/*              }}*/}
-                                        {/*            >*/}
-                                        {/*              {filteredResponseSuggestions.map(*/}
-                                        {/*                (suggestion) => (*/}
-                                        {/*                  <div*/}
-                                        {/*                    key={suggestion}*/}
-                                        {/*                    className="px-2 py-1 text-sm cursor-pointer hover:bg-accent"*/}
-                                        {/*                    onClick={() =>*/}
-                                        {/*                      handleResponseSuggestionClick(*/}
-                                        {/*                        suggestion,*/}
-                                        {/*                      )*/}
-                                        {/*                    }*/}
-                                        {/*                  >*/}
-                                        {/*                    {suggestion}*/}
-                                        {/*                  </div>*/}
-                                        {/*                ),*/}
-                                        {/*              )}*/}
-                                        {/*            </Card>*/}
-                                        {/*          )}*/}
-                                        {/*        </div>*/}
-                                        {/*      </FormControl>*/}
-                                        {/*      <FormMessage />*/}
-                                        {/*    </FormItem>*/}
-                                        {/*  )}*/}
-                                        {/*/>*/}
                                     </div>
                                 )}
-
-                                {/*<FormField*/}
-                                {/*    control={form.control}*/}
-                                {/*    name="allowOrigin"*/}
-                                {/*    render={({field}) => (*/}
-                                {/*        <FormItem>*/}
-                                {/*            <FormLabel>Allow Origin</FormLabel>*/}
-                                {/*            <FormControl>*/}
-                                {/*                <Input*/}
-                                {/*                    placeholder="*"*/}
-                                {/*                    {...field}*/}
-                                {/*                />*/}
-                                {/*            </FormControl>*/}
-                                {/*            <FormDescription>*/}
-                                {/*                Value of the Access-Control-Allow-Origin header. Defaults to "*" if not*/}
-                                {/*                provided.*/}
-                                {/*            </FormDescription>*/}
-                                {/*            <FormMessage/>*/}
-                                {/*        </FormItem>*/}
-                                {/*    )}*/}
-                                {/*/>*/}
-                                {/*<FormField*/}
-                                {/*    control={form.control}*/}
-                                {/*    name="allowMethods"*/}
-                                {/*    render={({field}) => (*/}
-                                {/*        <FormItem>*/}
-                                {/*            <FormLabel>Allow Methods</FormLabel>*/}
-                                {/*            <FormControl>*/}
-                                {/*                <Input*/}
-                                {/*                    placeholder="GET, POST, PUT, DELETE, OPTIONS"*/}
-                                {/*                    {...field}*/}
-                                {/*                />*/}
-                                {/*            </FormControl>*/}
-                                {/*            <FormDescription>*/}
-                                {/*                Value of the Access-Control-Allow-Methods header. Defaults to "GET,*/}
-                                {/*                POST, PUT, DELETE, OPTIONS" if not provided.*/}
-                                {/*            </FormDescription>*/}
-                                {/*            <FormMessage/>*/}
-                                {/*        </FormItem>*/}
-                                {/*    )}*/}
-                                {/*/>*/}
-                                {/*<FormField*/}
-                                {/*    control={form.control}*/}
-                                {/*    name="allowHeaders"*/}
-                                {/*    render={({field}) => (*/}
-                                {/*        <FormItem>*/}
-                                {/*            <FormLabel>Allow Methods</FormLabel>*/}
-                                {/*            <FormControl>*/}
-                                {/*                <Input*/}
-                                {/*                    placeholder="Content-Type, Authorization"*/}
-                                {/*                    {...field}*/}
-                                {/*                />*/}
-                                {/*            </FormControl>*/}
-                                {/*            <FormDescription>*/}
-                                {/*                Value of the Access-Control-Allow-Headers header. Defaults to*/}
-                                {/*                "Content-Type, Authorization" if not provided.*/}
-                                {/*            </FormDescription>*/}
-                                {/*            <FormMessage/>*/}
-                                {/*        </FormItem>*/}
-                                {/*    )}*/}
-                                {/*/>*/}
-
                                 <div className="flex justify-end space-x-3">
                                     <Button
                                         type="button"

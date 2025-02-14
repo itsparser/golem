@@ -1,5 +1,5 @@
 import {Api} from "@/types/api";
-import {ComponentExportFunction, Export, FileStructure} from "@/types/component";
+import {Case, ComponentExportFunction, Export, FileStructure, Typ} from "@/types/component";
 import {type ClassValue, clsx} from "clsx";
 import {twMerge} from "tailwind-merge";
 
@@ -173,4 +173,103 @@ export function parseFileStructure(data: FileStructure[]): FileNode {
     })
 
     return root
+}
+
+/**
+ * Returns the short name and full multiline representation of a WIT-like type.
+ */
+export function parseTypeForTooltip(typ: Typ | undefined): {
+    short: string;
+    full: string;
+} {
+    if (!typ) {
+        return {short: "null", full: "null"};
+    }
+
+    switch (typ.type) {
+        case "Bool":
+            return {short: "bool", full: "bool"};
+        case "S8":
+        case "S16":
+        case "S32":
+        case "S64":
+            return {short: `i${typ.type.slice(1)}`, full: `i${typ.type.slice(1)}`};
+        case "U8":
+        case "U16":
+        case "U32":
+        case "U64":
+            return {short: `u${typ.type.slice(1)}`, full: `u${typ.type.slice(1)}`};
+        case "F32":
+        case "F64":
+            return {short: typ.type.toLowerCase(), full: typ.type.toLowerCase()};
+        case "Char":
+            return {short: "char", full: "char"};
+        case "Str":
+            return {short: "string", full: "String"};
+        case "List": {
+            const inner = parseTypeForTooltip(typ.inner);
+            return {
+                short: `list<${inner.short}>`,
+                full: `list<${inner.full}>`,
+            };
+        }
+        case "Option": {
+            const inner = parseTypeForTooltip(typ.inner);
+            return {
+                short: `option<${inner.short}>`,
+                full: `Option<${inner.full}>`,
+            };
+        }
+        case "Result": {
+            const okParsed = parseTypeForTooltip(typ.ok);
+            const errParsed = parseTypeForTooltip(typ.err);
+            return {
+                short: `result<${okParsed.short}, ${errParsed.short}>`,
+                full: `Result<${okParsed.full}, ${errParsed.full}>`,
+            };
+        }
+        case "Tuple": {
+            const elements = (typ.fields || []).map((element) =>
+                parseTypeForTooltip(element.typ)
+            );
+            return {
+                short: `tuple<${elements.map((e) => e.short).join(", ")}>`,
+                full: `(${elements.map((e) => e.full).join(", ")})`,
+            };
+        }
+        case "Record": {
+            const result: Record<string, unknown> = {};
+            (typ.fields || []).forEach((field) => {
+                const parsed = parseTypeForTooltip(field.typ);
+                result[field.name] = parsed.full;
+            });
+            return {
+                short: "record",
+                full: JSON.stringify(result, null, 2),
+            };
+        }
+        case "Variant": {
+            const cases = ((typ.cases as Case[]) || []).map((c) => {
+                const parsed = parseTypeForTooltip(c.typ);
+                return `${c.name.charAt(0).toUpperCase() + c.name.slice(1)}(${
+                    parsed.full
+                })`;
+            });
+            return {
+                short: "variant",
+                full: `enum {\n  ${cases.join(",\n  ")}\n}`,
+            };
+        }
+        case "Enum": {
+            const cases = ((typ.cases as string[]) || []).map(
+                (c) => c.charAt(0).toUpperCase() + c.slice(1)
+            );
+            return {
+                short: "enum",
+                full: `enum (\n  ${cases.join(",\n  ")}\n)`,
+            };
+        }
+        default:
+            return {short: "unknown", full: "unknown"};
+    }
 }

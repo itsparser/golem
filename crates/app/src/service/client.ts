@@ -356,8 +356,6 @@ export class Service {
         headers = {"Content-Type": "application/json"}
     ): Promise<any> => {
         try {
-            console.log("data", data);
-            console.log("url", url);
             const response = await fetchData(`${this.baseUrl}${url}`, {
                 method: method,
                 body: data,
