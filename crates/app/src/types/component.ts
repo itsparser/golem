@@ -14,6 +14,20 @@ export interface  Field {
     typ: Typ;
 }
 
+export type TypeField = {
+    name: string;
+    typ: {
+      type: string;
+      inner?: Field["typ"];
+      fields?: Field[];
+      cases?: Array<string | { name: string; typ: Field["typ"] }>;
+      names?: string[];
+      ok?: Field["typ"];
+      err?: Field["typ"];
+    };
+  };
+  
+
 export interface Case {
     name: string;
     typ: Typ;

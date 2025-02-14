@@ -277,6 +277,7 @@ export default function ComponentInvoke() {
                   <DynamicForm
                     functionDetails={functionDetails}
                     onInvoke={(data) => onInvoke(data)}
+                    resetResult={() => setResultValue("")}
                   />
                 )}
                 {viewMode === "preview" && functionDetails && (
@@ -382,7 +383,7 @@ function SectionCard({
                         <Info className="w-4 h-4 text-muted-foreground" />
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[500px p-2 text-[13px] bg-gray-800 text-white rounded-lg shadow-lg max-h-[500px] overflow-scroll">
+                    <PopoverContent className="w-[500px] p-2 text-[13px] bg-gray-800 text-white rounded-lg shadow-lg max-h-[500px] overflow-scroll">
                       <CodeBlock
                         text={JSON.stringify(
                           parseTooltipTypesData(functionDetails),
