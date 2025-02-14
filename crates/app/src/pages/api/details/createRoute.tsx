@@ -18,8 +18,8 @@ import {toast} from "@/hooks/use-toast";
 import {RibEditor} from "@/components/rib-editor.tsx";
 
 const MethodPattern = z.enum([
-    "GET",
-    "POST",
+    "Get",
+    "Post",
     "PUT",
     "DELETE",
     "PATCH",
@@ -63,7 +63,7 @@ const RouteRequestData = z.object({
 
 function filterMethod(type: string) {
     if (type === "default") {
-        return ["GET", "POST", "PUT", "DELETE", "PATCH"];
+        return ["Get", "Post", "PUT", "DELETE", "PATCH"];
     } else if (type === "cors-preflight") {
         return ["OPTIONS", "HEAD", "TRACE", "CONNECT"];
     }
@@ -133,6 +133,7 @@ const CreateRoute = () => {
         resolver: zodResolver(RouteRequestData),
         defaultValues: {
             path: "/",
+            method: "Get",
             binding: {
                 bindingType: "default",
                 componentId: {
@@ -143,7 +144,6 @@ const CreateRoute = () => {
                 idempotencyKey: "",
                 response: "",
             },
-            security: "",
         },
     });
     // Fetch API details
@@ -203,7 +203,9 @@ const CreateRoute = () => {
             selectedApi.routes = selectedApi.routes.filter(
                 (route) => !(route.path === path && route.method === method),
             );
-            selectedApi.routes.push(values);
+            selectedApi.routes = [values];
+            console.log("selectedApi", selectedApi)
+            console.log("values", values)
             await API.putApi(
                 activeApiDetails.id,
                 activeApiDetails.version,

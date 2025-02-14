@@ -213,7 +213,8 @@ const DynamicForm: React.FC = () => {
         } else if (typ.type === "I32" || typ.type === "I64") {
             dataType = "Signed Integer";
         } else {
-            dataType = generateJsonSchema(field);
+            dataType = JSON.stringify(generateJsonSchema(field));
+            console.log(generateJsonSchema(field));
         }
 
 

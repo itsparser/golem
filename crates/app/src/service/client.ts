@@ -2,7 +2,7 @@
 import {Component, ComponentList} from "@/types/component.ts";
 import {ENDPOINT} from "@/service/endpoints.ts";
 import {Api} from "@/types/api.ts";
-import { fetchData } from "@/lib/tauri&web.ts";
+import {fetchData} from "@/lib/tauri&web.ts";
 import {toast} from "@/hooks/use-toast";
 import {Plugin} from "@/types/plugin";
 import {parseErrorResponse} from "@/service/error-handler.ts";
@@ -272,12 +272,12 @@ export class Service {
     };
 
     public getOplog = async (componentId: string, workerName: string, count: number, searchQuery: string) => {
-      const r = await this.callApi(
-          ENDPOINT.getOplog(componentId, workerName, count, searchQuery),
-          "GET"
-      );
-      return r;
-  };
+        const r = await this.callApi(
+            ENDPOINT.getOplog(componentId, workerName, count, searchQuery),
+            "GET"
+        );
+        return r;
+    };
 
     public getComponentByIdAsKey = async (): Promise<
         Record<string, ComponentList>
@@ -356,6 +356,8 @@ export class Service {
         headers = {"Content-Type": "application/json"}
     ): Promise<any> => {
         try {
+            console.log("data", data);
+            console.log("url", url);
             const response = await fetchData(`${this.baseUrl}${url}`, {
                 method: method,
                 body: data,

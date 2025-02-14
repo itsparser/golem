@@ -9,6 +9,7 @@ interface MonacoEditorProps extends EditorProps {
     language?: string;
     height?: string;
     scriptKeys?: string[];
+    suggestVariable?: Record<string, any>;
 }
 
 export const RibEditor: React.FC<MonacoEditorProps> = ({
@@ -16,6 +17,7 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                                                            onChange,
                                                            className,
                                                            scriptKeys,
+                                                           suggestVariable,
                                                            ...props
                                                        }) => {
     const {theme} = useTheme();
@@ -59,11 +61,13 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                 tokenPostfix: ".rib",
 
                 keywords: [
-                    "let", "if", "then", "else", "for", "in", "yield", "reduce", "from", "true", "false", "some", "none", "ok", "error"
+                    "let", "if", "then", "else", "for", "in", "yield", "reduce", "from",
+                    "true", "false", "some", "none", "ok", "error"
                 ],
 
                 typeKeywords: [
-                    "bool", "s8", "u8", "s16", "u16", "s32", "u32", "s64", "u64", "f32", "f64", "char", "string", "list", "tuple", "option", "result"
+                    "bool", "s8", "u8", "s16", "u16", "s32", "u32", "s64", "u64",
+                    "f32", "f64", "char", "string", "list", "tuple", "option", "result"
                 ],
 
                 operators: [
@@ -71,33 +75,12 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                 ],
 
                 symbols: /[=><!~?:&|+\-*/^%]+/,
-
                 escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
                 tokenizer: {
                     root: [
-                        // Function definitions
-                        [/\bfn\s+([a-zA-Z_]\w*)/, ["keyword", "function"]],
-
-                        // Function calls: highlight function name
-                        [/\b([a-zA-Z_]\w*)\s*(?=\()/, "function.call"],
-
-                        // Highlight variables & arguments inside functions
-                        // [/\b([a-zA-Z_]\w*)\b/, {
-                        //     cases: {
-                        //         "@functions": "function.argument",
-                        //         "@default": "identifier",
-                        //     },
-                        // }],
-
-                        {include: "@whitespace"},
-                        [/[{}()[\]]/, "@brackets"],
-                        [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
-                        [/0[xX][0-9a-fA-F]+/, "number.hex"],
-                        [/\d+/, "number"],
-                        [/"([^"\\]|\\.)*$/, "string.invalid"],
-                        [/"/, {token: "string.quote", bracket: "@open", next: "@string"}],
-                        // Identifiers and keywords
+                        // Keywords
+                        [/\b(fn)\b/, "keyword"],
                         [/[a-z_$][\w$]*/, {
                             cases: {
                                 "@typeKeywords": "keyword.type",
@@ -106,12 +89,23 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                             }
                         }],
 
-                        // Whitespace
+                        // Function names (in declarations)
+                        [/\b([a-zA-Z_]\w*)\b(?=\s*\()/, "function"],
+
+                        // Function calls
+                        [/\b([a-zA-Z_]\w*)\b(?=\s*\()/, {
+                            cases: {
+                                "@keywords": "keyword",
+                                "@default": "function.call"
+                            }
+                        }],
+
                         {include: "@whitespace"},
 
-                        // Delimiters and operators
+                        // Brackets
                         [/[{}()[\]]/, "@brackets"],
-                        [/[<>](?!@symbols)/, "@brackets"],
+
+                        // Operators
                         [/@symbols/, {
                             cases: {
                                 "@operators": "operator",
@@ -125,7 +119,7 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         [/\d+/, "number"],
 
                         // Strings
-                        [/"([^"\\]|\\.)*$/, "string.invalid"],
+                        [/"([^"\\]|\\.)*$/, "string.invalid"],  // Unclosed string
                         [/"/, {token: "string.quote", bracket: "@open", next: "@string"}],
                     ],
 
@@ -135,13 +129,9 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         [/""/, "string"],
                         [/"/, {token: "string.quote", bracket: "@close", next: "@pop"}],
                         [/\$/, "string"],
-
                         [/@escapes/, "string.escape"],
                         [/\\./, "string.escape.invalid"],
                         [/\$\{/, {token: "delimiter.bracket", next: "@bracketCounting"}],
-                        [/""/, "string"],
-                        [/"/, {token: "string.quote", bracket: "@close", next: "@pop"}],
-                        [/\$/, "string"],
                     ],
 
                     comment: [
@@ -167,25 +157,9 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
 
             // Add custom completions
             monacoInstance.languages.registerCompletionItemProvider("rib", {
-                triggerCharacters: ["."],
+                triggerCharacters: [".", "r", "e", "q", "u", "e", "s", "t", "v", "a", "r"],
+
                 provideCompletionItems: (model, position) => {
-                    // const wordUntilPosition = model.getWordUntilPosition(position);
-                    // const range = {
-                    //     startLineNumber: position.lineNumber,
-                    //     endLineNumber: position.lineNumber,
-                    //     startColumn: wordUntilPosition.startColumn,
-                    //     endColumn: wordUntilPosition.endColumn,
-                    // };
-                    //
-                    // return {
-                    //     suggestions: scriptKeywords.map(key => ({
-                    //         label: key,
-                    //         kind: monacoInstance.languages.CompletionItemKind.Keyword,
-                    //         insertText: key,
-                    //         range: range
-                    //     }))
-                    // };
-                    const code = model.getValue() // Get full code
                     let requestStructure = {
                         "path": {
                             "username": "vasanth",
@@ -194,48 +168,117 @@ export const RibEditor: React.FC<MonacoEditorProps> = ({
                         "query": {
                             "search": "string"
                         }
-                    }
+                    };
+
+                    const variable = {
+                        "path": {
+                            "username": "vasanth",
+                            "nav": "bar"
+                        },
+                        "query": {
+                            "search": "string"
+                        }
+                    };
+
+                    const functions = [
+                        {
+                            name: "this_is_function_name",
+                            args: [
+                                {name: "args1", datatype: "string"},
+                                {name: "args2", datatype: "User"}  // Custom datatype
+                            ]
+                        }
+                    ];
+
+                    const customTypes = ["User", "Profile", "Settings"];  // Define custom types
 
                     try {
-                        const requestRegex = /request\s*=\s*(\{[\s\S]*?\})/
-                        const match = requestRegex.exec(code)
+                        const code = model.getValue();
+
+                        // Extract request object dynamically from the code
+                        const requestRegex = /request\s*=\s*(\{[\s\S]*?\})/m;
+                        const match = requestRegex.exec(code);
                         if (match) {
-                            requestStructure = JSON.parse(match[1].replace(/(\w+)\s*:/g, '"$1":')) // Convert into valid JSON
+                            const jsonString = match[1]
+                                .replace(/(\w+)\s*:/g, '"$1":') // Ensure valid JSON keys
+                                .replace(/'/g, '"'); // Convert single quotes to double quotes
+                            requestStructure = JSON.parse(jsonString);
+                        }
+
+                        // Extract custom types from code (e.g., `type User = {...}`)
+                        const typeRegex = /type\s+(\w+)/g;
+                        let typeMatch;
+                        while ((typeMatch = typeRegex.exec(code)) !== null) {
+                            if (!customTypes.includes(typeMatch[1])) {
+                                customTypes.push(typeMatch[1]); // Add user-defined types dynamically
+                            }
                         }
                     } catch (e) {
-                        console.error("Error parsing object:", e)
+                        console.error("Error parsing request object or types:", e);
                     }
 
-                    console.log("Extracted object:", requestStructure)
+                    console.log("Extracted object:", requestStructure);
+                    console.log("Custom Types:", customTypes);
 
-                    const wordUntilPosition = model.getWordUntilPosition(position)
+                    const wordUntilPosition = model.getWordUntilPosition(position);
                     const range = {
                         startLineNumber: position.lineNumber,
                         endLineNumber: position.lineNumber,
                         startColumn: wordUntilPosition.startColumn,
                         endColumn: wordUntilPosition.endColumn,
-                    }
+                    };
 
                     // Extract nested object keys recursively
                     const getObjectKeys = (obj, prefix = "") =>
                         Object.entries(obj).flatMap(([key, value]) =>
                             typeof value === "object"
-                                ? [{
-                                    label: prefix + key,
-                                    insertText: prefix + key,
-                                    kind: monacoInstance.languages.CompletionItemKind.Property
-                                }, ...getObjectKeys(value, `${prefix}${key}.`)]
+                                ? [
+                                    {
+                                        label: prefix + key,
+                                        insertText: prefix + key,
+                                        kind: monacoInstance.languages.CompletionItemKind.Property,
+                                        range,
+                                    },
+                                    ...getObjectKeys(value, `${prefix}${key}.`)
+                                ]
                                 : [{
                                     label: prefix + key,
                                     insertText: prefix + key,
-                                    kind: monacoInstance.languages.CompletionItemKind.Property
+                                    kind: monacoInstance.languages.CompletionItemKind.Property,
+                                    range,
                                 }]
-                        )
+                        );
 
-                    const suggestions = getObjectKeys(requestStructure, "request.")
+                    // Get request-based suggestions
+                    const requestSuggestions = getObjectKeys(requestStructure, "request.");
 
-                    return {suggestions}
-                },
+                    // Get variable-based suggestions
+                    const variableSuggestions = getObjectKeys(variable, "variable.");
+
+                    // Function suggestions with argument placeholders
+                    const functionSuggestions = functions.map(fn => ({
+                        label: fn.name,
+                        kind: monacoInstance.languages.CompletionItemKind.Function,
+                        insertText: `${fn.name}(${fn.args.map((arg) => `${arg.name}: ${arg.datatype}`).join(", ")})`,
+                        detail: "Function",
+                        documentation: `Function: ${fn.name} \nArguments: ${fn.args.map(arg => `${arg.name}: ${arg.datatype}`).join(", ")}`,
+                        range
+                    }));
+
+                    // Custom datatype suggestions
+                    const customTypeSuggestions = customTypes.map(type => ({
+                        label: type,
+                        kind: monacoInstance.languages.CompletionItemKind.Struct, // Custom type
+                        insertText: type,
+                        detail: "Custom Type",
+                        documentation: `User-defined type: ${type}`,
+                        range
+                    }));
+
+                    return {
+                        suggestions: [...requestSuggestions, ...variableSuggestions, ...functionSuggestions, ...customTypeSuggestions]
+                    };
+                }
             });
         }
     }, [monacoInstance]);

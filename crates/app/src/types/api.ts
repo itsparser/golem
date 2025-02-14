@@ -1,3 +1,5 @@
+import {VersionedComponentId} from "@/types/component.ts";
+
 export interface Api {
     createdAt?: string;
     draft: boolean;
@@ -39,7 +41,7 @@ export type HttpMethod =
     | "Trace"
     | "Connect";
 
-export type MethodPattern = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS" | "TRACE" | "CONNECT"
+export type MethodPattern = "Get" | "Post" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS" | "TRACE" | "CONNECT"
 export type GatewayBindingType = "default" | "file-server" | "http-handler" | "cors-preflight"
 
 export interface RouteRequestData {
@@ -52,7 +54,7 @@ export interface RouteRequestData {
 
 export interface GatewayBindingData {
     bindingType: GatewayBindingType
-    componentId?: string
+    componentId?: VersionedComponentId
     workerName?: string
     idempotencyKey?: string
     response?: string
