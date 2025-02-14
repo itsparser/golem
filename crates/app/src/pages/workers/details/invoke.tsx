@@ -32,7 +32,8 @@ import {
   safeFormatJSON,
   parseTooltipTypesData,
 } from "@/lib/worker";
-import DynamicForm from "@/pages/workers/details/dynamic-form.tsx";
+import { toast } from "@/hooks/use-toast";
+import { DynamicForm } from "@/pages/workers/details/dynamic-form.tsx";
 
 export default function WorkerInvoke() {
   const { componentId = "", workerName = "" } = useParams();
@@ -46,7 +47,6 @@ export default function WorkerInvoke() {
     useState<ComponentExportFunction | null>(null);
   const [value, setValue] = useState<string>("{}");
   const [resultValue, setResultValue] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
@@ -91,16 +91,23 @@ export default function WorkerInvoke() {
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message);
+        toast({
+          title: error.message,
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       } else {
-        setError("Unable to fetch function details.");
+        toast({
+          title: "Unable to fetch function details.",
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       }
     }
   }, [componentId, urlFn, name]);
 
   useEffect(() => {
     if (componentId) {
-      setError(null);
       setResultValue("");
       fetchFunctionDetails();
     }
@@ -110,12 +117,10 @@ export default function WorkerInvoke() {
     const formatted = safeFormatJSON(newValue);
     setValue(formatted);
     setResultValue("");
-    setError(null);
   };
 
   const onInvoke = async () => {
     try {
-      setError(null);
       const sanitizedValue = sanitizeInput(value);
       const parsedValue = JSON.parse(sanitizedValue);
 
@@ -144,9 +149,17 @@ export default function WorkerInvoke() {
         "description" in error
       ) {
         const description = (error as { description?: string }).description;
-        setError(description ?? "An unknown error occurred.");
+        toast({
+          title: description ?? "An unknown error occurred.",
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       } else {
-        setError("Invalid JSON data. Please correct it before invoking.");
+        toast({
+          title: "Invalid JSON data. Please correct it before invoking",
+          variant: "destructive",
+          duration: Number.POSITIVE_INFINITY,
+        });
       }
     }
   };
@@ -210,7 +223,7 @@ export default function WorkerInvoke() {
             </header>
 
             <div className="p-10 space-y-6 mx-auto overflow-auto h-[80vh]">
-              <main className="flex-1 p-6 space-y-6">
+              <main className="flex-1 space-y-6">
                 <header className="flex gap-4 items-center mb-4">
                   <div className="flex-1 flex items-center gap-2">
                     <Button
@@ -253,7 +266,9 @@ export default function WorkerInvoke() {
                     </Button>
                   </div>
                 </header>
-                {viewMode === "form" && <DynamicForm />}
+                {viewMode === "form" && functionDetails && (
+                  <DynamicForm functionDetails={functionDetails} />
+                )}
                 {viewMode === "preview" && functionDetails && (
                   <SectionCard
                     title="Preview"
@@ -261,9 +276,14 @@ export default function WorkerInvoke() {
                     value={value}
                     onValueChange={handleValueChange}
                     copyToClipboard={copyToClipboard}
-                    error={error}
                     functionDetails={functionDetails}
-                    showToolTip={true}
+                    onReset={() => {
+                      if (functionDetails) {
+                        const initialJson = parseToJsonEditor(functionDetails);
+                        setValue(JSON.stringify(initialJson, null, 2));
+                      }
+                    }}
+                    onInvoke={onInvoke}
                   />
                 )}
 
@@ -285,29 +305,6 @@ export default function WorkerInvoke() {
                     readOnly={true}
                   />
                 )}
-                {viewMode !== "types" && (
-                  <div className="flex gap-4 justify-end">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        if (functionDetails) {
-                          const initialJson =
-                            parseToJsonEditor(functionDetails);
-                          setValue(JSON.stringify(initialJson, null, 2));
-                        }
-                      }}
-                      className="text-primary hover:bg-primary/10 hover:text-primary"
-                    >
-                      <TimerReset className="h-4 w-4 mr-1" />
-                      Reset
-                    </Button>
-                    <Button onClick={onInvoke}>
-                      <Play className="h-4 w-4 mr-1" />
-                      Invoke
-                    </Button>
-                  </div>
-                )}
-
                 {resultValue && functionDetails && (
                   <SectionCard
                     title="Result"
@@ -336,10 +333,10 @@ interface SectionCardProps {
   value: string;
   onValueChange?: (value: string) => void;
   copyToClipboard?: () => void;
-  error?: string | null;
   readOnly?: boolean;
   functionDetails?: ComponentExportFunction;
-  showToolTip?: boolean;
+  onInvoke?: () => void;
+  onReset?: () => void;
 }
 
 function SectionCard({
@@ -348,76 +345,90 @@ function SectionCard({
   value,
   onValueChange,
   copyToClipboard,
-  error,
-  showToolTip,
   functionDetails,
   readOnly = false,
+  onInvoke = () => {},
+  onReset = () => {},
 }: SectionCardProps) {
   return (
-    <Card className="w-full bg-background">
-      <CardHeader className="flex items-center pb-2 flex-row">
-        <div className="flex items-center justify-between w-full">
-          <div>
-            <CardTitle className="text-xl font-bold flex items-center gap-4">
-              <div>{title}</div>
-              {showToolTip && functionDetails && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      className="p-1 hover:bg-muted rounded-full transition-colors"
-                      aria-label="Show interpolation info"
-                    >
-                      <Info className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[500px] p-2 bg-gray-800 text-white rounded-lg shadow-lg">
-                    <CodeBlock
-                      text={JSON.stringify(
-                        parseTooltipTypesData(functionDetails),
-                        null,
-                        2
-                      )}
-                      language="json"
-                      theme={dracula}
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-          {copyToClipboard && (
-            <Button variant="outline" size="sm" onClick={copyToClipboard}>
-              <ClipboardCopy className="h-4 w-4 mr-1" />
-              Copy
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {readOnly ? (
-          <ReactJson
-            src={JSON.parse(value || "{}")}
-            name={null}
-            theme="rjv-default"
-            collapsed={false}
-            enableClipboard={false}
-            displayDataTypes={false}
-            style={{ fontSize: "14px", lineHeight: "1.6" }}
-          />
-        ) : (
-          <Textarea
-            value={value}
-            onChange={(e) => onValueChange?.(e.target.value)}
-            className={cn(
-              "min-h-[400px] font-mono text-sm mt-2",
-              error && "border-red-500"
+    <div>
+      <Card className="w-full bg-background">
+        <CardHeader className="flex items-center pb-2 flex-row">
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-4">
+                <div>{title}</div>
+                {!readOnly && functionDetails && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="p-1 hover:bg-muted rounded-full transition-colors"
+                        aria-label="Show interpolation info"
+                      >
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[500px p-2 text-[13px] bg-gray-800 text-white rounded-lg shadow-lg max-h-[500px] overflow-scroll">
+                      <CodeBlock
+                        text={JSON.stringify(
+                          parseTooltipTypesData(functionDetails),
+                          null,
+                          2
+                        )}
+                        language="json"
+                        theme={dracula}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            {copyToClipboard && (
+              <Button variant="outline" size="sm" onClick={copyToClipboard}>
+                <ClipboardCopy className="h-4 w-4 mr-1" />
+                Copy
+              </Button>
             )}
-            placeholder="Enter JSON data..."
-          />
-        )}
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      </CardContent>
-    </Card>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {readOnly ? (
+            <ReactJson
+              src={JSON.parse(value || "{}")}
+              name={null}
+              theme="rjv-default"
+              collapsed={false}
+              enableClipboard={false}
+              displayDataTypes={false}
+              style={{ fontSize: "14px", lineHeight: "1.6" }}
+            />
+          ) : (
+            <Textarea
+              value={value}
+              onChange={(e) => onValueChange?.(e.target.value)}
+              className={cn("min-h-[400px] font-mono text-sm mt-2")}
+              placeholder="Enter JSON data..."
+            />
+          )}
+        </CardContent>
+      </Card>
+      {!readOnly && (
+        <div className="flex gap-4 justify-end mt-4">
+          <Button
+            variant="outline"
+            onClick={onReset}
+            className="text-primary hover:bg-primary/10 hover:text-primary"
+          >
+            <TimerReset className="h-4 w-4 mr-1" />
+            Reset
+          </Button>
+          <Button onClick={onInvoke}>
+            <Play className="h-4 w-4 mr-1" />
+            Invoke
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

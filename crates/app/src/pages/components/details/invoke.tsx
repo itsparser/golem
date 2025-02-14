@@ -187,7 +187,7 @@ export default function ComponentInvoke() {
             </header>
 
             <div className="p-10 space-y-6 mx-auto overflow-auto h-[80vh] w-[60%]">
-              <main className="flex-1 p-6 space-y-6">
+              <main className="flex-1 space-y-6">
                 <SectionCard
                   title="Preview"
                   description="Preview the current function invocation arguments"
