@@ -22,6 +22,7 @@ import {
   parseToJsonEditor,
   parseTooltipTypesData,
   safeFormatJSON,
+  validateJsonStructure,
 } from "@/lib/worker";
 import { CodeBlock, dracula } from "react-code-blocks";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,9 +55,11 @@ const nonStringPrimitives = [
 export const DynamicForm = ({
   functionDetails,
   onInvoke,
+  resetResult,
 }: {
   functionDetails: ComponentExportFunction;
   onInvoke: (args: unknown[]) => void;
+  resetResult: () => void;
 }) => {
   const [formData, setFormData] = useState<FormData>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,21 +95,49 @@ export const DynamicForm = ({
       delete updatedErrors[name];
       return updatedErrors;
     });
+    resetResult();
   };
 
   const validateForm = (): Record<string, string> => {
     const validationErrors: Record<string, string> = {};
     functionDetails.parameters.forEach((field) => {
-      const value = formData[field.name];
+      let value = formData[field.name];
       if (nonStringPrimitives.includes(field.typ.type) && value === undefined) {
         validationErrors[field.name] = `${field.name} is required`;
+      } else {
+        if (
+          !nonStringPrimitives.includes(field.typ.type) &&
+          field.typ.type !== "Str" &&
+          field.typ.type !== "Chr"
+        ) {
+          value = JSON.parse(value);
+        } else if (
+          ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
+            field.typ.type
+          )
+        ) {
+          value = Number.parseInt(value);
+        } else if (value !== undefined) {
+          if (
+            ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
+              field.typ.type
+            )
+          ) {
+            value = Number.parseInt(value);
+          } else if (field.typ.type === "bool") {
+            value = Boolean(value);
+          }
+        }
+        const error = validateJsonStructure(value, field);
+        if (error) {
+          validationErrors[field.name] = error;
+        }
       }
     });
     return validationErrors;
   };
 
   const handleSubmit = () => {
-    console.log(formData);
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -120,7 +151,6 @@ export const DynamicForm = ({
           field.typ.type !== "Chr"
         ) {
           try {
-            console.log(value, "JSON PArse", field.typ.type);
             result.push(JSON.parse(value));
           } catch (error) {
             console.error(`Error parsing JSON for field ${field.name}:`, error);
@@ -179,7 +209,6 @@ export const DynamicForm = ({
             value={value}
             className={errors[name] ? "border-red-500" : ""}
             onChange={(e) => {
-              console.log(e.target.value);
               handleInputChange(name, e.target.value);
             }}
           />

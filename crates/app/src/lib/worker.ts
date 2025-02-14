@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ComponentExportFunction, Field } from "@/types/component.ts";
+import { ComponentExportFunction, Field, Typ, TypeField } from "@/types/component.ts";
 
 function buildJsonSkeleton(field: Field): any {
   const { type, fields, cases, names } = field.typ;
@@ -322,4 +322,145 @@ export function parseTypesData(input: any): any {
       items: input.parameters.map((param: any) => transformType(param.typ)),
     },
   };
+}
+
+export function validateJsonStructure(data: any, field: TypeField): string | null {
+  const { type, fields, cases, names } = field.typ;
+
+  switch (type) {
+    case "Str":
+    case "Chr":
+      if (typeof data !== "string") {
+        return `Expected a string for field "${field.name}", but got ${typeof data}`;
+      }
+      break;
+
+    case "Bool":
+      if (typeof data !== "boolean") {
+        return `Expected a boolean for field "${field.name}", but got ${typeof data}`;
+      }
+      break;
+
+    case "F64":
+    case "F32":
+    case "U64":
+    case "S64":
+    case "U32":
+    case "S32":
+    case "U16":
+    case "S16":
+    case "U8":
+    case "S8":
+      if (typeof data !== "number") {
+        return `Expected a number for field "${field.name}", but got ${typeof data}`;
+      }
+      break;
+
+    case "Record": {
+      if (typeof data !== "object" || data === null || Array.isArray(data)) {
+        return `Expected an object for field "${field.name}", but got ${typeof data}`;
+      }
+      if (!fields) break;
+      for (const subField of fields) {
+        const error = validateJsonStructure(data[subField.name], subField);
+        if (error) return error;
+      }
+      break;
+    }
+
+    case "Tuple": {
+      if (!Array.isArray(data)) {
+        return `Expected an array for field "${field.name}", but got ${typeof data}`;
+      }
+      if (!fields) break;
+      if (data.length !== fields.length) {
+        return `Expected ${fields.length} elements in tuple for field "${field.name}", but got ${data.length}`;
+      }
+      for (let i = 0; i < fields.length; i++) {
+        const error = validateJsonStructure(data[i], fields[i]);
+        if (error) return error;
+      }
+      break;
+    }
+
+    case "List": {
+      if (!Array.isArray(data)) {
+        return `Expected an array for field "${field.name}", but got ${typeof data}`;
+      }
+      break;
+    }
+
+    case "Option": {
+      if (data !== null && data !== undefined) {
+        const error = validateJsonStructure(data, {
+          ...field,
+          typ: field.typ.inner!,
+        });
+        if (error) return error;
+      }
+      break;
+    }
+
+    case "Flags": {
+      if (!Array.isArray(data)) {
+        return `Expected an array for field "${field.name}", but got ${typeof data}`;
+      }
+      if (names && !data.every((item) => names.includes(item))) {
+        return `Expected flags to be one of [${names.join(", ")}] for field "${field.name}"`;
+      }
+      break;
+    }
+
+    case "Enum": {
+      if (cases && !cases.includes(data)) {
+        return `Expected enum value to be one of [${cases.join(", ")}] for field "${field.name}"`;
+      }
+      break;
+    }
+
+    case "Variant": {
+      if (!cases || cases.length === 0) break;
+      if (typeof data !== "object" || data === null || Array.isArray(data)) {
+        return `Expected an object for field "${field.name}", but got ${typeof data}`;
+      }
+      const caseNames = cases.map((c) => typeof c === "string" ? c : c.name);
+      const selectedCase = Object.keys(data)[0];
+      if (!caseNames.includes(selectedCase)) {
+        return `Expected variant to be one of [${caseNames.join(", ")}] for field "${field.name}"`;
+      }
+      const selectedCaseField = cases.find(
+        (c): c is { name: string; typ: Typ } => typeof c !== "string" && c.name === selectedCase
+      );
+      if (selectedCaseField) {
+        const error = validateJsonStructure(data[selectedCase], selectedCaseField);
+        if (error) return error;
+      }
+      break;
+    }
+
+    case "Result": {
+      if (typeof data !== "object" || data === null || Array.isArray(data)) {
+        return `Expected an object for field "${field.name}", but got ${typeof data}`;
+      }
+      if (data.ok !== null && data.ok !== undefined) {
+        const error = validateJsonStructure(data.ok, {
+          ...field,
+          typ: field.typ.ok!,
+          name: "",
+        });
+        if (error) return error;
+      }
+      if (data.err !== null && data.err !== undefined) {
+        if (typeof data.err !== "string") {
+          return `Expected a string for field "${field.name}.err", but got ${typeof data.err}`;
+        }
+      }
+      break;
+    }
+
+    default:
+      return `Unknown type "${type}" for field "${field.name}"`;
+  }
+
+  return null; // No error
 }
