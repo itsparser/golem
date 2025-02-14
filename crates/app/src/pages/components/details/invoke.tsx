@@ -34,8 +34,8 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { DynamicForm } from "@/pages/workers/details/dynamic-form.tsx";
 
-export default function WorkerInvoke() {
-  const { componentId = "", workerName = "" } = useParams();
+export default function ComponentInvoke() {
+  const { componentId = "" } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -137,9 +137,8 @@ export default function WorkerInvoke() {
       const functionName = `${encodeURIComponent(name)}.${encodeURIComponent(
         `{${urlFn}}`
       )}`;
-      const response = await API.invokeWorkerAwait(
+      const response = await API.invokeEphemeralAwait(
         componentId,
-        workerName,
         functionName,
         { params }
       );
