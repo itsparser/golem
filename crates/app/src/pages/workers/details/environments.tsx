@@ -16,6 +16,8 @@ import { Check, Copy, Eye, EyeOff } from "lucide-react";
 export default function WorkerEnvironments() {
   const { componentId, workerName } = useParams();
   const [workerDetails, setWorkerDetails] = useState({} as Worker);
+  const [visible, setVisible] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (componentId && workerName) {
@@ -25,78 +27,72 @@ export default function WorkerEnvironments() {
     }
   }, [componentId, workerName]);
 
-  const [visible, setVisible] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async (value: string) => {
+  const handleCopy = async (key: string, value: string) => {
     await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
   };
 
   return (
-    <div className="flex">
-      <div className="flex-1 flex flex-col">
-        <div className="p-10 space-y-6 max-w-7xl mx-auto overflow-scroll h-[76vh]">
-          <Card className="w-full min-w-[600px] max-w-md mx-auto border rounded-md shadow-sm  p-6">
-            <CardHeader className="flex justify-between mb-4 font-large">
-              <CardTitle>Environment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {workerDetails.env &&
-              Object.entries(workerDetails.env)?.length > 0 ? (
-                Object.entries(workerDetails.env).map(([key, value]) => (
-                  <div
-                    className={`flex items-center justify-between border-b`}
-                    key={key}
-                  >
-                    <span className="font-medium">{key}</span>
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type={visible ? "text" : "password"}
-                        value={value}
-                        readOnly
-                        className="w-64 bg-transparent border-none hover:border-none hover:border-transparent focus:border-none shadow-none"
+    <div className="flex justify-center p-6">
+      <Card className="w-full max-w-2xl border rounded-lg shadow-lg p-6">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Environment Variables</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {workerDetails.env && Object.entries(workerDetails.env).length > 0 ? (
+            <div className="space-y-4">
+              {Object.entries(workerDetails.env).map(([key, value]) => (
+                <div
+                  className="flex items-center justify-between border-b pb-2"
+                  key={key}
+                >
+                  <span className="font-medium">{key}</span>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type={visible ? "text" : "password"}
+                      value={value}
+                      readOnly
+                      className="w-64 bg-transparent border-none hover:border-none hover:border-transparent focus:border-none shadow-none"
                       />
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCopy(value)}
-                            >
-                              {copied ? (
-                                <Check className="h-5 w-5" />
-                              ) : (
-                                <Copy className="h-5 w-5" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Copy to Clipboard</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setVisible(prev => !prev)}
-                      >
-                        {visible ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </Button>
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleCopy(key, value)}
+                          >
+                            {copiedKey === key ? (
+                              <Check className="h-5 w-5 text-green-500" />
+                            ) : (
+                              <Copy className="h-5 w-5 text-gray-500" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy to Clipboard</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setVisible(prev => !prev)}
+                    >
+                      {visible ? (
+                        <EyeOff className="h-5 w-5 text-gray-500" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-500" />
+                      )}
+                    </Button>
                   </div>
-                ))
-              ) : (
-                <div>No Environment Variables</div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-gray-500 text-sm text-center">No Environment Variables</div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

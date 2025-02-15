@@ -55,19 +55,21 @@ const UpdateLog: React.FC<{ update: Update }> = ({ update }) => {
   };
 
   return (
-    <div className="mb-2 flex items-center space-x-2">
+    <div className="mb-3 flex items-center space-x-3">
       <Badge
         variant="outline"
-        className={`${getStatusColor(update.type)} text-white`}
+        className={`${getStatusColor(update.type)} text-white px-3 py-1`}
       >
         {getStatusText(update.type)}
       </Badge>
       <span className="text-sm text-gray-600">
         {format(new Date(update.timestamp), "yyyy-MM-dd HH:mm:ss")}
       </span>
-      <span className="text-sm">Target Version: {update.targetVersion}</span>
+      <span className="text-sm font-medium">Target: v{update.targetVersion}</span>
       {update.details && (
-        <span className="text-sm text-gray-500 truncate">{update.details}</span>
+        <span className="text-sm text-gray-500 truncate w-full max-w-[200px]">
+          {update.details}
+        </span>
       )}
     </div>
   );
@@ -81,16 +83,17 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
 }) => {
   return (
     <>
-      <Card className="w-full max-w-4xl mx-auto mb-4">
+      <Card className="w-full max-w-4xl mx-auto mb-6 shadow-md">
         <CardHeader>
-          <CardTitle>Worker Information</CardTitle>
+          <CardTitle className="text-lg">Worker Information</CardTitle>
           <CardDescription>
-            Current Version: {componentVersion} | Status: {status}
+            Current Version: <span className="font-semibold">v{componentVersion}</span> | Status: {" "}
+            <Badge className="bg-blue-500 text-white px-2 py-1">{status}</Badge>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-2">Active Plugins</h3>
+            <h3 className="text-lg font-semibold mb-3">Active Plugins</h3>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -104,25 +107,17 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
                   activePlugins.map(plugin => (
                     <TableRow key={plugin}>
                       <TableCell>
-                        <Plug className="h-4 w-4" />
+                        <Plug className="h-4 w-4 text-gray-500" />
                       </TableCell>
                       <TableCell className="font-medium">{plugin}</TableCell>
                       <TableCell className="text-right">
-                        <Badge
-                          variant="outline"
-                          className="bg-green-500 text-white"
-                        >
-                          Active
-                        </Badge>
+                        <Badge className="bg-green-500 text-white px-2 py-1">Active</Badge>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={3}
-                      className="text-center text-muted-foreground h-52"
-                    >
+                    <TableCell colSpan={3} className="text-center text-gray-500 py-6">
                       No plugins found.
                     </TableCell>
                   </TableRow>
@@ -132,27 +127,26 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
           </div>
         </CardContent>
       </Card>
-      <Card className="w-full max-w-4xl mx-auto">
+      <Card className="w-full max-w-4xl mx-auto shadow-md">
         <CardHeader>
-          <CardTitle>Worker Updates</CardTitle>
+          <CardTitle className="text-lg">Worker Updates</CardTitle>
         </CardHeader>
         <CardContent>
           {updates.length > 0 ? (
-            <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+            <ScrollArea className="h-[300px] w-full rounded-md border p-4 overflow-y-auto">
               {updates.map((update, index) => (
                 <UpdateLog key={index} update={update} />
               ))}
             </ScrollArea>
           ) : (
-            <div className="text-center text-muted-foreground">
-              No updates found.
-            </div>
+            <div className="text-center text-gray-500 py-6">No updates found.</div>
           )}
         </CardContent>
       </Card>
     </>
   );
 };
+
 export default function WorkerInfo() {
   const { componentId = "", workerName = "" } = useParams();
   const [workerDetails, setWorkerDetails] = useState({} as Worker);
@@ -164,12 +158,13 @@ export default function WorkerInfo() {
       });
     }
   }, [componentId, workerName]);
+
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-10 px-6">
       <PluginStatus
         activePlugins={workerDetails.activePlugins || []}
         componentVersion={workerDetails.componentVersion || 0}
-        status={workerDetails.status || ""}
+        status={workerDetails.status || "Unknown"}
         updates={(workerDetails.updates || []).reverse()}
       />
     </div>

@@ -22,10 +22,9 @@ export function APISection() {
 
   return (
     <ErrorBoundary>
-      <Card className="transition-all hover:shadow-md  flex-1">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          {/* <div className="flex justify-between items-center mb-6"> */}
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold flex items-center gap-2 text-primary">
             <Server className="w-5 h-5 text-muted-foreground" />
             APIs
           </CardTitle>
@@ -33,14 +32,13 @@ export function APISection() {
             View All
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
-          {/* </div> */}
         </CardHeader>
         <CardContent className="space-y-2">
-          {apis && apis.length > 0 ? (
+        {apis && apis.length > 0 ? (
             apis.map(api => (
               <div
                 key={api.id}
-                className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer"
+                className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-md transition-all"
                 onClick={() => {
                   navigate(`/apis/${api.id}/version/${api.version}`);
                 }}
@@ -50,11 +48,15 @@ export function APISection() {
               </div>
             ))
           ) : (
-            <div className="rounded-lg border-2 border-dashed border-border p-12 text-center grid place-items-center h-full w-full">
-              <Layers className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No APIs</h3>
-              <p className="text-gray-500 mb-4">
-                Create your first API to get started
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <Layers className="h-8 w-8 text-gray-400" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                No APIs
+              </h2>
+              <p className="text-gray-500 mb-6 text-center">
+                Create your first API to get started.
               </p>
               <Button onClick={() => navigate("/apis/create")}>
                 <PlusCircle className="mr-2 size-4" />

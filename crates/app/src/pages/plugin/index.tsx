@@ -63,7 +63,7 @@ export default function PluginList() {
           {plugins.map(plugin => (
             <Card
               key={plugin.name}
-              className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow"
+              className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow from-background to-muted border-border cursor-pointer bg-gradient-to-br"
               onClick={() =>
                 navigate(`/plugins/${plugin.name}/${plugin.version}`)
               }

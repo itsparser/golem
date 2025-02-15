@@ -33,7 +33,7 @@ export default function ComponentInfo() {
 
   useEffect(() => {
     if (componentId) {
-      API.getComponentByIdAsKey().then(response => {
+      API.getComponentByIdAsKey().then((response) => {
         const componentData = response[componentId];
         const versionList = componentData?.versionList || [];
         setVersionList(versionList);
@@ -52,18 +52,17 @@ export default function ComponentInfo() {
   async function downloadFile() {
     try {
       API.downloadComponent(componentId!, versionChange).then(
-        async response => {
+        async (response) => {
           const blob = await response.blob();
           const arrayBuffer = await blob.arrayBuffer();
 
-          // Specify the file name and path
           const fileName = `${componentId}.wasm`;
           await saveFile(fileName, new Uint8Array(arrayBuffer));
           toast({
             title: "File downloaded successfully",
             duration: 3000,
           });
-        },
+        }
       );
     } catch (error) {
       console.error("Error downloading the file:", error);
@@ -74,87 +73,72 @@ export default function ComponentInfo() {
     componentList[componentId]?.versions?.[versionChange] || {};
 
   return (
-    <div className="flex">
-      <div className="flex-1 p-8">
-        <Card className="w-full max-w-3xl mx-auto">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-            <div className="space-y-1.5">
-              <CardTitle className="text-2xl font-semibold">
-                Component Information
-              </CardTitle>
-              <CardDescription>
-                View metadata about this component
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {versionList.length > 0 && (
-                <Select
-                  defaultValue={versionChange.toString()}
-                  onValueChange={version => handleVersionChange(+version)}
-                >
-                  <SelectTrigger className="w-[80px]">
-                    <SelectValue> v{versionChange}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {versionList.map((version: number) => (
-                      <SelectItem key={version} value={String(version)}>
-                        v{version}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button variant="outline" size="icon" onClick={downloadFile}>
-                <Download className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3 border-b">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Component ID
-                </div>
-                <div className="font-mono text-sm">
-                  {componentDetails.versionedComponentId?.componentId}
-                </div>
+    <div className="flex justify-center p-8">
+      <Card className="w-full max-w-4xl shadow-md border rounded-xl">
+        <CardHeader className="flex flex-col md:flex-row items-center justify-between pb-6 border-b">
+          <div className="text-center md:text-left">
+            <CardTitle className="text-2xl font-semibold">
+              Component Information
+            </CardTitle>
+            <CardDescription>
+              View metadata about this component
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-3 mt-4 md:mt-0">
+            {versionList.length > 0 && (
+              <Select
+                defaultValue={versionChange.toString()}
+                onValueChange={(version) => handleVersionChange(+version)}
+              >
+                <SelectTrigger className="w-[100px] border rounded-md">
+                  <SelectValue>v{versionChange}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {versionList.map((version: number) => (
+                    <SelectItem key={version} value={String(version)}>
+                      v{version}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Button
+              variant="outline"
+              size="icon"
+              className="border rounded-md"
+              onClick={downloadFile}
+            >
+              <Download className="h-5 w-5" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 text-sm">
+            {[
+              ["Component ID", componentDetails.versionedComponentId?.componentId],
+              ["Version", versionChange],
+              ["Name", componentDetails.componentName],
+              ["Size", `${Math.round((componentDetails?.componentSize || 0) / 1024)} KB`],
+              [
+                "Created At",
+                componentDetails.createdAt
+                  ? formatRelativeTime(componentDetails.createdAt)
+                  : "NA",
+              ],
+            ].map(([label, value], index) => (
+              <div
+                key={label}
+                className={`grid grid-cols-[180px,1fr] items-center gap-4 py-3 ${
+                  index !== 4 ? "border-b" : ""
+                }`}
+              >
+                <div className="font-medium text-muted-foreground">{label}</div>
+                <div className="font-mono">{value}</div>
               </div>
-              <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3 border-b">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Version
-                </div>
-                <div className="font-mono text-sm">{versionChange}</div>
-              </div>
-              <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3 border-b">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Name
-                </div>
-                <div className="font-mono text-sm">
-                  {componentDetails.componentName}
-                </div>
-              </div>
-              <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3 border-b">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Size
-                </div>
-                <div className="font-mono text-sm">
-                  {Math.round((componentDetails?.componentSize || 0) / 1024)} KB
-                </div>
-              </div>
-              <div className="grid grid-cols-[180px,1fr] items-center gap-4 py-3">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Created At
-                </div>
-                <div className="font-mono text-sm">
-                  {componentDetails.createdAt
-                    ? formatRelativeTime(componentDetails.createdAt)
-                    : "NA"}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

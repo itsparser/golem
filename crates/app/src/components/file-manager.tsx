@@ -33,7 +33,7 @@ const FolderStructureNode: React.FC<{ node: FileNode; level: number }> = ({
   if (node.type === "file") {
     return (
       <div
-        className="flex items-center py-2 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+        className="flex items-center py-2 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-400 transition-colors duration-150"
         style={{ paddingLeft: `${indent + 8}px` }}
       >
         <File className="w-4 h-4 mr-2 text-blue-500 dark:text-blue-400" />
@@ -50,7 +50,7 @@ const FolderStructureNode: React.FC<{ node: FileNode; level: number }> = ({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger
-        className="flex items-center py-2 px-2 w-full text-left rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+        className="flex items-center py-2 px-2 w-full text-left rounded-md hover:bg-gray-100 dark:hover:bg-gray-400 transition-colors duration-150"
         style={{ paddingLeft: `${indent}px` }}
       >
         {isOpen ? (
