@@ -7,7 +7,7 @@ import {
 } from "@/types/component.ts";
 
 function buildJsonSkeleton(field: Field): any {
-  const { type, fields, cases, names } = field.typ;
+  const { type, fields, cases, names, inner } = field.typ;
   switch (type) {
     case "Str":
     case "Chr":
@@ -42,6 +42,9 @@ function buildJsonSkeleton(field: Field): any {
     }
 
     case "List": {
+      if(inner) {
+        return [buildJsonSkeleton({ ...field, typ: inner })];
+      }
       return [];
     }
 
@@ -199,6 +202,8 @@ function parseType(typ: any): any {
   }
 
   switch (typ.type) {
+    case "Tuple":
+      return `(${(typ.items || []).map((item: any) => parseType(item)).join(", ")})`;
     case "List": {
       return `List<${parseType(typ.inner)}>`;
     }
@@ -334,7 +339,7 @@ export function validateJsonStructure(
   data: any,
   field: TypeField,
 ): string | null {
-  const { type, fields, cases, names } = field.typ;
+  const { type, fields, cases, names, inner } = field.typ;
 
   switch (type) {
     case "Str":
@@ -395,6 +400,15 @@ export function validateJsonStructure(
     case "List": {
       if (!Array.isArray(data)) {
         return `Expected an array for field "${field.name}", but got ${typeof data}`;
+      }
+      if (inner) {
+        for (const item of data) {
+          const error = validateJsonStructure(item, {
+            ...field,
+            typ: inner,
+          });
+          if (error) return error;
+        }
       }
       break;
     }

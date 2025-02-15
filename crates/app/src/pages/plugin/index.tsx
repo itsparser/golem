@@ -110,10 +110,10 @@ export default function PluginList() {
       ) : (
         <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
           <LayoutGrid className="h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-lg font-medium text-gray-700">
+          <h2 className="text-lg font-medium text-gray-600">
             No Plugins Found
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             Create a new plugin to get started.
           </p>
         </div>

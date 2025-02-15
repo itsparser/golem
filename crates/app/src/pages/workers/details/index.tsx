@@ -8,7 +8,7 @@ import {
 } from "@/types/worker.ts";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Activity, Clock, Cog, LayoutGrid } from "lucide-react";
+import { Activity, Clock, Cog, LayoutGrid, ActivityIcon} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvocationsChart } from "./widgets/invocationCharts";
 import { formatRelativeTime } from "@/lib/utils";
@@ -169,10 +169,10 @@ export default function WorkerDetails() {
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
                   <LayoutGrid className="h-12 w-12 text-gray-400 mb-4" />
-                  <h2 className="text-lg font-medium text-gray-700">
+                  <h2 className="text-lg font-medium text-gray-600">
                     No Invocations was initiated
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     Initiate an invocation to get started.
                   </p>
                 </div>
@@ -197,11 +197,11 @@ export default function WorkerDetails() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
-                  <LayoutGrid className="h-12 w-12 text-gray-400 mb-4" />
-                  <h2 className="text-lg font-medium text-gray-700">
+                  <ActivityIcon className="h-12 w-12 text-gray-400 mb-4" />
+                  <h2 className="text-lg font-medium text-gray-600">
                     No Terminal Output
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-400">
                     Initiate an invocation to get started and add terminal
                     output.
                   </p>
