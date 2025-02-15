@@ -21,9 +21,11 @@ import {
   TableIcon,
   TimerReset,
   Info,
+  Check,
 } from "lucide-react";
 import { cn, sanitizeInput } from "@/lib/utils";
 import ReactJson from "react-json-view";
+import { useTheme } from "@/components/theme-provider.tsx";
 import { Textarea } from "@/components/ui/textarea";
 import {
   parseToJsonEditor,
@@ -366,6 +368,17 @@ function SectionCard({
   onInvoke = () => {},
   onReset = () => {},
 }: SectionCardProps) {
+  const { theme } = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (copyToClipboard) {
+      copyToClipboard();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div>
       <Card className="w-full bg-background">
@@ -401,9 +414,18 @@ function SectionCard({
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>
             {copyToClipboard && (
-              <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                <ClipboardCopy className="h-4 w-4 mr-1" />
-                Copy
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1 text-green-500" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <ClipboardCopy className="h-4 w-4 mr-1" />
+                    Copy
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -413,7 +435,7 @@ function SectionCard({
             <ReactJson
               src={JSON.parse(value || "{}")}
               name={null}
-              theme="rjv-default"
+              theme={theme === "dark" ? "brewer" : "rjv-default"}
               collapsed={false}
               enableClipboard={false}
               displayDataTypes={false}

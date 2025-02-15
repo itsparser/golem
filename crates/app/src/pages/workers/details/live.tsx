@@ -26,8 +26,8 @@ export default function WorkerLive() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Debounced values to prevent rapid API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  const debouncedActiveTab = useDebounce(activeTab, 500);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedActiveTab = useDebounce(activeTab, 300);
 
   useEffect(() => {
     async function fetchData() {

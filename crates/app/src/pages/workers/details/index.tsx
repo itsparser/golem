@@ -1,18 +1,25 @@
 import { API } from "@/service";
-import { Invocation, Terminal, Worker, WsMessage } from "@/types/worker.ts";
+import {
+  Invocation,
+  OplogEntry,
+  Terminal,
+  Worker,
+  WsMessage,
+} from "@/types/worker.ts";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Activity, Clock, Cog } from "lucide-react";
+import { Activity, Clock, Cog, LayoutGrid } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvocationsChart } from "./widgets/invocationCharts";
 import { formatRelativeTime } from "@/lib/utils";
 import { WSS } from "@/service/wss";
 
 export default function WorkerDetails() {
-  const { componentId, workerName } = useParams();
+  const { componentId = "", workerName = "" } = useParams();
   const [workerDetails, setWorkerDetails] = useState({} as Worker);
   const wsRef = useRef<WSS | null>(null);
-  const [messages, setMessages] = useState<WsMessage[]>([]);
+  const [invocationData, setInvocationData] = useState<Invocation[]>([]);
+  const [terminal, setTerminal] = useState<Terminal[]>([]);
 
   useEffect(() => {
     if (componentId && workerName) {
@@ -23,22 +30,45 @@ export default function WorkerDetails() {
   }, [componentId, workerName]);
 
   useEffect(() => {
-    const initWebSocket = async () => {
-      try {
-        const url = `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`;
-        const ws = await WSS.getConnection(url);
-        wsRef.current = ws;
+    async function fetchData() {
+      setInvocationData([]);
+      setTerminal([]);
+      await getopLog();
+      const initWebSocket = async () => {
+        try {
+          const url = `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`;
+          const ws = await WSS.getConnection(url);
+          wsRef.current = ws;
 
-        ws.onMessage((data: unknown) => {
-          const message = data as WsMessage;
-          setMessages((prev: WsMessage[]) => [...prev, message]);
-        });
-      } catch (error) {
-        console.error("Failed to connect WebSocket:", error);
-      }
-    };
+          ws.onMessage((data: unknown) => {
+            const message = data as WsMessage;
+            if (message["InvocationStart"]) {
+              setInvocationData((prev) => [
+                ...prev,
+                {
+                  timestamp: message.InvocationStart.timestamp,
+                  function: message.InvocationStart.function,
+                },
+              ]);
+            } else if (message["StdOut"]) {
+              const bytes = message.StdOut.bytes || [];
+              setTerminal((prev) => [
+                ...prev,
+                {
+                  timestamp: message.StdOut.timestamp,
+                  message: String.fromCharCode(...bytes),
+                },
+              ]);
+            }
+          });
+        } catch (error) {
+          console.error("Failed to connect WebSocket:", error);
+        }
+      };
 
-    initWebSocket();
+      initWebSocket();
+    }
+    fetchData();
 
     return () => {
       if (wsRef.current) {
@@ -47,26 +77,30 @@ export default function WorkerDetails() {
     };
   }, []);
 
-  const invocationData = [] as Invocation[];
-  const terminal = [] as Terminal[];
-  messages.forEach((message) => {
-    const invocationStart = message["InvocationStart"];
-    const stdOut = message["StdOut"];
-    if (invocationStart)
-      invocationData.push({
-        timestamp: invocationStart.timestamp,
-        function: invocationStart.function,
+  const getopLog = async () => {
+    API.getOplog(componentId, workerName, 100, "").then((response) => {
+      const terminalData = [] as Terminal[];
+      const invocationList = [] as Invocation[];
+      response.entries.forEach((item: OplogEntry) => {
+        if (item.entry.type === "Log") {
+          terminalData.push({
+            timestamp: item.entry.timestamp,
+            message: item.entry.message,
+          });
+        } else if (item.entry.type === "ExportedFunctionInvoked") {
+          invocationList.push({
+            timestamp: item.entry.timestamp,
+            function: item.entry.function_name,
+          });
+        }
       });
-    else if (stdOut && stdOut.bytes) {
-      terminal.push({
-        timestamp: stdOut.timestamp,
-        message: String.fromCharCode(...stdOut.bytes),
-      });
-    }
-  });
+      setInvocationData(invocationList);
+      setTerminal(terminalData);
+    });
+  };
 
   return (
-    <div className="flex p-10 space-y-6 h-[87vh] w-full overflow-y-auto">
+    <div className="flex  space-y-6 h-[88vh] w-full overflow-y-auto">
       <div className="m-10 max-w-7xl mx-auto grid gap-10 ">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -133,7 +167,15 @@ export default function WorkerDetails() {
               {invocationData.length > 0 ? (
                 <InvocationsChart data={invocationData} />
               ) : (
-                <>No messages</>
+                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
+                  <LayoutGrid className="h-12 w-12 text-gray-400 mb-4" />
+                  <h2 className="text-lg font-medium text-gray-700">
+                    No Invocations was initiated
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Initiate an invocation to get started.
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
@@ -144,15 +186,26 @@ export default function WorkerDetails() {
             <CardTitle>Log</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="bg-background border rounded-md p-4 font-mono text-sm space-y-2 min-h-[150px]">
+            <div>
               {terminal.length > 0 ? (
-                terminal.map((message) => (
-                  <div key={message.timestamp} className="border-b">
-                    {message.message}
-                  </div>
-                ))
+                <div className="bg-background border rounded-md p-4 font-mono text-sm space-y-2 min-h-[200px]">
+                  {terminal.map((message) => (
+                    <div key={message.timestamp} className="border-b">
+                      {message.message}
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <>No messages</>
+                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
+                  <LayoutGrid className="h-12 w-12 text-gray-400 mb-4" />
+                  <h2 className="text-lg font-medium text-gray-700">
+                    No Terminal Output
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Initiate an invocation to get started and add terminal
+                    output.
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>
