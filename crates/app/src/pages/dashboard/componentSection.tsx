@@ -1,16 +1,16 @@
-import { ArrowRight, LayoutGrid, PlusCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import ErrorBoundary from "@/components/errorBoundary";
 import { Button } from "@/components/ui/button.tsx";
-import { useEffect, useState } from "react";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card.tsx";
 import { API } from "@/service";
 import { ComponentList } from "@/types/component.ts";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.tsx";
-import ErrorBoundary from "@/components/errorBoundary";
+import { ArrowRight, LayoutGrid, PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ComponentCard } from "../components";
 
 export const ComponentsSection = () => {
@@ -38,7 +38,7 @@ export const ComponentsSection = () => {
         </CardHeader>
         <CardContent>
           {Object.keys(components).length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-scroll max-h-[70vh] px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 overflow-scroll max-h-[70vh] px-4">
               {Object.values(components).map((data: ComponentList) => (
                 <ComponentCard
                   key={data.componentId}

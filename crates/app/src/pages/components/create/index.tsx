@@ -1,15 +1,11 @@
+import ErrorBoundary from "@/components/errorBoundary";
+import { Button } from "@/components/ui/button.tsx";
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
 } from "@/components/ui/card.tsx";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { DndProvider } from "react-dnd";
-import JSZip from "jszip";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -20,13 +16,17 @@ import {
 } from "@/components/ui/form.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { API } from "@/service";
+import { zodResolver } from "@hookform/resolvers/zod";
+import JSZip from "jszip";
 import { ArrowLeft, Database, FileUp, Zap } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button.tsx";
-import { API } from "@/service";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import ErrorBoundary from "@/components/errorBoundary";
-import { FileManager, FileItem } from "./fileManager";
+import { z } from "zod";
+import { FileItem, FileManager } from "./fileManager";
 
 const COMPONENT_TYPES = [
   {
@@ -46,7 +46,10 @@ const COMPONENT_TYPES = [
 ];
 
 const formSchema = z.object({
-  name: z.string().min(4, { message: "Component name must be at least 4 characters" }).optional(),
+  name: z
+    .string()
+    .min(4, { message: "Component name must be at least 4 characters" })
+    .optional(),
   type: z.enum(["Durable", "Ephemeral"]),
   component: z.instanceof(File).refine(file => file.size < 50000000, {
     message: "Component file must be less than 50MB.",
@@ -66,7 +69,6 @@ const CreateComponent = () => {
       component: undefined,
     },
   });
-
 
   async function addFilesToZip(zipFolder: JSZip, parentId: string | null) {
     const children = fileSystem.filter(file => file.parentId === parentId);
@@ -130,74 +132,126 @@ const CreateComponent = () => {
     <ErrorBoundary>
       <div className="p-6 bg-background text-foreground w-full overflow-y-auto h-[90vh]">
         <Card className="max-w-5xl mx-auto border shadow-md rounded-lg p-6">
-          <CardTitle className="text-2xl font-bold">Create a New Component</CardTitle>
-          <CardDescription className="text-gray-500">Components are the building blocks</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            Create a New Component
+          </CardTitle>
+          <CardDescription className="text-gray-500">
+            Components are the building blocks
+          </CardDescription>
           <CardContent className="pt-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Component Name</FormLabel>
-                    <FormControl><Input {...field} placeholder="Enter component name" /></FormControl>
-                    <FormDescription>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Component Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter component name" />
+                      </FormControl>
+                      <FormDescription>
                         The name must be unique for this component.
                       </FormDescription>
-                  </FormItem>
-                )} />
+                    </FormItem>
+                  )}
+                />
 
-                <FormField control={form.control} name="type" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Component Type</FormLabel>
-                    <FormControl>
-                      <RadioGroup onValueChange={field.onChange} defaultValue={field.value} {...field}>
-                        {COMPONENT_TYPES.map(type => (
-                          <FormItem key={type.value} className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-accent">
-                            <FormControl>
-                              <RadioGroupItem value={type.value} />
-                            </FormControl>
-                            <div className="flex flex-col">
-                              <div className="flex items-center space-x-2">{type.icon}<span className="font-medium">{type.label}</span></div>
-                              <p className="text-sm text-gray-600">{type.description}</p>
-                            </div>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                  </FormItem>
-                )} />
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Component Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          {...field}
+                        >
+                          {COMPONENT_TYPES.map(type => (
+                            <FormItem
+                              key={type.value}
+                              className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-accent"
+                            >
+                              <FormControl>
+                                <RadioGroupItem value={type.value} />
+                              </FormControl>
+                              <div className="flex flex-col">
+                                <div className="flex items-center space-x-2">
+                                  {type.icon}
+                                  <span className="font-medium">
+                                    {type.label}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {type.description}
+                                </p>
+                              </div>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                <FormField control={form.control} name="component" render={({ field: { onChange } }) => (
-                  <FormItem>
-                    <FormLabel>Component File</FormLabel>
-                    <FormControl>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400" onClick={() => fileInputRef?.current?.click()}>
-                        <FileUp className="h-8 w-8 text-gray-500 mb-2 mx-auto" />
-                        <Input
-                              type="file"
-                              accept=".wasm,application/wasm"
-                              className="hidden"
-                              ref={fileInputRef}
-                              onChange={event => {
-                                const file = event.target.files?.[0];
-                                if (file) {
-                                  setFile(file);
-                                  onChange(file);
-                                }
-                              }}
-                            />
-                        <p className="text-sm text-gray-500">File up to 50MB</p>
-                        <p className="font-medium mt-2">{file ? file.name : "Upload WASM File"}</p>
-                      </div>
+                <FormField
+                  control={form.control}
+                  name="component"
+                  render={({ field: { onChange } }) => (
+                    <FormItem>
+                      <FormLabel>Component File</FormLabel>
+                      <FormControl>
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400"
+                          onClick={() => fileInputRef?.current?.click()}
+                        >
+                          <FileUp className="h-8 w-8 text-gray-500 mb-2 mx-auto" />
+                          <Input
+                            type="file"
+                            accept=".wasm,application/wasm"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={event => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                setFile(file);
+                                onChange(file);
+                              }
+                            }}
+                          />
+                          <p className="text-sm text-gray-500">
+                            File up to 50MB
+                          </p>
+                          <p className="font-medium mt-2">
+                            {file ? file.name : "Upload WASM File"}
+                          </p>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
-                    </FormControl>
-                  </FormItem>
-                )} />
-
-                <DndProvider backend={HTML5Backend}><FileManager files={fileSystem} setFiles={setFileSystem} /></DndProvider>
+                <DndProvider backend={HTML5Backend}>
+                  <FileManager files={fileSystem} setFiles={setFileSystem} />
+                </DndProvider>
 
                 <div className="flex justify-between mt-6">
-                  <Button type="button" variant="secondary" onClick={() => navigate(-1)}><ArrowLeft className="mr-2 h-5 w-5" />Back</Button>
-                  <Button type="submit" className="px-6 py-2">Create Component</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => navigate(-1)}
+                  >
+                    <ArrowLeft className="mr-2 h-5 w-5" />
+                    Back
+                  </Button>
+                  <Button type="submit" className="px-6 py-2">
+                    Create Component
+                  </Button>
                 </div>
               </form>
             </Form>
