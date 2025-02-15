@@ -1,5 +1,5 @@
-import { Search, Trash2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Search, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -7,23 +7,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useEffect, useState } from 'react';
-import { API } from '@/service';
-import { useParams } from 'react-router-dom';
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { API } from "@/service";
+import { useParams } from "react-router-dom";
 import {
   Component,
   ComponentList,
   InstalledPlugin,
-} from '@/types/component.ts';
-import { toast } from '@/hooks/use-toast.ts';
+} from "@/types/component.ts";
+import { toast } from "@/hooks/use-toast.ts";
 import {
   Dialog,
   DialogClose,
@@ -31,12 +31,12 @@ import {
   DialogDescription,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 export default function Plugins() {
-  const { componentId = '' } = useParams();
+  const { componentId = "" } = useParams();
   const [component, setComponent] = useState<ComponentList>(
     {} as ComponentList,
   );
@@ -46,9 +46,9 @@ export default function Plugins() {
   const [versionChange, setVersionChange] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newPlugin, setNewPlugin] = useState({
-    name: '',
+    name: "",
     priority: 1,
-    version: '',
+    version: "",
   });
   const [availabePlugin, setAvailabePlugin] = useState<
     Record<string, string[]>
@@ -71,9 +71,9 @@ export default function Plugins() {
         setAvailabePlugin(pluginMap);
       } catch (error) {
         toast({
-          title: 'Failed to fetch plugins',
+          title: "Failed to fetch plugins",
           description: `An error occurred while fetching the plugin list. ${error}`,
-          variant: 'destructive',
+          variant: "destructive",
           duration: 5000,
         });
       }
@@ -127,9 +127,9 @@ export default function Plugins() {
     if (latestVersion === versionChange) {
       API.deletePluginToComponent(componentId, pluginId).then(() => {
         toast({
-          title: 'Plugin deleted successfully',
+          title: "Plugin deleted successfully",
           description:
-            'Plugin has been deleted successfully. Please check the latest version of the component.',
+            "Plugin has been deleted successfully. Please check the latest version of the component.",
           duration: 3000,
         });
         refreshComponent();
@@ -147,8 +147,8 @@ export default function Plugins() {
     API.addPluginToComponent(componentId, pluginData)
       .then(() => {
         toast({
-          title: 'Plugin added successfully',
-          description: 'The new plugin has been added successfully.',
+          title: "Plugin added successfully",
+          description: "The new plugin has been added successfully.",
           duration: 3000,
         });
         refreshComponent();
@@ -156,9 +156,9 @@ export default function Plugins() {
       })
       .catch(error => {
         toast({
-          title: 'Failed to add plugin',
+          title: "Failed to add plugin",
           description: `An error occurred while adding the plugin. ${error}`,
-          variant: 'destructive',
+          variant: "destructive",
           duration: 5000,
         });
       });
@@ -218,7 +218,7 @@ export default function Plugins() {
                     >
                       <SelectTrigger>
                         <SelectValue>
-                          {newPlugin.name || 'Select a plugin'}
+                          {newPlugin.name || "Select a plugin"}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
@@ -241,11 +241,11 @@ export default function Plugins() {
                     >
                       <SelectTrigger>
                         <SelectValue>
-                          {newPlugin.version || 'Select a Plugin Version'}
+                          {newPlugin.version || "Select a Plugin Version"}
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {(availabePlugin[newPlugin.name || ''] || []).map(
+                        {(availabePlugin[newPlugin.name || ""] || []).map(
                           version => (
                             <SelectItem key={version} value={version}>
                               {version}

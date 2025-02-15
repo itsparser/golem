@@ -1,27 +1,144 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { Edit, Trash2 } from 'lucide-react';
+import { CheckIcon, CopyIcon, Edit2Icon, Trash2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { API } from '@/service';
-import { Api, Route } from '@/types/api';
-import ErrorBoundary from '@/components/errorBoundary.tsx';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ComponentList } from '@/types/component';
-import { HTTP_METHOD_COLOR } from '@/components/nav-route';
+import ErrorBoundary from "@/components/errorBoundary.tsx";
+import { HTTP_METHOD_COLOR } from "@/components/nav-route";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { API } from "@/service";
+import { Api, RouteRequestData } from "@/types/api";
+import { ComponentList } from "@/types/component";
+
+interface CodeBlockProps {
+  code: string | string[];
+  label?: string;
+  allowCopy?: boolean;
+}
+
+function CodeBlock({ code, label, allowCopy = false }: CodeBlockProps) {
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const copyToClipboard = async () => {
+    const textToCopy = Array.isArray(code) ? code.join("\n") : code;
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+      toast({
+        description: "Code copied to clipboard",
+        duration: 2000,
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        description: "Failed to copy code",
+        duration: 2000,
+      });
+    }
+  };
+
+  return (
+    <div className="relative group">
+      {allowCopy && (
+        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 bg-gray-200 dark:bg-gray-800/50 hover:bg-gray-300 dark:hover:bg-gray-800"
+            onClick={copyToClipboard}
+            aria-label={`Copy ${label || "code"}`}
+          >
+            {copied ? (
+              <CheckIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+            ) : (
+              <CopyIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+            )}
+          </Button>
+        </div>
+      )}
+      <pre className="bg-gray-100 dark:bg-[#161B22] rounded p-3 font-mono text-sm text-gray-800 dark:text-gray-300 overflow-x-auto">
+        <code>
+          {Array.isArray(code)
+            ? code.map((line, index) => (
+                <div key={index} className="py-1">
+                  {line}
+                </div>
+              ))
+            : code}
+        </code>
+      </pre>
+    </div>
+  );
+}
+
+function PathParameters({ url }: { url: string }) {
+  const [parameters, setParameters] = useState<
+    { name: string; type: string }[]
+  >([]);
+  const extractDynamicParams = (path: string) => {
+    const pathParamRegex = /{([^}]+)}/g; // Matches {param} in path
+    const queryParamRegex = /[?&]([^=]+)={([^}]+)}/g; // Matches ?key={param} or &key={param}
+
+    const params: { name: string; type: string }[] = [];
+    let match;
+
+    // Extract path parameters
+    while ((match = pathParamRegex.exec(path)) !== null) {
+      params.push({ name: match[1], type: "path" });
+    }
+
+    // Extract query parameters (key-value pair)
+    while ((match = queryParamRegex.exec(path)) !== null) {
+      params.push({ name: match[1], type: "query" });
+    }
+    setParameters(params);
+  };
+  useEffect(() => {
+    extractDynamicParams(url);
+  }, [url]);
+
+  return (
+    <div className="bg-gray-100 dark:bg-[#161B22] rounded p-3 overflow-x-auto">
+      <div className="flex flex-wrap gap-2">
+        {parameters.map(param => (
+          <Badge
+            key={param.name}
+            variant="outline"
+            className={`font-mono text-sm ${
+              param.type === "path"
+                ? "border-blue-500 dark:border-blue-500"
+                : "border-gray-500 dark:border-gray-500"
+            }`}
+          >
+            <span className="text-purple-600 dark:text-purple-400">
+              {param.name}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400">: </span>
+            <span className="text-yellow-600 dark:text-yellow-300">
+              {param.type}
+            </span>
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export const ApiRoute = () => {
   const navigate = useNavigate();
   const { apiName, version } = useParams();
-  const [currentRoute, setCurrentRoute] = useState({} as Route);
+  const [currentRoute, setCurrentRoute] = useState({} as RouteRequestData);
+  const [apiResponse, setApiResponse] = useState({} as Api);
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
   const [queryParams] = useSearchParams();
-  const path = queryParams.get('path');
-  const method = queryParams.get('method');
+  const path = queryParams.get("path");
+  const method = queryParams.get("method");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,10 +150,11 @@ export const ApiRoute = () => {
         setComponentList(componentResponse);
         const selectedApi = apiResponse.find(api => api.version === version);
         if (selectedApi) {
+          setApiResponse(selectedApi);
           const route = selectedApi.routes.find(
             route => route.path === path && route.method === method,
           );
-          setCurrentRoute(route || ({} as Route));
+          setCurrentRoute(route || ({} as RouteRequestData));
         } else {
           navigate(`/apis/${apiName}/version/${version}`);
         }
@@ -71,9 +189,9 @@ export const ApiRoute = () => {
 
   return (
     <ErrorBoundary>
-      <main className="flex-1 overflow-y-auto h-[80vh] mx-auto p-6 w-full max-w-7xl">
-        <Card>
-          <CardHeader className="border-b border-zinc-800">
+      <main className=" mx-auto p-6 w-full max-w-7xl">
+        <Card className="w-full text-gray-800 dark:text-gray-200 p-6 border-gray-200 dark:border-gray-800">
+          <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Badge
@@ -86,95 +204,99 @@ export const ApiRoute = () => {
                 >
                   {currentRoute.method}
                 </Badge>
-                <span className="text-sm font-mono">{currentRoute.path}</span>
+                <span className="font-mono text-gray-600 dark:text-gray-300">
+                  {currentRoute.path}
+                </span>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => routeToQuery()}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    handleDelete();
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Delete
-                </Button>
-              </div>
+              {apiResponse?.draft && (
+                <div className="flex gap-2 items-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                    onClick={() => routeToQuery()}
+                  >
+                    <Edit2Icon className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+                    onClick={() => handleDelete()}
+                  >
+                    <Trash2Icon className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-            <div className="space-y-2">
-              <CardTitle className="text-sm ">Component</CardTitle>
-              <Input
-                value={`${
-                  componentList[currentRoute?.binding?.componentId?.componentId]
-                    ?.componentName
-                } / v${currentRoute?.binding?.componentId?.version}`}
-                disabled
-                className="text-sm font-mono"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-sm ">Path</CardTitle>
-                <Badge
-                  variant="outline"
-                  className="border-blue-500 text-blue-400"
-                >
-                  Parameters
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  value="user-id"
-                  disabled
-                  className=" text-sm font-mono"
+            {currentRoute?.binding?.componentId?.componentId && (
+              <div className="mb-6">
+                <h2 className="text-gray-800 dark:text-gray-200 mb-2">
+                  Component
+                </h2>
+                <CodeBlock
+                  code={`${
+                    componentList[
+                      currentRoute?.binding?.componentId?.componentId!
+                    ]?.componentName
+                  } / v${currentRoute?.binding?.componentId?.version}`}
+                  label="component name"
+                  allowCopy={false}
                 />
               </div>
-            </div>
+            )}
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-sm ">Response</CardTitle>
-                <Badge
-                  variant="outline"
-                  className="border-blue-500 text-blue-400"
-                >
-                  Rib
-                </Badge>
+            {/* Path Section */}
+            {currentRoute?.path && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-gray-800 dark:text-gray-200">
+                    Parameters
+                  </h2>
+                </div>
+                <PathParameters url={currentRoute?.path} />
               </div>
-              <div className="p-2 rounded-md border ">
-                <pre className="bg-gray-100 p-4 rounded-md text-sm font-mono dark:bg-gray-900 dark:text-gray-200 overflow-auto">
-                  {currentRoute?.binding?.response || 'No response'}
-                </pre>
-              </div>
-            </div>
+            )}
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-sm ">Worker Name</CardTitle>
-                <Badge
-                  variant="outline"
-                  className="border-blue-500 text-blue-400"
-                >
-                  Rib
-                </Badge>
+            {/* Worker Name Section */}
+            {currentRoute?.binding?.workerName && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-gray-800 dark:text-gray-200">
+                    Worker Name
+                  </h2>
+                  <span className="text-blue-600 dark:text-blue-400 text-sm border border-blue-300 dark:border-blue-500/30 rounded px-2 py-0.5">
+                    Rib
+                  </span>
+                </div>
+                <CodeBlock
+                  code={currentRoute?.binding?.workerName || "No worker name"}
+                  label="worker name RIB script"
+                  allowCopy={true}
+                />
               </div>
-              <div className="p-2 rounded-md border ">
-                <pre className="bg-gray-100 p-4 rounded-md text-sm font-mono dark:bg-gray-900 dark:text-gray-200 overflow-auto">
-                  {currentRoute?.binding?.workerName || 'No worker name'}
-                </pre>
+            )}
+
+            {/* Response Section */}
+            {currentRoute?.binding?.response && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-gray-800 dark:text-gray-200">Response</h2>
+                  <span className="text-blue-600 dark:text-blue-400 text-sm border border-blue-300 dark:border-blue-500/30 rounded px-2 py-0.5">
+                    Rib
+                  </span>
+                </div>
+                <CodeBlock
+                  code={currentRoute?.binding?.response || "No response"}
+                  label="response RIB script"
+                  allowCopy={true}
+                />
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </main>

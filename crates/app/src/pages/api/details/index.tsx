@@ -1,14 +1,14 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { Globe, LayoutGrid, Plus } from 'lucide-react';
-import { API } from '@/service';
-import { Api, Route } from '@/types/api';
-import ErrorBoundary from '@/components/errorBoundary.tsx';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Deployment } from '@/types/deployments.ts';
-import { HTTP_METHOD_COLOR } from '@/components/nav-route.tsx';
+import ErrorBoundary from "@/components/errorBoundary.tsx";
+import { HTTP_METHOD_COLOR } from "@/components/nav-route.tsx";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API } from "@/service";
+import { Api, RouteRequestData } from "@/types/api";
+import { Deployment } from "@/types/deployments.ts";
+import { Globe, LayoutGrid, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const APIDetails = () => {
   const { apiName, version } = useParams();
@@ -39,7 +39,7 @@ const APIDetails = () => {
     }
   }, [apiName, version]);
 
-  const routeToQuery = (route: Route) => {
+  const routeToQuery = (route: RouteRequestData) => {
     navigate(
       `/apis/${apiName}/version/${version}/routes/?path=${route.path}&method=${route.method}`,
     );

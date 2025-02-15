@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Loader2, PlusCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -11,26 +11,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { API } from '@/service';
-import { Api } from '@/types/api';
-import ErrorBoundary from '@/components/errorBoundary';
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { API } from "@/service";
+import { Api } from "@/types/api";
+import ErrorBoundary from "@/components/errorBoundary";
 
 const newVersionSchema = z.object({
   version: z
     .string()
-    .min(1, 'Version is required')
+    .min(1, "Version is required")
     .regex(
       /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/,
-      'Version must follow semantic versioning (e.g., 1.0.0)',
+      "Version must follow semantic versioning (e.g., 1.0.0)",
     )
     .refine(
       value => {
         // Parse version components
-        const [major, minor, patch] = value.split('.').map(Number);
+        const [major, minor, patch] = value.split(".").map(Number);
         return (
           Number.isInteger(major) &&
           Number.isInteger(minor) &&
@@ -41,7 +41,7 @@ const newVersionSchema = z.object({
         );
       },
       {
-        message: 'Invalid version format. Must be valid semver (e.g., 1.0.0)',
+        message: "Invalid version format. Must be valid semver (e.g., 1.0.0)",
       },
     ),
 });
@@ -60,12 +60,12 @@ export default function APINewVersion() {
   const form = useForm<NewVersionFormValues>({
     resolver: zodResolver(newVersionSchema),
     defaultValues: {
-      version: '',
+      version: "",
     },
   });
 
   // Watch version changes to validate against existing versions
-  const watchedVersion = form.watch('version');
+  const watchedVersion = form.watch("version");
 
   useEffect(() => {
     if (watchedVersion && apiDetails.length > 0) {
@@ -73,12 +73,12 @@ export default function APINewVersion() {
         api => api.version === watchedVersion,
       );
       if (versionExists) {
-        form.setError('version', {
-          type: 'manual',
-          message: 'This version already exists',
+        form.setError("version", {
+          type: "manual",
+          message: "This version already exists",
         });
       } else {
-        form.clearErrors('version');
+        form.clearErrors("version");
       }
     }
   }, [watchedVersion, apiDetails, form]);
@@ -95,8 +95,8 @@ export default function APINewVersion() {
         setApiDetails(response);
         setActiveApiDetails(response[response.length - 1]);
       } catch (error) {
-        console.error('Failed to fetch API details:', error);
-        setFetchError('Failed to load API details. Please try again.');
+        console.error("Failed to fetch API details:", error);
+        setFetchError("Failed to load API details. Please try again.");
 
         // Retry logic (max 3 attempts)
         if (retryCount < 3) {
@@ -111,19 +111,19 @@ export default function APINewVersion() {
     };
 
     fetchApiDetails();
-    form.setValue('version', autoIncrementVersion());
+    form.setValue("version", autoIncrementVersion());
   }, [apiName, version]);
 
   const autoIncrementVersion = () => {
-    const [major, minor, patch] = version!.split('.').map(Number);
+    const [major, minor, patch] = version!.split(".").map(Number);
     return `${major}.${minor}.${patch + 1}`;
   };
 
   const onSubmit = async (values: NewVersionFormValues) => {
     if (!activeApiDetails) {
-      form.setError('version', {
-        type: 'manual',
-        message: 'No active API version selected',
+      form.setError("version", {
+        type: "manual",
+        message: "No active API version selected",
       });
       return;
     }
@@ -133,9 +133,9 @@ export default function APINewVersion() {
       api => api.version === values.version,
     );
     if (versionExists) {
-      form.setError('version', {
-        type: 'manual',
-        message: 'This version already exists',
+      form.setError("version", {
+        type: "manual",
+        message: "This version already exists",
       });
       return;
     }
@@ -152,10 +152,10 @@ export default function APINewVersion() {
         navigate(`/apis/${apiName}/version/${values.version}`);
       });
     } catch (error) {
-      console.error('Failed to create new version:', error);
-      form.setError('version', {
-        type: 'manual',
-        message: 'Failed to create new version. Please try again.',
+      console.error("Failed to create new version:", error);
+      form.setError("version", {
+        type: "manual",
+        message: "Failed to create new version. Please try again.",
       });
     } finally {
       setIsSubmitting(false);

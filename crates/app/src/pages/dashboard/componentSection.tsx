@@ -1,17 +1,17 @@
-import { ArrowRight, Layers, PlusCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button.tsx';
-import { useEffect, useState } from 'react';
-import { API } from '@/service';
-import { ComponentList } from '@/types/component.ts';
+import { ArrowRight, Layers, PlusCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button.tsx";
+import { useEffect, useState } from "react";
+import { API } from "@/service";
+import { ComponentList } from "@/types/component.ts";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card.tsx';
-import ErrorBoundary from '@/components/errorBoundary';
-import { ComponentCard } from '../components';
+} from "@/components/ui/card.tsx";
+import ErrorBoundary from "@/components/errorBoundary";
+import { ComponentCard } from "../components";
 
 export const ComponentsSection = () => {
   const navigate = useNavigate();
@@ -24,11 +24,11 @@ export const ComponentsSection = () => {
 
   return (
     <ErrorBoundary>
-      <Card className={'rounded-lg lg:col-span-2'}>
+      <Card className={"rounded-lg lg:col-span-2"}>
         <CardHeader>
           <div className="flex justify-between items-center mb-6">
             <CardTitle>Components</CardTitle>
-            <Button variant="ghost" onClick={() => navigate('/components')}>
+            <Button variant="ghost" onClick={() => navigate("/components")}>
               View All
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
@@ -59,7 +59,7 @@ export const ComponentsSection = () => {
                 </p>
                 <Button
                   onClick={() => {
-                    navigate('/components/create');
+                    navigate("/components/create");
                   }}
                 >
                   <PlusCircle className="mr-2 size-4" />

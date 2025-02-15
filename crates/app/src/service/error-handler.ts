@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { parseErrorMessage } from '@/lib/utils.ts';
-import { toast } from '@/hooks/use-toast.ts';
+import { parseErrorMessage } from "@/lib/utils.ts";
+import { toast } from "@/hooks/use-toast.ts";
 
 export type ErrorResponse = {
   code?: string;
@@ -11,24 +11,24 @@ export type ErrorResponse = {
 
 export function parseErrorResponse(response: any): ErrorResponse {
   const parsedError: ErrorResponse = {
-    title: 'API request failed.',
-    description: 'Something went wrong. Please try again later.',
+    title: "API request failed.",
+    description: "Something went wrong. Please try again later.",
     payload: response,
   };
-  console.log('response', response, typeof response);
-  if (typeof response === 'string') {
+  console.log("response", response, typeof response);
+  if (typeof response === "string") {
     parsedError.description = parseErrorMessage(response);
-  } else if (typeof response === 'object') {
-    console.log('object', JSON.stringify(response), String(response));
+  } else if (typeof response === "object") {
+    console.log("object", JSON.stringify(response), String(response));
     if (response?.error) {
       parsedError.description = response?.error;
     } else if (response?.Error) {
       parsedError.description = response?.Error;
     } else if (response?.errors) {
-      parsedError.description = response?.errors.join(', ');
+      parsedError.description = response?.errors.join(", ");
     } else if (response?.golemError) {
       parsedError.code = response.golemError.type;
-      parsedError.title = 'Golem Error';
+      parsedError.title = "Golem Error";
       parsedError.description =
         response.golemError.reason || parsedError.description;
 
@@ -36,83 +36,83 @@ export function parseErrorResponse(response: any): ErrorResponse {
         parsedError.description += ` (Path: ${response.golemError.path})`;
       }
       switch (response.golemError.type) {
-        case 'WorkerAlreadyExists':
-          parsedError.title = 'Worker Conflict';
+        case "WorkerAlreadyExists":
+          parsedError.title = "Worker Conflict";
           parsedError.description = `Worker '${response.golemError.worker_id}' already exists.`;
           break;
-        case 'WorkerNotFound':
-          parsedError.title = 'Worker Not Found';
+        case "WorkerNotFound":
+          parsedError.title = "Worker Not Found";
           parsedError.description = `Worker '${response.golemError.worker_id}' not found.`;
           break;
-        case 'WorkerCreationFailed':
-          parsedError.title = 'Worker Creation Failed';
+        case "WorkerCreationFailed":
+          parsedError.title = "Worker Creation Failed";
           parsedError.description = `Failed to create worker '${response.golemError.worker_id}': ${response.golemError.details}`;
           break;
-        case 'ComponentDownloadFailed':
-          parsedError.title = 'Component Download Error';
+        case "ComponentDownloadFailed":
+          parsedError.title = "Component Download Error";
           parsedError.description = `Failed to download component '${response.golemError.component_id}': ${response.golemError.reason}`;
           break;
-        case 'ComponentParseFailed':
-          parsedError.title = 'Component Parsing Error';
+        case "ComponentParseFailed":
+          parsedError.title = "Component Parsing Error";
           parsedError.description = `Failed to parse component '${response.golemError.component_id}': ${response.golemError.reason}`;
           break;
-        case 'InitialComponentFileDownloadFailed':
-          parsedError.title = 'File Download Failure';
+        case "InitialComponentFileDownloadFailed":
+          parsedError.title = "File Download Failure";
           parsedError.description = `Failed to download initial file at '${response.golemError.path}': ${response.golemError.reason}`;
           break;
-        case 'PromiseNotFound':
-          parsedError.title = 'Promise Not Found';
+        case "PromiseNotFound":
+          parsedError.title = "Promise Not Found";
           parsedError.description = `Promise '${response.golemError.promise_id}' not found.`;
           break;
-        case 'PromiseDropped':
-          parsedError.title = 'Promise Dropped';
+        case "PromiseDropped":
+          parsedError.title = "Promise Dropped";
           parsedError.description = `Promise '${response.golemError.promise_id}' was dropped.`;
           break;
-        case 'RuntimeError':
-          parsedError.title = 'Runtime Error';
+        case "RuntimeError":
+          parsedError.title = "Runtime Error";
           parsedError.description = `Runtime error occurred: ${response.golemError.details}`;
           break;
-        case 'ValueMismatch':
-          parsedError.title = 'Value Mismatch';
+        case "ValueMismatch":
+          parsedError.title = "Value Mismatch";
           parsedError.description = `Value mismatch error: ${response.golemError.details}`;
           break;
-        case 'InvalidRequest':
-          parsedError.title = 'Invalid Request';
+        case "InvalidRequest":
+          parsedError.title = "Invalid Request";
           parsedError.description = `Invalid request: ${response.golemError.details}`;
           break;
-        case 'UnexpectedOplogEntry':
-          parsedError.title = 'Unexpected Oplog Entry';
+        case "UnexpectedOplogEntry":
+          parsedError.title = "Unexpected Oplog Entry";
           parsedError.description = `Unexpected oplog entry: Expected '${response.golemError.expected}', got '${response.golemError.got}'.`;
           break;
-        case 'InvalidShardId':
-          parsedError.title = 'Invalid Shard ID';
-          parsedError.description = `Invalid shard ID '${response.golemError.shard_id}', valid IDs: ${response.golemError.shard_ids?.join(', ')}.`;
+        case "InvalidShardId":
+          parsedError.title = "Invalid Shard ID";
+          parsedError.description = `Invalid shard ID '${response.golemError.shard_id}', valid IDs: ${response.golemError.shard_ids?.join(", ")}.`;
           break;
-        case 'FileSystemError':
-          parsedError.title = 'File System Error';
+        case "FileSystemError":
+          parsedError.title = "File System Error";
           parsedError.description = `File system error at '${response.golemError.path}': ${response.golemError.reason}`;
           break;
-        case 'Unknown':
-          parsedError.title = 'Unknown Error';
+        case "Unknown":
+          parsedError.title = "Unknown Error";
           parsedError.description = `Unknown error occurred: ${response.golemError.details}`;
           break;
         default:
-          parsedError.title = 'Golem Error';
+          parsedError.title = "Golem Error";
           parsedError.description =
             response.golemError.reason ||
-            'An unspecified Golem error occurred.';
+            "An unspecified Golem error occurred.";
           break;
       }
     } else {
-      console.log('elese', response);
+      console.log("elese", response);
       parsedError.description = parseErrorMessage(String(response));
     }
   }
   toast({
     title: parsedError.title,
     description: parsedError.description,
-    variant: 'destructive',
-    duration: parsedError.description.includes('Rib compilation error')
+    variant: "destructive",
+    duration: parsedError.description.includes("Rib compilation error")
       ? Infinity
       : 5000,
   });

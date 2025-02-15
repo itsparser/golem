@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { YamlEditor } from './yaml-editor';
-import * as yaml from 'js-yaml';
-import { Input } from '@/components/ui/input.tsx';
+} from "@/components/ui/dialog";
+import { YamlEditor } from "./yaml-editor";
+import * as yaml from "js-yaml";
+import { Input } from "@/components/ui/input.tsx";
 
 export default function YamlUploader() {
-  const [yamlContent, setYamlContent] = useState<string>('');
-  const [fileName, setFileName] = useState<string>('');
+  const [yamlContent, setYamlContent] = useState<string>("");
+  const [fileName, setFileName] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,7 +30,7 @@ export default function YamlUploader() {
       yaml.load(content);
       setYamlContent(content);
     } catch (error) {
-      console.error('Invalid YAML file:', error);
+      console.error("Invalid YAML file:", error);
       // You might want to show an error toast or message here
     }
   };
@@ -42,24 +42,24 @@ export default function YamlUploader() {
       // Validate YAML before submitting
       yaml.load(yamlContent);
 
-      const response = await fetch('/api/upload-yaml', {
-        method: 'POST',
+      const response = await fetch("/api/upload-yaml", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ content: yamlContent, fileName }),
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        throw new Error("Upload failed");
       }
 
       // Reset state and close dialog
-      setYamlContent('');
-      setFileName('');
+      setYamlContent("");
+      setFileName("");
       setIsOpen(false);
     } catch (error) {
-      console.error('Error uploading YAML:', error);
+      console.error("Error uploading YAML:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +93,7 @@ export default function YamlUploader() {
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>
-                {isSubmitting ? 'Uploading...' : 'Upload'}
+                {isSubmitting ? "Uploading..." : "Upload"}
               </Button>
             </div>
           </>

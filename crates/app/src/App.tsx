@@ -1,93 +1,93 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 // BrowserRouter is used for client-side routing
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 // ThemeProvider provides theming support
-import { ThemeProvider } from '@/components/theme-provider.tsx';
-import Navbar from '@/components/navbar.tsx';
-import ErrorBoundary from '@/components/errorBoundary';
-import { Dashboard } from '@/pages/dashboard';
-import FileManager from '@/pages/components/details/file.tsx';
-import WorkerInfo from '@/pages/workers/details/info.tsx';
+import { ThemeProvider } from "@/components/theme-provider.tsx";
+import Navbar from "@/components/navbar.tsx";
+import ErrorBoundary from "@/components/errorBoundary";
+import { Dashboard } from "@/pages/dashboard";
+import FileManager from "@/pages/components/details/file.tsx";
+import WorkerInfo from "@/pages/workers/details/info.tsx";
 
 // Lazy load route components for code splitting and performance improvement
 // Lazy-loading improves initial load times by loading components only when needed.
-const Components = lazy(() => import('@/pages/components'));
-const CreateComponent = lazy(() => import('@/pages/components/create'));
+const Components = lazy(() => import("@/pages/components"));
+const CreateComponent = lazy(() => import("@/pages/components/create"));
 const APIs = lazy(() =>
-  import('@/pages/api').then(module => ({ default: module.APIs })),
+  import("@/pages/api").then(module => ({ default: module.APIs })),
 );
-const CreateAPI = lazy(() => import('@/pages/api/create'));
-const APIDetails = lazy(() => import('@/pages/api/details'));
-const APISettings = lazy(() => import('@/pages/api/details/settings'));
-const CreateRoute = lazy(() => import('@/pages/api/details/createRoute.tsx'));
-const Deployments = lazy(() => import('@/pages/deployment'));
+const CreateAPI = lazy(() => import("@/pages/api/create"));
+const APIDetails = lazy(() => import("@/pages/api/details"));
+const APISettings = lazy(() => import("@/pages/api/details/settings"));
+const CreateRoute = lazy(() => import("@/pages/api/details/createRoute.tsx"));
+const Deployments = lazy(() => import("@/pages/deployment"));
 const ComponentDetails = lazy(() =>
-  import('@/pages/components/details').then(module => ({
+  import("@/pages/components/details").then(module => ({
     default: module.ComponentDetails,
   })),
 );
-const PluginList = lazy(() => import('@/pages/plugin'));
+const PluginList = lazy(() => import("@/pages/plugin"));
 const ComponentSettings = lazy(
-  () => import('@/pages/components/details/settings'),
+  () => import("@/pages/components/details/settings"),
 );
-const ComponentInfo = lazy(() => import('@/pages/components/details/info'));
-const Exports = lazy(() => import('@/pages/components/details/export'));
-const ComponentUpdate = lazy(() => import('@/pages/components/details/update'));
-const WorkerList = lazy(() => import('@/pages/workers'));
-const APINewVersion = lazy(() => import('./pages/api/details/newVersion'));
-const CreateWorker = lazy(() => import('@/pages/workers/create'));
-const WorkerDetails = lazy(() => import('@/pages/workers/details'));
+const ComponentInfo = lazy(() => import("@/pages/components/details/info"));
+const Exports = lazy(() => import("@/pages/components/details/export"));
+const ComponentUpdate = lazy(() => import("@/pages/components/details/update"));
+const WorkerList = lazy(() => import("@/pages/workers"));
+const APINewVersion = lazy(() => import("./pages/api/details/newVersion"));
+const CreateWorker = lazy(() => import("@/pages/workers/create"));
+const WorkerDetails = lazy(() => import("@/pages/workers/details"));
 const WorkerEnvironments = lazy(
-  () => import('@/pages/workers/details/environments'),
+  () => import("@/pages/workers/details/environments"),
 );
-const WorkerManage = lazy(() => import('@/pages/workers/details/manage'));
-const WorkerInvoke = lazy(() => import('@/pages/workers/details/invoke'));
-const WorkerLive = lazy(() => import('@/pages/workers/details/live'));
-const CreatePlugin = lazy(() => import('@/pages/plugin/create'));
+const WorkerManage = lazy(() => import("@/pages/workers/details/manage"));
+const WorkerInvoke = lazy(() => import("@/pages/workers/details/invoke"));
+const WorkerLive = lazy(() => import("@/pages/workers/details/live"));
+const CreatePlugin = lazy(() => import("@/pages/plugin/create"));
 const PluginView = lazy(() =>
-  import('@/pages/plugin/view').then(module => ({
+  import("@/pages/plugin/view").then(module => ({
     default: module.PluginView,
   })),
 );
 const ApiRoute = lazy(() =>
-  import('@/pages/api/details/viewRoute').then(module => ({
+  import("@/pages/api/details/viewRoute").then(module => ({
     default: module.ApiRoute,
   })),
 );
-const CreateDeployment = lazy(() => import('@/pages/deployment/create'));
+const CreateDeployment = lazy(() => import("@/pages/deployment/create"));
 const ApiLayout = lazy(() =>
-  import('./pages/api/details/apis-layout').then(module => ({
+  import("./pages/api/details/apis-layout").then(module => ({
     default: module.ApiLayout,
   })),
 );
-const ComponentInvoke = lazy(() => import('@/pages/components/details/invoke'));
-const Plugins = lazy(() => import('@/pages/components/details/plugin'));
+const ComponentInvoke = lazy(() => import("@/pages/components/details/invoke"));
+const Plugins = lazy(() => import("@/pages/components/details/plugin"));
 const ComponentLayout = lazy(() =>
-  import('@/pages/components/details/component-layout').then(module => ({
+  import("@/pages/components/details/component-layout").then(module => ({
     default: module.ComponentLayout,
   })),
 );
 const WorkerLayout = lazy(() =>
-  import('@/pages/workers/details/worker-layout').then(module => ({
+  import("@/pages/workers/details/worker-layout").then(module => ({
     default: module.WorkerLayout,
   })),
 );
 
 // Route configuration constants for ease of maintenance
 const ROUTES = {
-  DASHBOARD: '/',
-  COMPONENTS: '/components',
-  COMPONENTS_CREATE: '/components/create',
-  COMPONENTS_DETAIL: '/components/:componentId',
-  APIS: '/apis',
-  APIS_CREATE: '/apis/create',
-  APIS_DETAIL: '/apis/:apiName/version/:version',
-  DEPLOYMENTS: '/deployments',
-  DEPLOYMENTS_CREATE: '/deployments/create',
-  PLUGINS: '/plugins',
-  PLUGINS_CREATE: '/plugins/create',
-  PLUGINS_DETAIL: '/plugins/:pluginId',
-  PLUGINS_VERSION: '/plugins/:pluginId/:version',
+  DASHBOARD: "/",
+  COMPONENTS: "/components",
+  COMPONENTS_CREATE: "/components/create",
+  COMPONENTS_DETAIL: "/components/:componentId",
+  APIS: "/apis",
+  APIS_CREATE: "/apis/create",
+  APIS_DETAIL: "/apis/:apiName/version/:version",
+  DEPLOYMENTS: "/deployments",
+  DEPLOYMENTS_CREATE: "/deployments/create",
+  PLUGINS: "/plugins",
+  PLUGINS_CREATE: "/plugins/create",
+  PLUGINS_DETAIL: "/plugins/:pluginId",
+  PLUGINS_VERSION: "/plugins/:pluginId/:version",
 };
 
 function App() {
@@ -130,7 +130,7 @@ function App() {
                 <Route path="workers/create" element={<CreateWorker />} />
               </Route>
               <Route
-                path={ROUTES.COMPONENTS_DETAIL + '/workers/:workerName'}
+                path={ROUTES.COMPONENTS_DETAIL + "/workers/:workerName"}
                 element={<WorkerLayout />}
               >
                 <Route path="" element={<WorkerDetails />} />

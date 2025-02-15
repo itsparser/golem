@@ -1,5 +1,5 @@
-import { ClipboardCopy, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { ClipboardCopy, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -7,18 +7,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useEffect, useState } from 'react';
-import { API } from '@/service';
-import { useParams } from 'react-router-dom';
-import { ComponentList, Export, Parameter, Typ } from '@/types/component';
+} from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { API } from "@/service";
+import { useParams } from "react-router-dom";
+import { ComponentList, Export, Parameter, Typ } from "@/types/component";
 
 // ---------- Shadcn UI Tooltip Imports ----------
 import {
@@ -26,8 +26,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { parseTypeForTooltip } from '@/lib/utils.ts';
+} from "@/components/ui/tooltip";
+import { parseTypeForTooltip } from "@/lib/utils.ts";
 
 /**
  * The interface for each export/function row
@@ -74,7 +74,7 @@ function TypeWithPopover({ typ }: { typ: Typ | undefined }) {
             className="flex items-center text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <ClipboardCopy className="w-4 h-4 mr-1" />
-            {copied ? 'Copied!' : 'Copy'}
+            {copied ? "Copied!" : "Copy"}
           </button>
         </div>
         <pre className="whitespace-pre-wrap text-sm bg-white dark:bg-zinc-900 p-2 rounded-md border dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
@@ -98,7 +98,7 @@ function buildParameterNodes(params: Parameter[]): React.ReactNode {
         {/* <span className="text-yellow-600">{param.name}</span>
             {": "} */}
         <TypeWithPopover typ={param.typ} />
-        {index < params.length - 1 && ', '}
+        {index < params.length - 1 && ", "}
       </span>
     );
   });
@@ -117,7 +117,7 @@ function generateFunctionInterfacesV1(data: Export[]): ExportResult[] {
       const functionName = func.name.replace(/-([a-z])/g, (_, letter: string) =>
         letter.toUpperCase(),
       );
-      console.log('func', JSON.stringify(func.parameters));
+      console.log("func", JSON.stringify(func.parameters));
       const paramNodes = buildParameterNodes(func.parameters);
 
       const returnNode = func.results?.[0]?.typ ? (
@@ -139,7 +139,7 @@ function generateFunctionInterfacesV1(data: Export[]): ExportResult[] {
 }
 
 export default function Exports() {
-  const { componentId = '' } = useParams();
+  const { componentId = "" } = useParams();
   const [component, setComponent] = useState<ComponentList>({});
   const [versionList, setVersionList] = useState<number[]>([]);
   const [versionChange, setVersionChange] = useState<number>(0);
@@ -261,10 +261,10 @@ export default function Exports() {
                       >
                         <TableCell className="font-mono text-sm">
                           {/* Example: functionName(paramName: type, ...) => returnType */}
-                          <span className="text-blue-400">{`${fn.package}.{${fn.function_name}}`}</span>{' '}
-                          <span className="text-zinc-500">{'('}</span>
+                          <span className="text-blue-400">{`${fn.package}.{${fn.function_name}}`}</span>{" "}
+                          <span className="text-zinc-500">{"("}</span>
                           {fn.parameter}
-                          <span className="text-zinc-500">{')'}</span> {'=>'}{' '}
+                          <span className="text-zinc-500">{")"}</span> {"=>"}{" "}
                           {fn.return}
                         </TableCell>
                       </TableRow>

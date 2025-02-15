@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe } from 'lucide-react';
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Globe } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -8,9 +8,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { ComponentExportFunction, Export } from '@/types/component';
-import ErrorBoundary from '@/components/errorBoundary';
+} from "@/components/ui/command";
+import { ComponentExportFunction, Export } from "@/types/component";
+import ErrorBoundary from "@/components/errorBoundary";
 
 export function ExportsList({ exports }: { exports: Export[] }) {
   const exportedFunctions = useMemo(

@@ -3,13 +3,13 @@ import {
   CardContent,
   CardDescription,
   CardTitle,
-} from '@/components/ui/card.tsx';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { DndProvider } from 'react-dnd';
-import JSZip from 'jszip';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { zodResolver } from '@hookform/resolvers/zod';
+} from "@/components/ui/card.tsx";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { DndProvider } from "react-dnd";
+import JSZip from "jszip";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -18,31 +18,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form.tsx';
-import { Input } from '@/components/ui/input.tsx';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, Database, FileUp, Zap } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button.tsx';
-import { API } from '@/service';
-import { useNavigate } from 'react-router-dom';
-import ErrorBoundary from '@/components/errorBoundary';
-import { FileManager, FileItem } from './fileManager';
+} from "@/components/ui/form.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ArrowLeft, Database, FileUp, Zap } from "lucide-react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button.tsx";
+import { API } from "@/service";
+import { useNavigate } from "react-router-dom";
+import ErrorBoundary from "@/components/errorBoundary";
+import { FileManager, FileItem } from "./fileManager";
 
 const COMPONENT_TYPES = [
   {
-    value: 'Durable',
-    label: 'Durable',
+    value: "Durable",
+    label: "Durable",
     icon: <Database className="h-5 w-5 text-gray-600" />,
     description:
-      'Workers are persistent and executed with transactional guarantees\nIdeal for stateful and high-reliability use cases',
+      "Workers are persistent and executed with transactional guarantees\nIdeal for stateful and high-reliability use cases",
   },
   {
-    value: 'Ephemeral',
-    label: 'Ephemeral',
+    value: "Ephemeral",
+    label: "Ephemeral",
     icon: <Zap className="h-5 w-5 text-gray-600" />,
     description:
-      'Workers are transient and executed normally\nIdeal for stateless and low-reliability use cases',
+      "Workers are transient and executed normally\nIdeal for stateless and low-reliability use cases",
   },
 ];
 
@@ -50,12 +50,12 @@ const formSchema = z.object({
   name: z
     .string()
     .min(4, {
-      message: 'Component name must be at least 4 characters',
+      message: "Component name must be at least 4 characters",
     })
     .optional(),
-  type: z.enum(['Durable', 'Ephemeral']),
+  type: z.enum(["Durable", "Ephemeral"]),
   component: z.instanceof(File).refine(file => file.size < 50000000, {
-    message: 'Your resume must be less than 50MB.',
+    message: "Your resume must be less than 50MB.",
   }),
 });
 
@@ -67,7 +67,7 @@ const CreateComponent = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
+      name: "",
       type: undefined,
       component: undefined,
     },
@@ -76,12 +76,12 @@ const CreateComponent = () => {
   async function addFilesToZip(zipFolder: JSZip, parentId: string | null) {
     const children = fileSystem.filter(file => file.parentId === parentId);
     for (const child of children) {
-      if (child.type === 'folder') {
+      if (child.type === "folder") {
         const folder = zipFolder.folder(child.name);
         if (folder) {
           await addFilesToZip(folder, child.id);
         }
-      } else if (child.type === 'file') {
+      } else if (child.type === "file") {
         if (child.fileObject) {
           zipFolder.file(child.name, child.fileObject);
         }
@@ -100,10 +100,10 @@ const CreateComponent = () => {
   function captureFileMetadata(allFiles: FileItem[]) {
     const filesPath: { path: string; permissions: string }[] = [];
     allFiles.forEach(file => {
-      if (file.type != 'folder') {
+      if (file.type != "folder") {
         filesPath.push({
           path: getFullPath(file, allFiles),
-          permissions: file.isLocked ? 'read-only' : 'read-write',
+          permissions: file.isLocked ? "read-only" : "read-write",
         });
       }
     });
@@ -112,18 +112,18 @@ const CreateComponent = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const formData = new FormData();
-    formData.append('name', values.name!);
-    formData.append('component', file!);
-    formData.append('componentType', values.type!);
+    formData.append("name", values.name!);
+    formData.append("component", file!);
+    formData.append("componentType", values.type!);
     // file system to zip
     const zip = new JSZip();
     await addFilesToZip(zip, null);
-    const blob = await zip.generateAsync({ type: 'blob' });
+    const blob = await zip.generateAsync({ type: "blob" });
     formData.append(
-      'filesPermissions',
+      "filesPermissions",
       JSON.stringify(captureFileMetadata(fileSystem)),
     );
-    formData.append('files', blob, 'temp.zip');
+    formData.append("files", blob, "temp.zip");
     API.createComponent(formData).then(res => {
       if (res?.versionedComponentId?.componentId) {
         navigate(`/components/${res.versionedComponentId.componentId}`);
@@ -136,7 +136,7 @@ const CreateComponent = () => {
       <div className="p-4 bg-background text-foreground w-full  px-6 lg:px-8 py-4 overflow-scroll h-[90vh]">
         <Card
           className="max-w-2xl mx-auto border-0 shadow-none "
-          key={'component.componentName'}
+          key={"component.componentName"}
         >
           <CardTitle>
             <h1 className="text-2xl font-semibold mb-1">
@@ -242,7 +242,7 @@ const CreateComponent = () => {
                               File up to 50MB
                             </p>
                             <p className="font-medium mb-1">
-                              {file ? file.name : 'Upload Component WASM'}
+                              {file ? file.name : "Upload Component WASM"}
                             </p>
                           </div>
                         </div>

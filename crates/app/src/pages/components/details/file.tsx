@@ -1,18 +1,18 @@
-import { FolderStructure } from '@/components/file-manager.tsx';
-import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { API } from '@/service';
+import { FolderStructure } from "@/components/file-manager.tsx";
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { API } from "@/service";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ComponentList } from '@/types/component.ts';
+} from "@/components/ui/select";
+import { ComponentList } from "@/types/component.ts";
 
 export default function FileManager() {
-  const { componentId = '' } = useParams();
+  const { componentId = "" } = useParams();
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});

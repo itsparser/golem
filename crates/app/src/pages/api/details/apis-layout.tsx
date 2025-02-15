@@ -1,21 +1,21 @@
-import { API } from '@/service';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { API } from "@/service";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Outlet,
   useLocation,
   useNavigate,
   useParams,
   useSearchParams,
-} from 'react-router-dom';
+} from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar.tsx';
-import { SidebarMenu } from '@/components/sidebar.tsx';
-import { Separator } from '@/components/ui/separator.tsx';
-import ErrorBoundary from '@/components/errorBoundary.tsx';
-import { CircleFadingPlusIcon, Home, Plus, Settings } from 'lucide-react';
+} from "@/components/ui/sidebar.tsx";
+import { SidebarMenu } from "@/components/sidebar.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
+import ErrorBoundary from "@/components/errorBoundary.tsx";
+import { CircleFadingPlusIcon, Home, Plus, Settings } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,33 +23,33 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb.tsx';
-import { Api } from '@/types/api.ts';
+} from "@/components/ui/breadcrumb.tsx";
+import { Api } from "@/types/api.ts";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from '@/components/ui/select.tsx';
-import { Badge } from '@/components/ui/badge.tsx';
-import { SelectValue } from '@radix-ui/react-select';
-import YamlUploader from '@/components/yaml-uploader.tsx';
-import { NavRoutes } from '@/components/nav-route.tsx';
-import { Button } from '@/components/ui/button.tsx';
+} from "@/components/ui/select.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
+import { SelectValue } from "@radix-ui/react-select";
+import YamlUploader from "@/components/yaml-uploader.tsx";
+import { NavRoutes } from "@/components/nav-route.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
 const MenuItems = (apiName: string, version: string) => [
   {
-    title: 'Overview',
+    title: "Overview",
     url: `/apis/${apiName}/version/${version}`,
     icon: Home,
   },
   {
-    title: 'Settings',
+    title: "Settings",
     url: `/apis/${apiName}/version/${version}/settings`,
     icon: Settings,
   },
   {
-    title: 'New Version',
+    title: "New Version",
     url: `/apis/${apiName}/version/${version}/newversion`,
     icon: CircleFadingPlusIcon,
   },
@@ -62,14 +62,14 @@ export const ApiLayout = () => {
   const [apiDetails, setApiDetails] = useState([] as Api[]);
 
   const [currentApiDetails, setCurrentApiDetails] = useState({} as Api);
-  const [currentMenu, setCurrentMenu] = useState('Overview');
+  const [currentMenu, setCurrentMenu] = useState("Overview");
 
   const basePath = useLocation().pathname.replace(
     `/apis/${apiName}/version/${version}`,
-    '',
+    "",
   );
-  const path = queryParams.get('path');
-  const method = queryParams.get('method');
+  const path = queryParams.get("path");
+  const method = queryParams.get("method");
   const sortedVersions = useMemo(() => {
     return [...apiDetails].sort((a, b) =>
       b.version.localeCompare(a.version, undefined, { numeric: true }),
@@ -84,18 +84,18 @@ export const ApiLayout = () => {
         setCurrentApiDetails(selectedApi);
       }
     });
-    if (location.pathname.includes('settings')) setCurrentMenu('Settings');
-    else if (location.pathname.includes('routes/add'))
-      setCurrentMenu('Add New Route');
+    if (location.pathname.includes("settings")) setCurrentMenu("Settings");
+    else if (location.pathname.includes("routes/add"))
+      setCurrentMenu("Add New Route");
     else if (path) setCurrentMenu(path);
-    else if (location.pathname.includes('newversion'))
-      setCurrentMenu('New Version');
-    else if (location.pathname.includes('manage')) setCurrentMenu('Manage');
+    else if (location.pathname.includes("newversion"))
+      setCurrentMenu("New Version");
+    else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
   }, [apiName, version, path, method]);
 
   const handleNavigateHome = useCallback(() => {
     navigate(`/apis/${apiName}/version/${version}`);
-    setCurrentMenu('Overview');
+    setCurrentMenu("Overview");
   }, [navigate, apiName, version]);
 
   return (
@@ -105,7 +105,7 @@ export const ApiLayout = () => {
           menus={MenuItems(apiName!, version!)}
           activeItem={currentMenu}
           setActiveItem={setCurrentMenu}
-          title={'Worker'}
+          title={"Worker"}
         >
           <NavRoutes
             routes={(currentApiDetails?.routes || []).map(route => {
@@ -140,7 +140,7 @@ export const ApiLayout = () => {
               </Breadcrumb>
             </div>
             {/*push this to right*/}
-            <div className={'flex items-center gap-4'}>
+            <div className={"flex items-center gap-4"}>
               <div className="flex items-center gap-2">
                 <Select
                   defaultValue={version}
@@ -194,7 +194,7 @@ export const ApiLayout = () => {
                 variant="default"
                 onClick={() => {
                   navigate(`/apis/${apiName}/version/${version}/routes/add?`);
-                  setCurrentMenu('Add New Route');
+                  setCurrentMenu("Add New Route");
                 }}
               >
                 <Plus className="h-5 w-5" />

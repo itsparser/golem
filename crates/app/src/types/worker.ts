@@ -23,7 +23,7 @@ export interface Update {
   details?: string;
   targetVersion: number;
   timestamp: string;
-  type: 'failedUpdate' | 'successfulUpdate';
+  type: "failedUpdate" | "successfulUpdate";
 }
 
 export interface WorkerStatus {
@@ -54,6 +54,6 @@ export interface OplogEntry {
     timestamp: string;
     message: string;
     function_name: string;
-    type: 'Log' | 'ExportedFunctionInvoked';
+    type: "Log" | "ExportedFunctionInvoked";
   };
 }

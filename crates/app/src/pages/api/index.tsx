@@ -1,20 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   GitBranch,
   Layers,
   Lock as LockIcon,
   Plus,
   Search,
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Api } from '@/types/api';
-import { API } from '@/service';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import ErrorBoundary from '@/components/errorBoundary';
-import { Badge } from '@/components/ui/badge.tsx';
-import { removeDuplicateApis } from '@/lib/utils';
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Api } from "@/types/api";
+import { API } from "@/service";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ErrorBoundary from "@/components/errorBoundary";
+import { Badge } from "@/components/ui/badge.tsx";
+import { removeDuplicateApis } from "@/lib/utils";
 
 export const APIs = () => {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export const APIs = () => {
               className="pl-10"
             />
           </div>
-          <Button onClick={() => navigate('/apis/create')} variant="default">
+          <Button onClick={() => navigate("/apis/create")} variant="default">
             <Plus className="h-5 w-5" />
             <span>New</span>
           </Button>

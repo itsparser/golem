@@ -124,7 +124,7 @@ export default function WorkerDetails() {
               <div className="text-2xl font-bold">
                 {(workerDetails.totalLinearMemorySize / (1024 * 1024)).toFixed(
                   2,
-                )}{' '}
+                )}{" "}
                 MB
               </div>
             </CardContent>
@@ -152,7 +152,7 @@ export default function WorkerDetails() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatRelativeTime(workerDetails.createdAt || new Date())}{' '}
+                {formatRelativeTime(workerDetails.createdAt || new Date())}{" "}
               </div>
             </CardContent>
           </Card>

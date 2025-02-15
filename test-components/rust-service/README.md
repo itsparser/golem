@@ -1,4 +1,3 @@
-
 build wasi component
 
 ```sh

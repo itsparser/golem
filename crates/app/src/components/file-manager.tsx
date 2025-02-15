@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import type React from 'react';
-import { useState } from 'react';
+import type React from "react";
+import { useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight, File, Folder } from 'lucide-react';
-import { cn, parseFileStructure } from '@/lib/utils';
-import { FileStructure } from '@/types/component.ts';
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight, File, Folder } from "lucide-react";
+import { cn, parseFileStructure } from "@/lib/utils";
+import { FileStructure } from "@/types/component.ts";
 
 interface FileNode {
   name: string;
-  type: 'file' | 'folder';
+  type: "file" | "folder";
   children?: FileNode[];
   permissions?: string;
 }
@@ -30,7 +30,7 @@ const FolderStructureNode: React.FC<{ node: FileNode; level: number }> = ({
 
   const indent = level * 16;
 
-  if (node.type === 'file') {
+  if (node.type === "file") {
     return (
       <div
         className="flex items-center py-2 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
@@ -60,10 +60,10 @@ const FolderStructureNode: React.FC<{ node: FileNode; level: number }> = ({
         )}
         <Folder
           className={cn(
-            'w-4 h-4 mr-2',
+            "w-4 h-4 mr-2",
             isOpen
-              ? 'text-yellow-500 dark:text-yellow-400'
-              : 'text-gray-400 dark:text-gray-500',
+              ? "text-yellow-500 dark:text-yellow-400"
+              : "text-gray-400 dark:text-gray-500",
           )}
         />
         <span className="text-sm font-medium">{node.name}</span>

@@ -1,9 +1,7 @@
-'use client';
-
-import { useRef, useState } from 'react';
-import Editor, { type Monaco, type OnMount } from '@monaco-editor/react';
-import * as yaml from 'js-yaml';
-import { useTheme } from '@/components/theme-provider.tsx';
+import { useTheme } from "@/components/theme-provider.tsx";
+import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
+import * as yaml from "js-yaml";
+import { useRef, useState } from "react";
 
 interface YamlEditorProps {
   value: string;
@@ -40,57 +38,57 @@ export function YamlEditor({ value, onChange }: YamlEditorProps) {
           // This function will be called for each document in the YAML file
         },
         {
-          filename: 'document.yaml',
+          filename: "document.yaml",
           onWarning: error => {
-            markers.push(createMarker(error, monaco, 'Warning'));
+            markers.push(createMarker(error, monaco, "Warning"));
           },
         },
       );
     } catch (e) {
       if (e instanceof yaml.YAMLException) {
-        markers.push(createMarker(e, monaco, 'Error'));
+        markers.push(createMarker(e, monaco, "Error"));
       }
     }
 
     // Additional custom validations
-    const lines = content.split('\n');
+    const lines = content.split("\n");
     lines.forEach((line, index) => {
-      if (line.trim().startsWith('- ') && line.trim().length === 2) {
+      if (line.trim().startsWith("- ") && line.trim().length === 2) {
         markers.push({
           severity: monaco.MarkerSeverity.Warning,
           startLineNumber: index + 1,
           startColumn: 1,
           endLineNumber: index + 1,
           endColumn: line.length + 1,
-          message: 'Empty list item',
+          message: "Empty list item",
         });
       }
-      if (line.includes('\t')) {
+      if (line.includes("\t")) {
         markers.push({
           severity: monaco.MarkerSeverity.Warning,
           startLineNumber: index + 1,
           startColumn: 1,
           endLineNumber: index + 1,
           endColumn: line.length + 1,
-          message: 'Use spaces for indentation instead of tabs',
+          message: "Use spaces for indentation instead of tabs",
         });
       }
     });
     setMarkers(markers);
-    console.log('markers', markers);
-    monaco.editor.setModelMarkers(model, 'yaml', markers);
+    console.log("markers", markers);
+    monaco.editor.setModelMarkers(model, "yaml", markers);
   };
 
   const createMarker = (
     error: yaml.YAMLException,
     monaco: Monaco,
-    severity: 'Error' | 'Warning',
+    severity: "Error" | "Warning",
   ) => {
     const line = error.mark ? error.mark.line + 1 : 1;
     const column = error.mark ? error.mark.column + 1 : 1;
     return {
       severity:
-        severity === 'Error'
+        severity === "Error"
           ? monaco.MarkerSeverity.Error
           : monaco.MarkerSeverity.Warning,
       startLineNumber: line,
@@ -123,18 +121,18 @@ export function YamlEditor({ value, onChange }: YamlEditorProps) {
     });
 
     // Set up YAML language configuration
-    monaco.languages.register({ id: 'yaml' });
-    monaco.languages.setMonarchTokensProvider('yaml', {
+    monaco.languages.register({ id: "yaml" });
+    monaco.languages.setMonarchTokensProvider("yaml", {
       tokenizer: {
         root: [
-          [/^[\t ]*[A-Za-z_$][\w$]*:/, 'key'],
-          [/^[\t ]*-/, 'delimiter'],
-          [/".*?"/, 'string'],
-          [/'.*?'/, 'string'],
-          [/\d+/, 'number'],
-          [/\btrue\b|\bfalse\b/, 'boolean'],
-          [/\bnull\b/, 'null'],
-          [/#.*$/, 'comment'],
+          [/^[\t ]*[A-Za-z_$][\w$]*:/, "key"],
+          [/^[\t ]*-/, "delimiter"],
+          [/".*?"/, "string"],
+          [/'.*?'/, "string"],
+          [/\d+/, "number"],
+          [/\btrue\b|\bfalse\b/, "boolean"],
+          [/\bnull\b/, "null"],
+          [/#.*$/, "comment"],
         ],
       },
     });
@@ -145,16 +143,16 @@ export function YamlEditor({ value, onChange }: YamlEditorProps) {
       <Editor
         defaultLanguage="yaml"
         value={value}
-        theme={theme == 'dark' ? 'vs-dark' : 'vs-light'}
+        theme={theme == "dark" ? "vs-dark" : "vs-light"}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
         options={{
           minimap: { enabled: false },
-          lineNumbers: 'off',
+          lineNumbers: "off",
           roundedSelection: false,
           scrollBeyondLastLine: false,
           readOnly: false,
-          wordWrap: 'on',
+          wordWrap: "on",
           automaticLayout: true,
           tabSize: 2,
           insertSpaces: true,
@@ -162,7 +160,7 @@ export function YamlEditor({ value, onChange }: YamlEditorProps) {
       />
       {markers && (
         <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-          {markers.map(x => x.message).join(' \n')}
+          {markers.map(x => x.message).join(" \n")}
         </div>
       )}
     </div>

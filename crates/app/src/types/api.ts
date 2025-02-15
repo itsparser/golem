@@ -1,4 +1,4 @@
-import { VersionedComponentId } from '@/types/component.ts';
+import { VersionedComponentId } from "@/types/component.ts";
 
 export interface Api {
   createdAt?: string;
@@ -9,53 +9,20 @@ export interface Api {
   count?: number;
 }
 
-export interface Route {
-  method: string;
-  path: string;
-  binding: {
-    binding_type?: string;
-    componentId: {
-      componentId: string;
-      version: number;
-    };
-    workerName: string;
-    response: string;
-    idempotency_key?: string;
-    allow_origin?: string;
-    allow_methods?: string;
-    allow_headers?: string;
-    expose_headers?: string;
-    max_age?: number;
-    allow_credentials?: boolean;
-  };
-}
-
-export type HttpMethod =
-  | 'Get'
-  | 'Post'
-  | 'Put'
-  | 'Patch'
-  | 'Delete'
-  | 'Head'
-  | 'Options'
-  | 'Trace'
-  | 'Connect';
-
 export type MethodPattern =
-  | 'Get'
-  | 'Post'
-  | 'PUT'
-  | 'DELETE'
-  | 'PATCH'
-  | 'HEAD'
-  | 'OPTIONS'
-  | 'TRACE'
-  | 'CONNECT';
+  | "Get"
+  | "Post"
+  | "Put"
+  | "Delete"
+  | "Patch"
+  | "Head"
+  | "Options"
+  | "Trace"
+  | "Connect";
 export type GatewayBindingType =
-  | 'default'
-  | 'file-server'
-  | 'http-handler'
-  | 'cors-preflight';
+  | "default"
+  | "file-server"
+  | "cors-preflight";
 
 export interface RouteRequestData {
   method: MethodPattern;
