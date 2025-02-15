@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { ChevronRight, Copy, Layers, Plus, Trash } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Api } from "@/types/api";
+import ErrorBoundary from "@/components/errorBoundary";
+import { HTTP_METHOD_COLOR } from "@/components/nav-route";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,10 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { API } from "@/service";
-import { Deployment } from "@/types/deployments";
-import ErrorBoundary from "@/components/errorBoundary";
 import { removeDuplicateApis } from "@/lib/utils";
+import { API } from "@/service";
+import { Api } from "@/types/api";
+import { Deployment } from "@/types/deployments";
+import { ChevronRight, Copy, Layers, Plus, Trash } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const RoutesCard = ({
   apiId,
@@ -65,9 +67,16 @@ const RoutesCard = ({
           >
             {/* Left Side: API Method & Path */}
             <div className="flex items-center space-x-2">
-              <span className="px-2 py-0.5 text-xs font-medium rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200">
+              <Badge
+                variant="secondary"
+                className={
+                  HTTP_METHOD_COLOR[
+                    endpoint.method as keyof typeof HTTP_METHOD_COLOR
+                  ]
+                }
+              >
                 {endpoint.method}
-              </span>
+              </Badge>
               <code className="text-sm font-mono">{endpoint.path}</code>
             </div>
 
