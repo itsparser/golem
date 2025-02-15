@@ -92,7 +92,7 @@ const APICard = ({ name, version, routes, count }: APICardProps) => {
   const navigate = useNavigate();
     return (
     <Card
-      className="from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer "
+      className="from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer hover:shadow-lg"
       onClick={() => navigate(`/apis/${name}/version/${version}`)}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

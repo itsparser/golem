@@ -70,6 +70,7 @@ export const ApiLayout = () => {
   );
   const path = queryParams.get("path");
   const method = queryParams.get("method");
+  const reload = queryParams.get("reload");
   const sortedVersions = useMemo(() => {
     return [...apiDetails].sort((a, b) =>
       b.version.localeCompare(a.version, undefined, { numeric: true }),
@@ -91,7 +92,7 @@ export const ApiLayout = () => {
     else if (location.pathname.includes("newversion"))
       setCurrentMenu("New Version");
     else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
-  }, [apiName, version, path, method]);
+  }, [apiName, version, path, method, reload]);
 
   const handleNavigateHome = useCallback(() => {
     navigate(`/apis/${apiName}/version/${version}`);

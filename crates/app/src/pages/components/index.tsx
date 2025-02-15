@@ -109,7 +109,7 @@ export const ComponentCard = React.memo(
     return (
       <Card
         className={cn(
-          "w-full max-w-2xl from-background to-muted border-border cursor-pointer bg-gradient-to-br",
+          "w-full max-w-2xl from-background to-muted border-border cursor-pointer bg-gradient-to-br hover:shadow-lg",
         )}
         onClick={handleClick}
       >
