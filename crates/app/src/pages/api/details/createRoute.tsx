@@ -514,7 +514,10 @@ const CreateRoute = () => {
                         <FormItem className="mt-4">
                           <FormLabel required>Worker Name</FormLabel>
                           <FormControl>
-                            <RibEditor {...field} />
+                            <RibEditor
+                              {...field}
+                              suggestVariable={variableSuggestions}
+                            />
                           </FormControl>
                           <FormDescription>
                             <div className="flex gap-1 items-center">
@@ -631,6 +634,7 @@ const CreateRoute = () => {
                             <RibEditor
                               {...field}
                               scriptKeys={responseSuggestions}
+                              suggestVariable={variableSuggestions}
                             />
                           </FormControl>
                           <FormMessage />

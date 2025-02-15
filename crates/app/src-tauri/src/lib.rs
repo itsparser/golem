@@ -3,7 +3,7 @@ use std::path::Path;
 use tauri::Manager;
 
 #[tauri::command]
-fn update_ip(new_ip: String) -> Result<(), String> {
+fn update_ip(url: &str) -> Result<(), String> {
     let config_path = Path::new("config.json");
 
     // Load existing config or create a new one
@@ -13,7 +13,7 @@ fn update_ip(new_ip: String) -> Result<(), String> {
     };
 
     // Update the IP address
-    config["ip_address"] = serde_json::json!(new_ip);
+    config["ip_address"] = serde_json::json!(url);
 
     // Save back to file
     fs::write(&config_path, serde_json::to_string_pretty(&config).unwrap())
@@ -47,7 +47,6 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_websocket::init())
         .plugin(tauri_plugin_fs::init())
-        .invoke_handler(tauri::generate_handler![])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,18 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ComponentList } from "@/types/component.ts";
-import { ENDPOINT } from "@/service/endpoints.ts";
-import { Api } from "@/types/api.ts";
-import { fetchData } from "@/lib/tauri&web.ts";
-import { toast } from "@/hooks/use-toast";
-import { Plugin } from "@/types/plugin";
-import { parseErrorResponse } from "@/service/error-handler.ts";
+import {Component, ComponentList} from "@/types/component.ts";
+import {ENDPOINT} from "@/service/endpoints.ts";
+import {Api} from "@/types/api.ts";
+import {fetchData, update_backend} from "@/lib/tauri&web.ts";
+import {toast} from "@/hooks/use-toast";
+import {Plugin} from "@/types/plugin";
+import {parseErrorResponse} from "@/service/error-handler.ts";
 
 export class Service {
   private baseUrl: string;
 
-  constructor(baseUrl: string = "http://localhost:9881") {
+  // @ts-ignore
+  constructor(baseUrl: string = window.backend) {
     this.baseUrl = baseUrl;
   }
+
+  public updateBackendEndpoint = async (url: string) => {
+    await update_backend(url);
+  };
 
   /**
    * getComponents: Get the list of all components

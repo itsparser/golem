@@ -173,25 +173,24 @@ const CreateComponent = () => {
                           {...field}
                         >
                           {COMPONENT_TYPES.map(type => (
-                            <FormItem
-                              key={type.value}
-                              className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-accent"
-                            >
-                              <FormControl>
-                                <RadioGroupItem value={type.value} />
-                              </FormControl>
-                              <div className="flex flex-col">
-                                <div className="flex items-center space-x-2">
-                                  {type.icon}
-                                  <span className="font-medium">
-                                    {type.label}
-                                  </span>
+                            <label key={type.value}>
+                              <FormItem className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                                <FormControl>
+                                  <RadioGroupItem value={type.value} />
+                                </FormControl>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center space-x-2">
+                                    {type.icon}
+                                    <span className="font-medium">
+                                      {type.label}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    {type.description}
+                                  </p>
                                 </div>
-                                <p className="text-sm text-gray-600">
-                                  {type.description}
-                                </p>
-                              </div>
-                            </FormItem>
+                              </FormItem>
+                            </label>
                           ))}
                         </RadioGroup>
                       </FormControl>

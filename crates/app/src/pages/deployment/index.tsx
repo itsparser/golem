@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { removeDuplicateApis } from "@/lib/utils";
 import { API } from "@/service";
@@ -48,7 +48,7 @@ const RoutesCard = ({
 
   return (
     routes && (
-      <Card >
+      <Card className="bg-transparent">
         <CardContent className="space-y-2 p-4">
           {routes.map((endpoint, index) => (
             <div
@@ -287,4 +287,3 @@ export default function Deployments() {
     </ErrorBoundary>
   );
 }
-

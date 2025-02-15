@@ -1,5 +1,6 @@
-import { writeFile } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
 import { BaseDirectory } from "@tauri-apps/api/path";
+import { writeFile } from "@tauri-apps/plugin-fs";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import TauriWebSocket from "@tauri-apps/plugin-websocket";
 
@@ -19,6 +20,10 @@ export async function saveFile(fileName: string, data: Uint8Array) {
     link.click();
     document.body.removeChild(link);
   }
+}
+
+export async function update_backend(url: string): Promise<void> {
+  await invoke("update_ip", { url: url }).catch((e)=> console.log("error", e));
 }
 
 export async function fetchData(

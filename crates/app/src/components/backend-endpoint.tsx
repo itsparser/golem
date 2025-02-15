@@ -1,8 +1,5 @@
-import { useState } from "react";
-import { z } from "zod";
-import { Input } from "@/components/ui/input";
+// @ts-nocheck
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +9,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const DEFAULT_ENDPOINT = window.backend;
+import { API, updateService } from "@/service";
+import { Settings } from "lucide-react";
+import { useState } from "react";
+import { z } from "zod";
 
 // Helper function to validate IP address
 const isValidIpAddress = (ip: string) => {
@@ -58,17 +58,20 @@ const endpointSchema = z.string().refine(
 );
 
 export function BackendEndpointInput() {
-  const [endpoint, setEndpoint] = useState(DEFAULT_ENDPOINT);
-  const [currentEndpoint, setCurrentEndpoint] = useState(DEFAULT_ENDPOINT);
+  const [endpoint, setEndpoint] = useState(window.backend);
+  const [currentEndpoint, setCurrentEndpoint] = useState(window.backend);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
       endpointSchema.parse(endpoint);
       // Validation passed
       console.log("Saving endpoint:", endpoint);
       setCurrentEndpoint(endpoint);
+      await API.updateBackendEndpoint(endpoint);
+      window.backend = endpoint;
+      updateService(endpoint);
       setOpen(false);
       setError(null);
     } catch (err) {
