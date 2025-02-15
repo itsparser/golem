@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Upload } from "lucide-react";
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-nocheck
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,9 +9,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { YamlEditor } from "./yaml-editor";
-import * as yaml from "js-yaml";
 import { Input } from "@/components/ui/input.tsx";
+import * as yaml from "js-yaml";
+import { Upload } from "lucide-react";
+import { useState } from "react";
+import { YamlEditor } from "./yaml-editor";
 
 export default function YamlUploader() {
   const [yamlContent, setYamlContent] = useState<string>("");

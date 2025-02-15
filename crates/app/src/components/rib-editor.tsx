@@ -78,7 +78,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
             "for",
             "in",
             "yield",
-            "reduce",
+            "reduce", 
             "from",
             "true",
             "false",
@@ -309,6 +309,11 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                     ],
               );
 
+              // Add suggestVariable suggestions
+              const suggestVariableSuggestions = suggestVariable 
+                ? getObjectKeys(suggestVariable)
+                : [];
+
               // Ensure scriptKeys is always an array and filter out invalid values
               const validScriptKeys = (scriptKeys || []).filter(key => true);
 
@@ -325,6 +330,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 suggestions: [
                   ...requestSuggestions,
                   ...localVariableSuggestions,
+                  ...suggestVariableSuggestions,
                   ...functionSuggestions,
                 ],
               };

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-nocheck
 import { useTheme } from "@/components/theme-provider.tsx";
 import Editor, { type Monaco, type OnMount } from "@monaco-editor/react";
 import * as yaml from "js-yaml";

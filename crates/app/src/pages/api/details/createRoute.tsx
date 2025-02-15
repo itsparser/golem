@@ -516,7 +516,7 @@ const CreateRoute = () => {
                           <FormControl>
                             <RibEditor
                               {...field}
-                              suggestVariable={variableSuggestions}
+                              suggestVariable={{ request: variableSuggestions }}
                             />
                           </FormControl>
                           <FormDescription>
@@ -634,7 +634,7 @@ const CreateRoute = () => {
                             <RibEditor
                               {...field}
                               scriptKeys={responseSuggestions}
-                              suggestVariable={variableSuggestions}
+                              suggestVariable={{ request: variableSuggestions }}
                             />
                           </FormControl>
                           <FormMessage />
