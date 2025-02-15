@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import ErrorBoundary from "@/components/errorBoundary.tsx";
 import { HTTP_METHOD_COLOR } from "@/components/nav-route";
+import { RibEditor } from "@/components/rib-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -273,11 +274,15 @@ export const ApiRoute = () => {
                     Rib
                   </span>
                 </div>
-                <CodeBlock
+                <RibEditor
+                  value={currentRoute?.binding?.workerName}
+                  disabled={true}
+                />
+                {/* <CodeBlock
                   code={currentRoute?.binding?.workerName || "No worker name"}
                   label="worker name RIB script"
                   allowCopy={true}
-                />
+                /> */}
               </div>
             )}
 
@@ -290,10 +295,9 @@ export const ApiRoute = () => {
                     Rib
                   </span>
                 </div>
-                <CodeBlock
-                  code={currentRoute?.binding?.response || "No response"}
-                  label="response RIB script"
-                  allowCopy={true}
+                <RibEditor
+                  value={currentRoute?.binding?.response}
+                  disabled={true}
                 />
               </div>
             )}
