@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { Layers, PlusCircle } from 'lucide-react';
+import { ArrowRight, Globe, Layers, PlusCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { API } from '@/service';
 import ErrorBoundary from '@/components/errorBoundary';
@@ -33,30 +33,26 @@ export function DeploymentSection() {
 
   return (
     <ErrorBoundary>
-      <Card className={'rounded-lg max-h-[275px]'}>
-        <CardHeader>
-          <div className="flex justify-between items-center mb-6">
-            <CardTitle>Deployments</CardTitle>
-            <Button variant="outline" onClick={() => navigate('/deployments')}>
+      <Card className="transition-all hover:shadow-md max-h-[275px]">
+        <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle  className="text-xl font-semibold flex items-center gap-2">
+              <Globe className="w-5 h-5 text-muted-foreground" />
+              Deployments
+            </CardTitle>
+            <Button variant="ghost"className="text-sm font-medium" size="sm" onClick={() => navigate('/deployments')}>
               View All
+              <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
-          </div>
         </CardHeader>
         <CardContent>
           {deployments.length > 0 ? (
-            <div className="grid gap-0 overflow-scroll max-h-[110px]  text-sm">
-              {deployments.map((deployment, index) => (
-                <div
-                  key={index}
-                  className="flex w-full items-center justify-between py-4 px-4 hover:bg-accent rounded-none border-t border-b border-gray cursor-pointer"
-                  onClick={() => {
-                    navigate(`/deployments`);
-                  }}
-                >
-                  <span className="text-gray-500">{deployment.site.host}</span>
+              deployments.map((deployment, index) => (
+                <div key={index} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => {
+                  navigate(`/deployments`);
+                }}>
+                  <p className="text-sm font-medium">{deployment.site.host}</p>
                 </div>
-              ))}
-            </div>
+              ))
           ) : (
             <div className="rounded-lg border-2 border-dashed border-border p-4 text-center grid place-items-center h-full w-full">
               <Layers className="h-5 w-5 text-gray-400 mb-2" />

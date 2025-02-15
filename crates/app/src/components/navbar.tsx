@@ -1,6 +1,7 @@
 import { ModeToggle } from '@/components/mode-toggle.tsx';
 import NavLink from '@/components/navLink.tsx';
 import { Logo } from '@/components/logo.tsx';
+import { BackendEndpointInput } from '@/components/backend-endpoint';
 
 const Navbar = () => {
   return (
@@ -22,6 +23,7 @@ const Navbar = () => {
         </div>
         <div className="flex items-center space-x-8">
           <div className="flex items-center space-x-2">
+            <BackendEndpointInput />
             <ModeToggle />
           </div>
         </div>

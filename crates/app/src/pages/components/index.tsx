@@ -139,7 +139,7 @@ export const ComponentCard = React.memo(
                 <div key={metric} className="space-y-2">
                   <h3
                     className={cn(
-                      'text-sm font-medium',
+                      'text-sm font-mono',
                       WORKER_COLOR_MAPPER[metric],
                     )}
                   >
@@ -147,7 +147,7 @@ export const ComponentCard = React.memo(
                   </h3>
                   <p
                     className={cn(
-                      'text-4xl font-bold',
+                      'text-xl font-bold',
                       WORKER_COLOR_MAPPER[metric],
                     )}
                   >

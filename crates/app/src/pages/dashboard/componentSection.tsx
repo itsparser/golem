@@ -1,4 +1,4 @@
-import { Layers, PlusCircle } from 'lucide-react';
+import { ArrowRight, Layers, PlusCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button.tsx';
 import { useEffect, useState } from 'react';
@@ -28,8 +28,9 @@ export const ComponentsSection = () => {
         <CardHeader>
           <div className="flex justify-between items-center mb-6">
             <CardTitle>Components</CardTitle>
-            <Button variant="outline" onClick={() => navigate('/components')}>
+            <Button variant="ghost" onClick={() => navigate('/components')}>
               View All
+              <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </CardHeader>
