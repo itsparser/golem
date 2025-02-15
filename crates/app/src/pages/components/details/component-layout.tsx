@@ -1,15 +1,15 @@
-import { API } from '@/service';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { API } from "@/service";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar.tsx';
-import { SidebarMenu } from '@/components/sidebar.tsx';
-import { Separator } from '@/components/ui/separator.tsx';
-import ErrorBoundary from '@/components/errorBoundary.tsx';
-import { ComponentList } from '@/types/component.ts';
+} from "@/components/ui/sidebar.tsx";
+import { SidebarMenu } from "@/components/sidebar.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
+import ErrorBoundary from "@/components/errorBoundary.tsx";
+import { ComponentList } from "@/types/component.ts";
 import {
   ArrowRightFromLine,
   Folder,
@@ -20,7 +20,7 @@ import {
   Settings,
   ToyBrick,
   Workflow,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,8 +28,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb.tsx';
-import { SidebarMenuProps } from '@/components/nav-main.tsx';
+} from "@/components/ui/breadcrumb.tsx";
+import { SidebarMenuProps } from "@/components/nav-main.tsx";
 
 /**
  * Creates menu items for the component sidebar
@@ -39,49 +39,49 @@ const createMenuItems = (
   componentType: string,
 ): SidebarMenuProps[] => [
   {
-    title: 'Overview',
+    title: "Overview",
     url: `/components/${componentId}`,
     icon: Home,
   },
   {
-    title: 'Workers',
+    title: "Workers",
     url: `/components/${componentId}/workers`,
     icon: Pickaxe,
-    isHidden: componentType === 'Ephemeral',
+    isHidden: componentType === "Ephemeral",
   },
   {
-    title: 'Invoke',
+    title: "Invoke",
     url: `/components/${componentId}/invoke`,
     icon: Workflow,
-    isHidden: componentType === 'Durable',
+    isHidden: componentType === "Durable",
   },
   {
-    title: 'Exports',
+    title: "Exports",
     url: `/components/${componentId}/exports`,
     icon: ArrowRightFromLine,
   },
   {
-    title: 'Update',
+    title: "Update",
     url: `/components/${componentId}/update`,
     icon: Pencil,
   },
   {
-    title: 'Files',
+    title: "Files",
     url: `/components/${componentId}/files`,
     icon: Folder,
   },
   {
-    title: 'Plugins',
+    title: "Plugins",
     url: `/components/${componentId}/plugins`,
     icon: ToyBrick,
   },
   {
-    title: 'Info',
+    title: "Info",
     url: `/components/${componentId}/info`,
     icon: Info,
   },
   {
-    title: 'Settings',
+    title: "Settings",
     url: `/components/${componentId}/settings`,
     icon: Settings,
   },
@@ -93,10 +93,10 @@ const createMenuItems = (
 export const ComponentLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { componentId = '' } = useParams();
+  const { componentId = "" } = useParams();
   const [currentComponent, setCurrentComponent] =
     useState<ComponentList | null>(null);
-  const [currentMenu, setCurrentMenu] = useState('Overview');
+  const [currentMenu, setCurrentMenu] = useState("Overview");
 
   // Fetch component data
   const fetchComponent = useCallback(async () => {
@@ -105,7 +105,7 @@ export const ComponentLayout = () => {
         const response = await API.getComponentByIdAsKey();
         setCurrentComponent(response[componentId]);
       } catch (error) {
-        console.error('Error fetching component:', error);
+        console.error("Error fetching component:", error);
       }
     }
   }, [componentId]);
@@ -116,25 +116,25 @@ export const ComponentLayout = () => {
 
   // Update current menu based on location
   useEffect(() => {
-    if (location.pathname.includes('workers')) setCurrentMenu('Workers');
-    else if (location.pathname.includes('invoke')) setCurrentMenu('Invoke');
-    else if (location.pathname.includes('exports')) setCurrentMenu('Exports');
-    else if (location.pathname.includes('update')) setCurrentMenu('Update');
-    else if (location.pathname.includes('plugins')) setCurrentMenu('Plugins');
-    else if (location.pathname.includes('info')) setCurrentMenu('Info');
-    else if (location.pathname.includes('settings')) setCurrentMenu('Settings');
-    else if (location.pathname.includes('files')) setCurrentMenu('Files');
-    else setCurrentMenu('Overview');
+    if (location.pathname.includes("workers")) setCurrentMenu("Workers");
+    else if (location.pathname.includes("invoke")) setCurrentMenu("Invoke");
+    else if (location.pathname.includes("exports")) setCurrentMenu("Exports");
+    else if (location.pathname.includes("update")) setCurrentMenu("Update");
+    else if (location.pathname.includes("plugins")) setCurrentMenu("Plugins");
+    else if (location.pathname.includes("info")) setCurrentMenu("Info");
+    else if (location.pathname.includes("settings")) setCurrentMenu("Settings");
+    else if (location.pathname.includes("files")) setCurrentMenu("Files");
+    else setCurrentMenu("Overview");
   }, [location.pathname]);
 
   // Memoize menu items
   const menuItems = useMemo(() => {
-    return createMenuItems(componentId, currentComponent?.componentType || '');
+    return createMenuItems(componentId, currentComponent?.componentType || "");
   }, [componentId, currentComponent?.componentType]);
 
   const handleNavigateHome = useCallback(() => {
     navigate(`/components/${componentId}`);
-    setCurrentMenu('Overview');
+    setCurrentMenu("Overview");
   }, [navigate, componentId]);
 
   // Memoize header component
@@ -150,8 +150,8 @@ export const ComponentLayout = () => {
               <BreadcrumbItem className="hidden md:block cursor-pointer">
                 <BreadcrumbLink asChild>
                   <span onClick={handleNavigateHome}>
-                    <span className="text-gray-500">Component:</span>{' '}
-                    {currentComponent?.componentName || 'Loading...'}
+                    <span className="text-gray-500">Component:</span>{" "}
+                    {currentComponent?.componentName || "Loading..."}
                   </span>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -178,7 +178,7 @@ export const ComponentLayout = () => {
           menus={menuItems}
           activeItem={currentMenu}
           setActiveItem={setCurrentMenu}
-          title={'Component'}
+          title={"Component"}
         />
         <SidebarInset>
           {Header}

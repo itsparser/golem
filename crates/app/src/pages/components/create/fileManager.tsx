@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
   ChevronRight,
   File,
@@ -11,12 +11,12 @@ import {
   Pencil,
   Check,
   X,
-} from 'lucide-react';
-import { useDropzone } from 'react-dropzone';
-import { useDrag, useDrop } from 'react-dnd';
+} from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import { useDrag, useDrop } from "react-dnd";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /**
  * Interface representing a file or folder in the file manager
@@ -25,15 +25,15 @@ export interface FileItem {
   id: string;
   name: string;
   size: number;
-  type: 'file' | 'folder';
+  type: "file" | "folder";
   parentId: string | null;
   isLocked: boolean;
   fileObject?: File;
 }
 
 const ItemTypes = {
-  FILE: 'file',
-  FOLDER: 'folder',
+  FILE: "file",
+  FOLDER: "folder",
 };
 
 export function FileManager({
@@ -47,14 +47,14 @@ export function FileManager({
     new Set(),
   );
   const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [editingName, setEditingName] = React.useState('');
+  const [editingName, setEditingName] = React.useState("");
 
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     const newFiles: FileItem[] = acceptedFiles.map(file => ({
       id: Math.random().toString(36).substring(7),
       name: file.name,
       size: file.size,
-      type: 'file',
+      type: "file",
       parentId: null,
       isLocked: false,
       fileObject: file,
@@ -69,9 +69,9 @@ export function FileManager({
     e.stopPropagation();
     const newFolder: FileItem = {
       id: Math.random().toString(36).substring(7),
-      name: 'New Folder',
+      name: "New Folder",
       size: 0,
-      type: 'folder',
+      type: "folder",
       parentId: null,
       isLocked: false,
     };
@@ -170,7 +170,7 @@ export function FileManager({
 
   const DraggableItem = ({ file }: { file: FileItem }) => {
     const isExpanded = expandedFolders.has(file.id);
-    const childFiles = file.type === 'folder' ? getChildFiles(file.id) : [];
+    const childFiles = file.type === "folder" ? getChildFiles(file.id) : [];
 
     const [{ isDragging }, drag] = useDrag(() => ({
       type: ItemTypes.FILE,
@@ -187,7 +187,7 @@ export function FileManager({
         // If dropped onto a folder, move the item into that folder.
         // Otherwise, use the parent's folder if the target is a file.
         if (item.id !== file.id) {
-          moveFile(item.id, file.type === 'folder' ? file.id : file.parentId);
+          moveFile(item.id, file.type === "folder" ? file.id : file.parentId);
         }
       },
       collect: monitor => ({
@@ -198,12 +198,12 @@ export function FileManager({
     return (
       <div
         ref={node => drag(drop(node))}
-        className={`${isDragging ? 'opacity-50' : ''} ${
-          isOver ? 'bg-muted/50' : ''
+        className={`${isDragging ? "opacity-50" : ""} ${
+          isOver ? "bg-muted/50" : ""
         }`}
       >
         <div className="flex items-center gap-2 py-1 px-2 rounded-md hover:bg-muted/50">
-          {file.type === 'folder' && (
+          {file.type === "folder" && (
             <Button
               variant="ghost"
               size="icon"
@@ -215,12 +215,12 @@ export function FileManager({
             >
               <ChevronRight
                 className={`h-4 w-4 transition-transform ${
-                  isExpanded ? 'rotate-90' : ''
+                  isExpanded ? "rotate-90" : ""
                 }`}
               />
             </Button>
           )}
-          {file.type === 'folder' ? (
+          {file.type === "folder" ? (
             <Folder className="h-4 w-4" />
           ) : (
             <File className="h-4 w-4" />
@@ -234,8 +234,8 @@ export function FileManager({
                 className="h-7 py-1"
                 autoFocus
                 onKeyDown={e => {
-                  if (e.key === 'Enter') saveEditing();
-                  if (e.key === 'Escape') cancelEditing();
+                  if (e.key === "Enter") saveEditing();
+                  if (e.key === "Escape") cancelEditing();
                 }}
               />
               <Button
@@ -258,7 +258,7 @@ export function FileManager({
           ) : (
             <>
               <span className="flex-1">{file.name}</span>
-              {file.type === 'file' && (
+              {file.type === "file" && (
                 <span className="text-sm text-muted-foreground">
                   {Math.round(file.size / 1024)} KB
                 </span>
@@ -303,7 +303,7 @@ export function FileManager({
             </>
           )}
         </div>
-        {file.type === 'folder' && isExpanded && (
+        {file.type === "folder" && isExpanded && (
           <div className="ml-6">
             {childFiles.map(childFile => (
               <DraggableItem key={childFile.id} file={childFile} />
@@ -325,7 +325,7 @@ export function FileManager({
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-8 text-center ${
-            isDragActive ? 'border-primary' : 'border-muted'
+            isDragActive ? "border-primary" : "border-muted"
           }`}
         >
           <input {...getInputProps()} />

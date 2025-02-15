@@ -16,11 +16,13 @@ To work on **Golem** you need to install the following tools:
   - Otherwise follow the [official instructions](https://github.com/protocolbuffers/protobuf#protobuf-compiler-installation)
 
 To be able to run all integration tests:
-  - Install redis
-    - `brew install redis` on OSX
-  - Install [docker](https://www.docker.com) (for running PostgreSQL container in tests)
+
+- Install redis
+  - `brew install redis` on OSX
+- Install [docker](https://www.docker.com) (for running PostgreSQL container in tests)
 
 To be able to run all services with `cargo-make run` with a merged log view:
+
 - Install [lnav](https://lnav.org)
   - `brew install lnav` on OSX
 - Install [nginx](https://nginx.org)
@@ -31,11 +33,13 @@ Everything else is managed by `cargo-make`.
 ## Development workflow
 
 ### Building
+
 To compile everything use
 
 ```shell
 cargo make build
 ```
+
 It is recommended to do a full build before starting working on Golem and opening it with an IDE. During development it is usually enough to recompile only the crate you are working on, for example:
 
 ```shell
@@ -43,6 +47,7 @@ cargo build -p golem-worker-service-base
 ```
 
 #### If cargo runs out of memory
+
 Depending on the number of CPU cores and available memory, building everything can use a lot of memory. If cargo runs out of memory or just uses too much, you can limit the number of parallel jobs by providing a cargo `config.toml` file, for example:
 
 ```toml
@@ -63,6 +68,7 @@ cargo test -p golem-worker-executor-base api::promise -- --report-time
 ```
 
 #### Running all unit tests
+
 To run all unit tests use
 
 ```shell
@@ -70,6 +76,7 @@ cargo make unit-tests
 ```
 
 #### Running all worker executor tests
+
 The **worker executor tests** are testing the Golem Worker Executor standalone without any of the other services. These tests require `redis`. To run all of them use
 
 ```shell
@@ -83,6 +90,7 @@ cargo make worker-executor-tests-group1
 ```
 
 #### Running all integration tests
+
 The **integration tests** are starting up several Golem services and testing them together. These tests also require `docker` and `redis` to be available.
 
 To run all integration tests use
@@ -92,6 +100,7 @@ cargo make integration-tests
 ```
 
 #### Running all the CLI tests
+
 The **CLI tests** are similar to the integration tests but interact with the running services only through the Golem CLI application.
 
 To run all CLI tests use
@@ -101,9 +110,11 @@ cargo make cli-tests
 ```
 
 #### Using a debugger
+
 When using a debugger with the tests, make sure to pass the `--nocapture` option to the test runner, otherwise the debugger will not be usable (when capturing is on, the test framework spawns child processes to run the actual tests).
 
 ### Updating the REST API
+
 Golem **generates OpenAPI specs** from the Rust code (using the [poem-openapi crate](https://crates.io/crates/poem-openapi), and the generated OpenAPI yaml file is also stored in the repository and a Rust Client crate is generated from it, used by the CLI app and also published into crates.io.
 
 When changing anything that affects the user facing REST API, this YAML needs to be explicitly regenerated. If this does not happen, the CI process will fail and ask for doing it.
@@ -115,6 +126,7 @@ cargo make generate-openapi
 ```
 
 ### Updating the config files
+
 Service config files are also generated from code similarly to OpenAPI specs. When changing any of the service configuration data types, they have to be regeneraetd otherwise the CI process fails and asks for doing it.
 
 To regenerate these files, use
@@ -124,6 +136,7 @@ cargo make generate-configs
 ```
 
 ### Preparing the pull request
+
 Golem CI checks the pull requests with `rustfmt` and `cargo clippy`. To make sure these checks pass, before opening a pull request run
 
 ```shell

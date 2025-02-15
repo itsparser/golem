@@ -1,18 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useFieldArray, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useMemo, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Loader2, Plus, X } from 'lucide-react';
+} from "@/components/ui/select";
+import { Loader2, Plus, X } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -21,10 +21,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import ErrorBoundary from '@/components/errorBoundary';
-import { API } from '@/service';
-import { useNavigate } from 'react-router-dom';
+} from "@/components/ui/form";
+import ErrorBoundary from "@/components/errorBoundary";
+import { API } from "@/service";
+import { useNavigate } from "react-router-dom";
 
 // Define API definition type
 interface ApiDefinition {
@@ -35,49 +35,49 @@ interface ApiDefinition {
 const formSchema = z.object({
   domain: z
     .string()
-    .min(1, 'Domain is required')
+    .min(1, "Domain is required")
     .regex(
       /^localhost(:\d{1,5})?$/,
-      'Please enter a valid localhost domain (e.g., localhost:9006)',
+      "Please enter a valid localhost domain (e.g., localhost:9006)",
     )
     .refine(
       value => {
-        if (value.includes(':')) {
-          const port = parseInt(value.split(':')[1]);
+        if (value.includes(":")) {
+          const port = parseInt(value.split(":")[1]);
           return port >= 1 && port <= 65535;
         }
         return true;
       },
-      { message: 'Port number must be between 1 and 65535' },
+      { message: "Port number must be between 1 and 65535" },
     )
     .transform(value => value.toLowerCase())
     .refine(
-      value => !value.startsWith('http://') && !value.startsWith('https://'),
-      { message: 'Do not include http:// or https://' },
+      value => !value.startsWith("http://") && !value.startsWith("https://"),
+      { message: "Do not include http:// or https://" },
     )
     .refine(
       value => {
-        if (!value.includes(':')) {
+        if (!value.includes(":")) {
           return false;
         }
         return true;
       },
-      { message: 'Port number is required (e.g., localhost:9006)' },
+      { message: "Port number is required (e.g., localhost:9006)" },
     ),
   definitions: z
     .array(
       z.object({
-        id: z.string().min(1, 'API definition is required'),
-        version: z.string().min(1, 'Version is required'),
+        id: z.string().min(1, "API definition is required"),
+        version: z.string().min(1, "Version is required"),
       }),
     )
-    .min(1, 'At least one API definition is required')
+    .min(1, "At least one API definition is required")
     .refine(
       definitions => {
         const ids = definitions.map(d => d.id);
         return new Set(ids).size === ids.length;
       },
-      { message: 'Each API can only be added once' },
+      { message: "Each API can only be added once" },
     ),
 });
 
@@ -94,14 +94,14 @@ export default function CreateDeployment() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      domain: 'localhost:9006',
-      definitions: [{ id: '', version: '' }],
+      domain: "localhost:9006",
+      definitions: [{ id: "", version: "" }],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'definitions',
+    name: "definitions",
   });
 
   // Fetch API definitions with retry logic
@@ -130,8 +130,8 @@ export default function CreateDeployment() {
 
         setApiDefinitions(transformedData);
       } catch (error) {
-        console.error('Failed to fetch API definitions:', error);
-        setFetchError('Failed to load API definitions. Please try again.');
+        console.error("Failed to fetch API definitions:", error);
+        setFetchError("Failed to load API definitions. Please try again.");
 
         // Retry logic (max 3 attempts)
         if (retryCount < 3) {
@@ -167,15 +167,15 @@ export default function CreateDeployment() {
       };
       await API.createDeployment(payload);
       toast({
-        title: 'Deployment was successful',
+        title: "Deployment was successful",
         duration: 3000,
       });
-      navigate('/deployments');
+      navigate("/deployments");
     } catch (error) {
-      console.error('Failed to create deployment:', error);
-      form.setError('root', {
-        type: 'manual',
-        message: 'Failed to create deployment. Please try again.',
+      console.error("Failed to create deployment:", error);
+      form.setError("root", {
+        type: "manual",
+        message: "Failed to create deployment. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -224,7 +224,7 @@ export default function CreateDeployment() {
                         onChange={e => {
                           // Remove any http/https if user pastes them
                           const value = e.target.value
-                            .replace(/^https?:\/\//, '')
+                            .replace(/^https?:\/\//, "")
                             .toLowerCase();
                           field.onChange(value);
                         }}
@@ -256,16 +256,16 @@ export default function CreateDeployment() {
                   onClick={() => {
                     // Check if there are any empty definitions before adding new one
                     const hasEmptyDefinition = form
-                      .getValues('definitions')
+                      .getValues("definitions")
                       .some(def => !def.id || !def.version);
                     if (!hasEmptyDefinition) {
-                      append({ id: '', version: '' });
+                      append({ id: "", version: "" });
                     }
                   }}
                   disabled={
                     isLoading ||
                     form
-                      .getValues('definitions')
+                      .getValues("definitions")
                       .some(def => !def.id || !def.version)
                   }
                 >
@@ -299,7 +299,7 @@ export default function CreateDeployment() {
                                 field.onChange(value);
                                 form.setValue(
                                   `definitions.${index}.version`,
-                                  '',
+                                  "",
                                 );
                               }}
                               value={field.value}
@@ -379,7 +379,7 @@ export default function CreateDeployment() {
                     Deploying...
                   </>
                 ) : (
-                  'Deploy'
+                  "Deploy"
                 )}
               </Button>
             </div>

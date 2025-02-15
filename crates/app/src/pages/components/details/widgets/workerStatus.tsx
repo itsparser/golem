@@ -1,37 +1,37 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock } from 'lucide-react';
-import { WorkerStatus as IWorkerStatus } from '@/types/worker.ts';
-import * as React from 'react';
-import { Label, Pie, PieChart } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock } from "lucide-react";
+import { WorkerStatus as IWorkerStatus } from "@/types/worker.ts";
+import * as React from "react";
+import { Label, Pie, PieChart } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart';
-import { Separator } from '@/components/ui/separator.tsx';
-import ErrorBoundary from '@/components/errorBoundary';
+} from "@/components/ui/chart";
+import { Separator } from "@/components/ui/separator.tsx";
+import ErrorBoundary from "@/components/errorBoundary";
 
 // Chart configuration with type safety via `satisfies`
 const chartConfig = {
   value: {
-    label: 'Worker Count',
+    label: "Worker Count",
   },
   Idle: {
-    label: 'Idle',
-    color: 'hsl(var(--chart-1))',
+    label: "Idle",
+    color: "hsl(var(--chart-1))",
   },
   Running: {
-    label: 'Running',
-    color: 'hsl(var(--chart-2))',
+    label: "Running",
+    color: "hsl(var(--chart-2))",
   },
   Suspended: {
-    label: 'Suspended',
-    color: 'hsl(var(--chart-3))',
+    label: "Suspended",
+    color: "hsl(var(--chart-3))",
   },
   Failed: {
-    label: 'Failed',
-    color: 'hsl(var(--chart-4))',
+    label: "Failed",
+    color: "hsl(var(--chart-4))",
   },
 } satisfies ChartConfig;
 
@@ -57,7 +57,7 @@ export function WorkerStatus({
 
   // Extracted render function for the chart label for clarity
   const renderChartLabel = ({ viewBox }: { viewBox?: any }) => {
-    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
       return (
         <text
           x={viewBox.cx}

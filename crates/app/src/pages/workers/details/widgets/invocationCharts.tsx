@@ -1,6 +1,6 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
-import { Invocation } from '@/types/worker';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { Invocation } from "@/types/worker";
 
 interface ProcessedData {
   date: string;
@@ -14,9 +14,9 @@ const processData = (data: Invocation[]): ProcessedData[] => {
   // Group data by date and collect unique function names
   data.forEach(curr => {
     const date = new Date(curr.timestamp);
-    const dateKey = date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    const dateKey = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
     const functionName = curr.function.match(/{(.*)}/)?.[1];
 
@@ -48,7 +48,7 @@ export function InvocationsChart({ data = [] as Invocation[] }) {
 
   const functionList =
     chartData.length > 0
-      ? Object.keys(chartData[0]).filter(key => key !== 'date')
+      ? Object.keys(chartData[0]).filter(key => key !== "date")
       : [];
 
   return (

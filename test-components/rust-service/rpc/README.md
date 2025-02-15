@@ -6,4 +6,3 @@ Internally, it uses the same functionalities (and data) as the rust-service/rust
 golem-cli app -b release build
 golem-cli app -b release copy
 ```
-

@@ -1,9 +1,9 @@
-import { writeFile } from '@tauri-apps/plugin-fs';
-import { BaseDirectory } from '@tauri-apps/api/path';
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
-import TauriWebSocket from '@tauri-apps/plugin-websocket';
+import { writeFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory } from "@tauri-apps/api/path";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+import TauriWebSocket from "@tauri-apps/plugin-websocket";
 
-const isTauri = typeof window !== 'undefined';
+const isTauri = typeof window !== "undefined";
 
 export async function saveFile(fileName: string, data: Uint8Array) {
   if (isTauri) {
@@ -12,7 +12,7 @@ export async function saveFile(fileName: string, data: Uint8Array) {
   } else {
     // Use Blob and createObjectURL for web downloads
     const blob = new Blob([data]);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = fileName;
     document.body.appendChild(link);
@@ -75,11 +75,11 @@ export class UniversalWebSocket {
       (this.ws as TauriWebSocket).addListener(event => {
         try {
           const message = event.data;
-          if (typeof message === 'string') {
+          if (typeof message === "string") {
             callback(JSON.parse(message));
           }
         } catch (e) {
-          console.error('Failed to parse Tauri WebSocket message', e);
+          console.error("Failed to parse Tauri WebSocket message", e);
         }
       });
     } else {
@@ -87,7 +87,7 @@ export class UniversalWebSocket {
         try {
           callback(JSON.parse(event.data));
         } catch (e) {
-          console.error('Failed to parse WebSocket message', e);
+          console.error("Failed to parse WebSocket message", e);
         }
       };
     }

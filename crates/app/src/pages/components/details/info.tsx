@@ -1,30 +1,30 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Download } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { ComponentList } from '@/types/component';
-import { saveFile } from '@/lib/tauri&web.ts';
-import { API } from '@/service';
-import { formatRelativeTime } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+} from "@/components/ui/select";
+import { Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ComponentList } from "@/types/component";
+import { saveFile } from "@/lib/tauri&web.ts";
+import { API } from "@/service";
+import { formatRelativeTime } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export default function ComponentInfo() {
-  const { componentId = '' } = useParams();
+  const { componentId = "" } = useParams();
   const [componentList, setComponentList] = useState<{
     [key: string]: ComponentList;
   }>({});
@@ -60,13 +60,13 @@ export default function ComponentInfo() {
           const fileName = `${componentId}.wasm`;
           await saveFile(fileName, new Uint8Array(arrayBuffer));
           toast({
-            title: 'File downloaded successfully',
+            title: "File downloaded successfully",
             duration: 3000,
           });
         },
       );
     } catch (error) {
-      console.error('Error downloading the file:', error);
+      console.error("Error downloading the file:", error);
     }
   }
 
@@ -148,7 +148,7 @@ export default function ComponentInfo() {
                 <div className="font-mono text-sm">
                   {componentDetails.createdAt
                     ? formatRelativeTime(componentDetails.createdAt)
-                    : 'NA'}
+                    : "NA"}
                 </div>
               </div>
             </div>

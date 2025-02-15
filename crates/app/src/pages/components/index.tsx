@@ -1,37 +1,37 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { LayoutGrid, PlusCircle } from 'lucide-react';
+import ErrorBoundary from "@/components/errorBoundary";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useNavigate } from 'react-router-dom';
-import { API } from '@/service';
-import { ComponentList } from '@/types/component';
-import { Worker } from '@/types/worker';
-import ErrorBoundary from '@/components/errorBoundary';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { calculateExportFunctions, cn, formatRelativeTime } from '@/lib/utils';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { calculateExportFunctions, cn, formatRelativeTime } from "@/lib/utils";
+import { API } from "@/service";
+import { ComponentList } from "@/types/component";
+import { Worker } from "@/types/worker";
+import { LayoutGrid, PlusCircle } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Worker status metrics used to categorize workers
  */
 const WORKER_STATUS_METRICS = [
-  'Idle',
-  'Running',
-  'Suspended',
-  'Failed',
+  "Idle",
+  "Running",
+  "Suspended",
+  "Failed",
 ] as const;
 
 const WORKER_COLOR_MAPPER = {
-  Idle: 'text-emerald-400 dark:text-emerald-200',
-  Running: 'text-blue-400 dark:text-blue-200',
-  Suspended: 'text-amber-400 dark:text-amber-200',
-  Failed: 'text-rose-400 dark:text-rose-200',
+  Idle: "text-emerald-400 dark:text-emerald-200",
+  Running: "text-blue-400 dark:text-blue-200",
+  Suspended: "text-amber-400 dark:text-amber-200",
+  Failed: "text-rose-400 dark:text-rose-200",
 };
 
 type WorkerStatusType = (typeof WORKER_STATUS_METRICS)[number];
@@ -109,17 +109,17 @@ export const ComponentCard = React.memo(
     return (
       <Card
         className={cn(
-          'w-full max-w-2xl from-background to-muted border-border cursor-pointer',
-          workerStatus && 'bg-gradient-to-br',
+          "w-full max-w-2xl from-background to-muted border-border cursor-pointer",
+          workerStatus && "bg-gradient-to-br",
         )}
         onClick={handleClick}
       >
         <CardHeader>
-          <CardTitle className="text-foreground">
-            {data.componentName || 'Unnamed Component'}
+          <CardTitle className="text-foreground font-mono">
+            {data.componentName || "Unnamed Component"}
           </CardTitle>
           <CardDescription
-            className={'text-xs font-light text-muted-foreground'}
+            className={"text-xs font-light text-muted-foreground"}
           >
             {formatRelativeTime(
               data.versions?.[data.versions?.length - 1].createdAt ||
@@ -139,7 +139,7 @@ export const ComponentCard = React.memo(
                 <div key={metric} className="space-y-2">
                   <h3
                     className={cn(
-                      'text-sm font-mono',
+                      "text-sm font-mono",
                       WORKER_COLOR_MAPPER[metric],
                     )}
                   >
@@ -147,7 +147,7 @@ export const ComponentCard = React.memo(
                   </h3>
                   <p
                     className={cn(
-                      'text-xl font-bold',
+                      "text-xl font-bold",
                       WORKER_COLOR_MAPPER[metric],
                     )}
                   >
@@ -164,7 +164,7 @@ export const ComponentCard = React.memo(
               variant="secondary"
               className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
             >
-              V{data.versionList?.[data.versionList?.length - 1] || '0'}
+              V{data.versionList?.[data.versionList?.length - 1] || "0"}
             </Badge>
             <Badge
               variant="secondary"
@@ -176,7 +176,7 @@ export const ComponentCard = React.memo(
               variant="secondary"
               className="bg-muted hover:bg-muted/80 text-muted-foreground transition-colors rounded-md cursor-pointer shadow"
             >
-              {Math.round((componentSize || 0) / 1024)} KB{' '}
+              {Math.round((componentSize || 0) / 1024)} KB{" "}
             </Badge>
             <Badge
               variant="secondary"
@@ -191,7 +191,7 @@ export const ComponentCard = React.memo(
   },
 );
 
-ComponentCard.displayName = 'ComponentCard';
+ComponentCard.displayName = "ComponentCard";
 
 /**
  * Main component for listing and searching project components
@@ -203,7 +203,7 @@ const Components = () => {
     {},
   );
   const [workerList, setWorkerList] = useState<WorkerStatusMap>({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   /**
    * Fetch all components, then fetch worker status for each component in parallel
@@ -242,7 +242,7 @@ const Components = () => {
       await Promise.all(workerPromises);
       setWorkerList(componentStatus);
     } catch (error) {
-      console.error('Error fetching components or metrics:', error);
+      console.error("Error fetching components or metrics:", error);
     }
   }, []);
 
@@ -266,7 +266,7 @@ const Components = () => {
       // Filter matches where the component name includes the user’s search text
       const filtered = Object.entries(componentList).reduce(
         (acc, [key, component]) => {
-          const componentName = component.componentName?.toLowerCase() || '';
+          const componentName = component.componentName?.toLowerCase() || "";
           if (componentName.includes(searchQuery.toLowerCase())) {
             acc[key] = component;
           }
@@ -329,7 +329,7 @@ const Components = () => {
               />
             </div>
             {/* Create Component Button */}
-            <Button onClick={() => navigate('/components/create')}>
+            <Button onClick={() => navigate("/components/create")}>
               <PlusCircle className="h-4 w-4 mr-2" />
               Create Component
             </Button>
@@ -340,13 +340,13 @@ const Components = () => {
         {Object.keys(filteredComponents).length === 0 ? (
           EmptyState
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-scroll max-h-[78vh]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-scroll max-h-[78vh] px-4">
             {Object.values(filteredComponents).map(data => (
               <ComponentCard
                 key={data.componentId}
                 data={data}
                 workerStatus={
-                  workerList[data.componentId || ''] || DEFAULT_WORKER_STATUS
+                  workerList[data.componentId || ""] || DEFAULT_WORKER_STATUS
                 }
                 onCardClick={handleCardClick}
               />

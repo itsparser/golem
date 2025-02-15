@@ -186,10 +186,7 @@
         }
       },
       "additionalProperties": false,
-      "required": [
-        "profiles",
-        "defaultProfile"
-      ]
+      "required": ["profiles", "defaultProfile"]
     },
     "componentProfilesWithTemplateRef": {
       "type": "object",
@@ -212,16 +209,12 @@
         }
       },
       "additionalProperties": false,
-      "required": [
-        "profiles",
-        "defaultProfile"
-      ]
+      "required": ["profiles", "defaultProfile"]
     },
     "externalCommand": {
       "type": "object",
       "description": "External command with optional inputs and outputs with up-to-date checks",
-      "properties": {
-      },
+      "properties": {},
       "oneOf": [
         {
           "properties": {
@@ -238,9 +231,7 @@
             }
           },
           "additionalProperties": false,
-          "required": [
-            "command"
-          ]
+          "required": ["command"]
         },
         {
           "properties": {
@@ -271,11 +262,7 @@
             }
           },
           "additionalProperties": false,
-          "required": [
-            "command",
-            "inputs",
-            "outputs"
-          ]
+          "required": ["command", "inputs", "outputs"]
         }
       ]
     },
@@ -294,10 +281,7 @@
               "description": "Target component name."
             }
           },
-          "required": [
-            "type",
-            "target"
-          ],
+          "required": ["type", "target"],
           "additionalProperties": false
         }
       ]

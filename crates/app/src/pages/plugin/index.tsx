@@ -1,18 +1,18 @@
-import { Component, Globe, LayoutGrid, Plus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Component, Globe, LayoutGrid, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { API } from '@/service';
-import { Plugin } from '@/types/plugin';
+} from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { API } from "@/service";
+import { Plugin } from "@/types/plugin";
 
 export default function PluginList() {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export default function PluginList() {
         <Button
           variant="default"
           className="ml-4"
-          onClick={() => navigate('/plugins/create')}
+          onClick={() => navigate("/plugins/create")}
         >
           <Plus className="mr-2 h-5 w-5" />
           Create Plugin
@@ -86,7 +86,7 @@ export default function PluginList() {
                   <Badge variant="outline" className="rounded-full text-sm">
                     {plugin.specs.type}
                   </Badge>
-                  {plugin.specs.type === 'OplogProcessor' && (
+                  {plugin.specs.type === "OplogProcessor" && (
                     <Badge variant="outline" className="rounded-full text-sm">
                       Component Version: {plugin.specs.componentVersion}
                     </Badge>
@@ -95,7 +95,7 @@ export default function PluginList() {
                     variant="outline"
                     className="flex items-center rounded-full text-sm"
                   >
-                    {plugin.scope.type === 'Global' ? (
+                    {plugin.scope.type === "Global" ? (
                       <Globe className="w-4 h-4 mr-1" />
                     ) : (
                       <Component className="w-4 h-4 mr-1" />

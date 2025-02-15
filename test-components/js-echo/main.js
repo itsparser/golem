@@ -1,5 +1,5 @@
 export const api = {
-    echo(value) {
-        return value;
-    }
-}
+  echo(value) {
+    return value;
+  },
+};

@@ -1,17 +1,17 @@
-import { API } from '@/service';
-import { Worker } from '@/types/worker.ts';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { API } from "@/service";
+import { Worker } from "@/types/worker.ts";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Check, Copy, Eye, EyeOff } from 'lucide-react';
+} from "@/components/ui/tooltip";
+import { Check, Copy, Eye, EyeOff } from "lucide-react";
 
 export default function WorkerEnvironments() {
   const { componentId, workerName } = useParams();
@@ -53,7 +53,7 @@ export default function WorkerEnvironments() {
                     <span className="font-medium">{key}</span>
                     <div className="flex items-center space-x-2">
                       <Input
-                        type={visible ? 'text' : 'password'}
+                        type={visible ? "text" : "password"}
                         value={value}
                         readOnly
                         className="w-64 bg-transparent border-none hover:border-none hover:border-transparent focus:border-none shadow-none"

@@ -24,7 +24,6 @@ export GOLEM__TRACING__FILE__ENABLED=true
 
 Logs that are not in JSON format (e.g. nginx / redis) will be loaded as the "message" field.
 
-
 On the first start it might take some time until _kibana_ is booted and until
 provisioning finishes, but after that the
 preconfigured [log view](http://localhost:5601/app/discover#/view/a6528e3b-703e-4b11-839c-8436f7009e61)

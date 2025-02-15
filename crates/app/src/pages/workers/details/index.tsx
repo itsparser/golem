@@ -1,12 +1,12 @@
-import { API } from '@/service';
-import { Invocation, Terminal, Worker, WsMessage } from '@/types/worker.ts';
-import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Activity, Clock, Cog } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { InvocationsChart } from './widgets/invocationCharts';
-import { formatRelativeTime } from '@/lib/utils';
-import { WSS } from '@/service/wss';
+import { API } from "@/service";
+import { Invocation, Terminal, Worker, WsMessage } from "@/types/worker.ts";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Activity, Clock, Cog } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InvocationsChart } from "./widgets/invocationCharts";
+import { formatRelativeTime } from "@/lib/utils";
+import { WSS } from "@/service/wss";
 
 export default function WorkerDetails() {
   const { componentId, workerName } = useParams();
@@ -34,7 +34,7 @@ export default function WorkerDetails() {
           setMessages((prev: WsMessage[]) => [...prev, message]);
         });
       } catch (error) {
-        console.error('Failed to connect WebSocket:', error);
+        console.error("Failed to connect WebSocket:", error);
       }
     };
 
@@ -50,8 +50,8 @@ export default function WorkerDetails() {
   const invocationData = [] as Invocation[];
   const terminal = [] as Terminal[];
   messages.forEach(message => {
-    const invocationStart = message['InvocationStart'];
-    const stdOut = message['StdOut'];
+    const invocationStart = message["InvocationStart"];
+    const stdOut = message["StdOut"];
     if (invocationStart)
       invocationData.push({
         timestamp: invocationStart.timestamp,
@@ -90,7 +90,7 @@ export default function WorkerDetails() {
               <div className="text-2xl font-bold">
                 {(workerDetails.totalLinearMemorySize / (1024 * 1024)).toFixed(
                   2,
-                )}{' '}
+                )}{" "}
                 MB
               </div>
             </CardContent>
@@ -118,7 +118,7 @@ export default function WorkerDetails() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatRelativeTime(workerDetails.createdAt || new Date())}{' '}
+                {formatRelativeTime(workerDetails.createdAt || new Date())}{" "}
               </div>
             </CardContent>
           </Card>

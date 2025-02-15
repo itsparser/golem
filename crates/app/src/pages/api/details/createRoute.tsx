@@ -1,21 +1,23 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Info, Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/select";
+import { Info, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import ErrorBoundary from "@/components/errorBoundary";
+import { RibEditor } from "@/components/rib-editor.tsx";
 import {
   Form,
   FormControl,
@@ -24,34 +26,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { API } from '@/service';
-import { Api } from '@/types/api';
-import type { Component, ComponentList } from '@/types/component';
-import ErrorBoundary from '@/components/errorBoundary';
-import { toast } from '@/hooks/use-toast';
-import { RibEditor } from '@/components/rib-editor.tsx';
-import { parseTypeForTooltip } from '@/lib/utils.ts';
+} from "@/components/ui/form";
+import { toast } from "@/hooks/use-toast";
+import { parseTypeForTooltip } from "@/lib/utils.ts";
+import { API } from "@/service";
+import type { GatewayBindingType, MethodPattern } from "@/types/api";
+import { Api } from "@/types/api";
+import type { Component, ComponentList } from "@/types/component";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 const MethodPattern = z.enum([
-  'Get',
-  'Post',
-  'PUT',
-  'DELETE',
-  'PATCH',
-  'HEAD',
-  'OPTIONS',
-  'TRACE',
-  'CONNECT',
+  "Get",
+  "Post",
+  "Put",
+  "Delete",
+  "Patch",
+  "Head",
+  "Options",
+  "Trace",
+  "Connect",
 ]);
 
-const GatewayBindingType = z.enum(['default', 'file-server', 'cors-preflight']);
+const BindingType = z.enum(["default", "file-server", "cors-preflight"]);
 
 const GatewayBindingData = z.object({
-  bindingType: GatewayBindingType,
+  bindingType: BindingType,
   componentId: z
     .object({
       componentId: z.string(),
@@ -81,10 +82,10 @@ const RouteRequestData = z.object({
 });
 
 function filterMethod(type: string) {
-  if (type === 'default') {
-    return ['Get', 'Post', 'PUT', 'DELETE', 'PATCH'];
-  } else if (type === 'cors-preflight') {
-    return ['OPTIONS', 'HEAD', 'TRACE', 'CONNECT'];
+  if (type === "default") {
+    return ["Get", "Post", "Put", "Delete", "Patch"];
+  } else if (type === "cors-preflight") {
+    return ["OPTIONS", "HEAD", "TRACE", "CONNECT"];
   }
   return [];
 }
@@ -92,14 +93,14 @@ function filterMethod(type: string) {
 type RouteFormValues = z.infer<typeof RouteRequestData>;
 
 const interpolations = [
-  { label: 'Path Parameters', expression: '${request.path.<PATH_PARAM_NAME>}' },
+  { label: "Path Parameters", expression: "${request.path.<PATH_PARAM_NAME>}" },
   {
-    label: 'Query Parameters',
-    expression: '${request.path.<QUERY_PARAM_NAME>}',
+    label: "Query Parameters",
+    expression: "${request.path.<QUERY_PARAM_NAME>}",
   },
-  { label: 'Request Body', expression: '${request.body}' },
-  { label: 'Request Body Field', expression: '${request.body.<FIELD_NAME>}' },
-  { label: 'Request Headers', expression: '${request.header.<HEADER_NAME>}' },
+  { label: "Request Body", expression: "${request.body}" },
+  { label: "Request Body Field", expression: "${request.body.<FIELD_NAME>}" },
+  { label: "Request Headers", expression: "${request.header.<HEADER_NAME>}" },
 ];
 
 const CreateRoute = () => {
@@ -111,8 +112,8 @@ const CreateRoute = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [queryParams] = useSearchParams();
-  const path = queryParams.get('path');
-  const method = queryParams.get('method');
+  const path = queryParams.get("path");
+  const method = queryParams.get("method");
 
   const [isEdit, setIsEdit] = useState(false);
   const [activeApiDetails, setActiveApiDetails] = useState<Api | null>(null);
@@ -151,16 +152,16 @@ const CreateRoute = () => {
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(RouteRequestData),
     defaultValues: {
-      path: '/',
-      method: 'Get',
+      path: "/",
+      method: "Get",
       binding: {
-        bindingType: 'default',
+        bindingType: "default",
         componentId: {
-          componentId: '',
+          componentId: "",
           version: 0,
         },
-        workerName: '',
-        response: '',
+        workerName: "",
+        response: "",
       },
     },
   });
@@ -186,13 +187,13 @@ const CreateRoute = () => {
             // @ts-ignore
             form.reset(route);
             if (!route.binding.bindingType) {
-              form.setValue('binding.bindingType', 'default');
+              form.setValue("binding.bindingType", "default");
             }
           }
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
-        setFetchError('Failed to load required data. Please try again.');
+        console.error("Failed to fetch data:", error);
+        setFetchError("Failed to load required data. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -211,9 +212,9 @@ const CreateRoute = () => {
       const selectedApi = apiResponse.find(api => api.version === version);
       if (!selectedApi) {
         toast({
-          title: 'API not found',
-          description: 'Please try again.',
-          variant: 'destructive',
+          title: "API not found",
+          description: "Please try again.",
+          variant: "destructive",
           duration: Number.POSITIVE_INFINITY,
         });
         return;
@@ -232,10 +233,10 @@ const CreateRoute = () => {
         );
       });
     } catch (error) {
-      console.error('Failed to create route:', error);
-      form.setError('root', {
-        type: 'manual',
-        message: 'Failed to create route. Please try again.',
+      console.error("Failed to create route:", error);
+      form.setError("root", {
+        type: "manual",
+        message: "Failed to create route. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -243,7 +244,7 @@ const CreateRoute = () => {
   };
   const handlePathChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    form.setValue('path', value);
+    form.setValue("path", value);
     extractDynamicParams(value);
   };
 
@@ -263,7 +264,7 @@ const CreateRoute = () => {
             const { short } = parseTypeForTooltip(p.typ);
             return `${p.name}: ${short}`;
           })
-          .join(', ');
+          .join(", ");
         return `${item.name}.{${func.name}}(${param})`;
       }),
     );
@@ -271,8 +272,8 @@ const CreateRoute = () => {
   };
 
   const onVersionChange = (version: string) => {
-    form.setValue('binding.componentId.version', Number(version));
-    const componentId = form.getValues('binding.componentId.componentId');
+    form.setValue("binding.componentId.version", Number(version));
+    const componentId = form.getValues("binding.componentId.componentId");
     loadResponseSuggestions(componentId, version);
   };
 
@@ -322,10 +323,10 @@ const CreateRoute = () => {
                           <Select
                             onValueChange={componentId => {
                               form.setValue(
-                                'binding.componentId.componentId',
+                                "binding.componentId.componentId",
                                 componentId,
                               );
-                              loadResponseSuggestions(componentId, '0');
+                              loadResponseSuggestions(componentId, "0");
                             }}
                             value={field.value}
                           >
@@ -338,7 +339,7 @@ const CreateRoute = () => {
                               {Object.values(componentList).map(
                                 (data: ComponentList) => (
                                   <SelectItem
-                                    value={data.componentId || ''}
+                                    value={data.componentId || ""}
                                     key={data.componentName}
                                   >
                                     {data.componentName}
@@ -362,21 +363,21 @@ const CreateRoute = () => {
                             onValueChange={onVersionChange}
                             value={String(field.value)}
                             disabled={
-                              !form.watch('binding.componentId.componentId')
+                              !form.watch("binding.componentId.componentId")
                             }
                           >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select version">
-                                  {' '}
-                                  v{field.value}{' '}
+                                  {" "}
+                                  v{field.value}{" "}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {form.watch('binding.componentId') &&
+                              {form.watch("binding.componentId") &&
                                 componentList[
-                                  form.watch('binding.componentId.componentId')
+                                  form.watch("binding.componentId.componentId")
                                 ]?.versionList?.map((v: number) => (
                                   <SelectItem value={String(v)} key={v}>
                                     v{v}
@@ -405,7 +406,10 @@ const CreateRoute = () => {
                           <FormLabel required>Bind type</FormLabel>
                           <Select
                             onValueChange={v =>
-                              form.setValue('binding.bindingType', v)
+                              form.setValue(
+                                "binding.bindingType",
+                                v as GatewayBindingType,
+                              )
                             }
                             value={field.value}
                           >
@@ -415,13 +419,11 @@ const CreateRoute = () => {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {GatewayBindingType.options.map(
-                                (data: string) => (
-                                  <SelectItem value={data} key={data}>
-                                    {data}
-                                  </SelectItem>
-                                ),
-                              )}
+                              {BindingType.options.map((data: string) => (
+                                <SelectItem value={data} key={data}>
+                                  {data}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -429,7 +431,7 @@ const CreateRoute = () => {
                       )}
                     />
                   </div>
-                  {filterMethod(form.watch('binding.bindingType')).length >
+                  {filterMethod(form.watch("binding.bindingType")).length >
                     0 && (
                     <div className="grid grid-cols-3 gap-4 mt-4">
                       <FormField
@@ -439,18 +441,20 @@ const CreateRoute = () => {
                           <FormItem>
                             <FormLabel required>Method</FormLabel>
                             <Select
-                              onValueChange={v => form.setValue('method', v)}
+                              onValueChange={v =>
+                                form.setValue("method", v as MethodPattern)
+                              }
                               value={
                                 field.value ||
                                 filterMethod(
-                                  form.watch('binding.bindingType'),
+                                  form.watch("binding.bindingType"),
                                 )[0]
                               }
                               disabled={
                                 !(
-                                  form.watch('binding.bindingType') &&
+                                  form.watch("binding.bindingType") &&
                                   filterMethod(
-                                    form.watch('binding.bindingType'),
+                                    form.watch("binding.bindingType"),
                                   ).length > 0
                                 )
                               }
@@ -458,15 +462,15 @@ const CreateRoute = () => {
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select Method">
-                                    {' '}
-                                    {field.value}{' '}
+                                    {" "}
+                                    {field.value}{" "}
                                   </SelectValue>
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {form.watch('binding.bindingType') &&
+                                {form.watch("binding.bindingType") &&
                                   filterMethod(
-                                    form.watch('binding.bindingType'),
+                                    form.watch("binding.bindingType"),
                                   ).map((v: string) => (
                                     <SelectItem value={v} key={v}>
                                       {v}
@@ -492,10 +496,6 @@ const CreateRoute = () => {
                                 onChange={e => handlePathChange(e)}
                               />
                             </FormControl>
-                            {/*<FormDescription>*/}
-                            {/*    Define path variables with angle brackets (e.g.,*/}
-                            {/*    /users/id)*/}
-                            {/*</FormDescription>*/}
                             <FormMessage />
                           </FormItem>
                         )}
@@ -503,7 +503,7 @@ const CreateRoute = () => {
                     </div>
                   )}
                 </div>
-                {form.watch('binding.bindingType') != 'cors-preflight' && (
+                {form.watch("binding.bindingType") != "cors-preflight" && (
                   <div>
                     <FormField
                       control={form.control}
@@ -581,8 +581,8 @@ const CreateRoute = () => {
                                 <PopoverContent
                                   className={`${
                                     responseSuggestions.length === 0
-                                      ? 'max-w-[450px]'
-                                      : 'w-[450px]'
+                                      ? "max-w-[450px]"
+                                      : "w-[450px]"
                                   }  p-4`}
                                   align="start"
                                   sideOffset={5}
@@ -603,7 +603,7 @@ const CreateRoute = () => {
                                                 `${row} `,
                                               );
                                               toast({
-                                                title: 'Copied to clipboard',
+                                                title: "Copied to clipboard",
                                                 duration: 3000,
                                               });
                                               setIsPopoverOpen(false);
@@ -653,7 +653,7 @@ const CreateRoute = () => {
                         Creating...
                       </>
                     ) : (
-                      <div>{isEdit ? 'Edit Route' : 'Create Route'}</div>
+                      <div>{isEdit ? "Edit Route" : "Create Route"}</div>
                     )}
                   </Button>
                 </div>

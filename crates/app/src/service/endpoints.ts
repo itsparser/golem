@@ -1,9 +1,9 @@
 export const ENDPOINT = {
   getComponents: () => {
-    return '/v1/components';
+    return "/v1/components";
   },
   createComponent: () => {
-    return '/v1/components';
+    return "/v1/components";
   },
   getComponentByIdAndVersion: (id: string, version: number) => {
     return `/v1/components/${id}/versions/${version}`;
@@ -27,10 +27,10 @@ export const ENDPOINT = {
     return `/v1/components/${id}`;
   },
   getApiList: () => {
-    return '/v1/api/definitions';
+    return "/v1/api/definitions";
   },
   createApi: () => {
-    return '/v1/api/definitions';
+    return "/v1/api/definitions";
   },
   postApi: () => {
     return `/v1/api/definitions`;
@@ -45,7 +45,7 @@ export const ENDPOINT = {
     return `/v1/api/definitions/${id}/${version}`;
   },
   getWorkers: () => {
-    return '/v1/components/workers/find';
+    return "/v1/components/workers/find";
   },
   createWorker: (component_id: string) => {
     return `/v1/components/${component_id}/workers`;
@@ -73,7 +73,7 @@ export const ENDPOINT = {
     return `/v1/components/${componentId}/invoke-and-await?function=${functionName}`;
   },
   getPlugins: () => {
-    return '/v1/plugins';
+    return "/v1/plugins";
   },
   getPluginName: (name: string) => {
     return `/v1/plugins/${name}`;

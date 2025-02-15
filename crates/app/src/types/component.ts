@@ -17,12 +17,12 @@ export type TypeField = {
   name: string;
   typ: {
     type: string;
-    inner?: Field['typ'];
+    inner?: Field["typ"];
     fields?: Field[];
-    cases?: Array<string | { name: string; typ: Field['typ'] }>;
+    cases?: Array<string | { name: string; typ: Field["typ"] }>;
     names?: string[];
-    ok?: Field['typ'];
-    err?: Field['typ'];
+    ok?: Field["typ"];
+    err?: Field["typ"];
   };
 };
 
@@ -85,8 +85,8 @@ export interface VersionedComponentId {
 }
 
 export enum ComponentType {
-  Durable = 'Durable',
-  Ephemeral = 'Ephemeral',
+  Durable = "Durable",
+  Ephemeral = "Ephemeral",
 }
 
 export interface Component {

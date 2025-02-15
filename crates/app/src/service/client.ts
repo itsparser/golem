@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ComponentList } from '@/types/component.ts';
-import { ENDPOINT } from '@/service/endpoints.ts';
-import { Api } from '@/types/api.ts';
-import { fetchData } from '@/lib/tauri&web.ts';
-import { toast } from '@/hooks/use-toast';
-import { Plugin } from '@/types/plugin';
-import { parseErrorResponse } from '@/service/error-handler.ts';
+import { Component, ComponentList } from "@/types/component.ts";
+import { ENDPOINT } from "@/service/endpoints.ts";
+import { Api } from "@/types/api.ts";
+import { fetchData } from "@/lib/tauri&web.ts";
+import { toast } from "@/hooks/use-toast";
+import { Plugin } from "@/types/plugin";
+import { parseErrorResponse } from "@/service/error-handler.ts";
 
 export class Service {
   private baseUrl: string;
 
-  constructor(baseUrl: string = 'http://localhost:9881') {
+  constructor(baseUrl: string = "http://localhost:9881") {
     this.baseUrl = baseUrl;
   }
 
@@ -39,7 +39,7 @@ export class Service {
   public createComponent = async (form: FormData) => {
     try {
       const response = await fetchData(`${this.baseUrl}/v1/components`, {
-        method: 'POST',
+        method: "POST",
         body: form,
       });
 
@@ -51,7 +51,7 @@ export class Service {
 
       return await response.json(); // Return JSON response if successful
     } catch (error) {
-      console.error('Error in createComponent:', error);
+      console.error("Error in createComponent:", error);
       parseErrorResponse(error);
     }
   };
@@ -68,7 +68,7 @@ export class Service {
       const response = await fetchData(
         `${this.baseUrl}/v1/components/${componenetId}/updates`,
         {
-          method: 'POST',
+          method: "POST",
           body: form,
         },
       );
@@ -81,7 +81,7 @@ export class Service {
 
       return await response.json(); // Return JSON response if successful
     } catch (error) {
-      console.error('Error in Update Component:', error);
+      console.error("Error in Update Component:", error);
     }
   };
 
@@ -91,14 +91,14 @@ export class Service {
   ) => {
     return await this.callApi(
       ENDPOINT.deletePluginToComponent(id, installation_id),
-      'DELETE',
+      "DELETE",
     );
   };
 
   public addPluginToComponent = async (id: string, form: any) => {
     return await this.callApi(
       ENDPOINT.addPluginToComponent(id),
-      'POST',
+      "POST",
       JSON.stringify(form),
     );
   };
@@ -110,13 +110,13 @@ export class Service {
   ) => {
     return await this.callApi(
       ENDPOINT.updateWorker(componentId, workerName),
-      'POST',
+      "POST",
       JSON.stringify({
-        mode: 'Automatic',
+        mode: "Automatic",
         targetVersion: version,
       }),
       {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
       },
     );
   };
@@ -127,7 +127,7 @@ export class Service {
   ) => {
     const r = await this.callApi(
       ENDPOINT.findWorker(componentId),
-      'POST',
+      "POST",
       JSON.stringify(param),
     );
     return r;
@@ -136,7 +136,7 @@ export class Service {
   public deleteWorker = async (componentId: string, workName: string) => {
     const r = await this.callApi(
       ENDPOINT.deleteWorker(componentId, workName),
-      'DELETE',
+      "DELETE",
     );
     return r;
   };
@@ -144,7 +144,7 @@ export class Service {
   public createWorker = async (componentID: string, params: any) => {
     const r = await this.callApi(
       ENDPOINT.createWorker(componentID),
-      'POST',
+      "POST",
       JSON.stringify(params),
     );
     return r;
@@ -163,21 +163,21 @@ export class Service {
   public createApi = async (payload: Api) => {
     const r = await this.callApi(
       ENDPOINT.createApi(),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
     return r;
   };
 
   public deleteApi = async (id: string, version: string) => {
-    const r = await this.callApi(ENDPOINT.deleteApi(id, version), 'DELETE');
+    const r = await this.callApi(ENDPOINT.deleteApi(id, version), "DELETE");
     return r;
   };
 
   public putApi = async (id: string, version: string, payload: Api) => {
     const r = await this.callApi(
       ENDPOINT.putApi(id, version),
-      'PUT',
+      "PUT",
       JSON.stringify(payload),
     );
     return r;
@@ -186,7 +186,7 @@ export class Service {
   public postApi = async (payload: Api) => {
     const r = await this.callApi(
       ENDPOINT.postApi(),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
     return r;
@@ -205,7 +205,7 @@ export class Service {
   public interruptWorker = async (componentId: string, workerName: string) => {
     const r = await this.callApi(
       ENDPOINT.interruptWorker(componentId, workerName),
-      'POST',
+      "POST",
       JSON.stringify({}),
     );
     return r;
@@ -214,7 +214,7 @@ export class Service {
   public resumeWorker = async (componentId: string, workerName: string) => {
     const r = await this.callApi(
       ENDPOINT.resumeWorker(componentId, workerName),
-      'POST',
+      "POST",
       JSON.stringify({}),
     );
     return r;
@@ -228,7 +228,7 @@ export class Service {
   ) => {
     const r = await this.callApi(
       ENDPOINT.invokeWorker(componentId, workerName, functionName),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
     return r;
@@ -241,7 +241,7 @@ export class Service {
   ) => {
     const r = await this.callApi(
       ENDPOINT.invokeEphemeralWorker(componentId, functionName),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
     return r;
@@ -255,7 +255,7 @@ export class Service {
   public deleteDeployment = async (deploymentId: string) => {
     const r = await this.callApi(
       ENDPOINT.deleteDeployment(deploymentId),
-      'DELETE',
+      "DELETE",
     );
     return r;
   };
@@ -263,7 +263,7 @@ export class Service {
   public createDeployment = async (payload: any) => {
     const r = await this.callApi(
       ENDPOINT.createDeployment(),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
     return r;
@@ -277,7 +277,7 @@ export class Service {
   ) => {
     const r = await this.callApi(
       ENDPOINT.getOplog(componentId, workerName, count, searchQuery),
-      'GET',
+      "GET",
     );
     return r;
   };
@@ -297,17 +297,17 @@ export class Service {
         } = component;
 
         // Use type assertion to help TS with the optional fields in versionedComponentId
-        const { componentId = '', version = 0 } = versionedComponentId;
+        const { componentId = "", version = 0 } = versionedComponentId;
 
         // Use componentId as the key. If not available, you might want to skip or handle differently.
-        const key = componentId || '';
+        const key = componentId || "";
 
         // Initialize the component entry if it doesn't exist
         if (!acc[key]) {
           acc[key] = {
-            componentName: componentName || '',
-            componentId: componentId || '',
-            componentType: componentType || '',
+            componentName: componentName || "",
+            componentId: componentId || "",
+            componentType: componentType || "",
             versions: [],
             versionList: [],
           };
@@ -344,19 +344,19 @@ export class Service {
   public createPlugin = async (payload: Plugin) => {
     return await this.callApi(
       ENDPOINT.getPlugins(),
-      'POST',
+      "POST",
       JSON.stringify(payload),
     );
   };
   public deletePlugin = async (name: string, version: string) => {
-    return await this.callApi(ENDPOINT.deletePlugin(name, version), 'DELETE');
+    return await this.callApi(ENDPOINT.deletePlugin(name, version), "DELETE");
   };
 
   private callApi = async (
     url: string,
-    method: string = 'GET',
+    method: string = "GET",
     data: FormData | string | null = null,
-    headers = { 'Content-Type': 'application/json' },
+    headers = { "Content-Type": "application/json" },
   ): Promise<any> => {
     try {
       const response = await fetchData(`${this.baseUrl}${url}`, {
@@ -365,10 +365,10 @@ export class Service {
         headers: headers,
       });
 
-      const contentType = response.headers.get('Content-Type');
+      const contentType = response.headers.get("Content-Type");
       let responseData: any;
 
-      if (contentType && contentType.includes('application/json')) {
+      if (contentType && contentType.includes("application/json")) {
         responseData = await response.json();
       } else {
         responseData = await response.text();
@@ -420,9 +420,9 @@ export class Service {
 
   private downloadApi = async (
     url: string,
-    method: string = 'GET',
+    method: string = "GET",
     data: FormData | string | null = null,
-    headers = { 'Content-Type': 'application/json' },
+    headers = { "Content-Type": "application/json" },
   ): Promise<any> => {
     const resp = await fetchData(`${this.baseUrl}${url}`, {
       method: method,
@@ -436,8 +436,8 @@ export class Service {
       })
       .catch(err => {
         toast({
-          title: 'Api is Failed check the api details',
-          variant: 'destructive',
+          title: "Api is Failed check the api details",
+          variant: "destructive",
           duration: 5000,
         });
         throw err;

@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from "react";
+import { format } from "date-fns";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -16,11 +16,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Plug } from 'lucide-react';
-import { Update, Worker } from '@/types/worker.ts';
-import { useParams } from 'react-router-dom';
-import { API } from '@/service';
+} from "@/components/ui/table";
+import { Plug } from "lucide-react";
+import { Update, Worker } from "@/types/worker.ts";
+import { useParams } from "react-router-dom";
+import { API } from "@/service";
 
 interface PluginStatusProps {
   activePlugins: string[];
@@ -32,25 +32,25 @@ interface PluginStatusProps {
 const UpdateLog: React.FC<{ update: Update }> = ({ update }) => {
   const getStatusColor = (type: string) => {
     switch (type) {
-      case 'failedUpdate':
-        return 'bg-red-500';
-      case 'successfulUpdate':
-        return 'bg-green-500';
-      case 'pendingUpdate':
+      case "failedUpdate":
+        return "bg-red-500";
+      case "successfulUpdate":
+        return "bg-green-500";
+      case "pendingUpdate":
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
   const getStatusText = (type: string) => {
     switch (type) {
-      case 'failedUpdate':
-        return 'Failed';
-      case 'successfulUpdate':
-        return 'Success';
-      case 'pendingUpdate':
-        return 'Pending';
+      case "failedUpdate":
+        return "Failed";
+      case "successfulUpdate":
+        return "Success";
+      case "pendingUpdate":
+        return "Pending";
       default:
-        return 'Pending';
+        return "Pending";
     }
   };
 
@@ -63,7 +63,7 @@ const UpdateLog: React.FC<{ update: Update }> = ({ update }) => {
         {getStatusText(update.type)}
       </Badge>
       <span className="text-sm text-gray-600">
-        {format(new Date(update.timestamp), 'yyyy-MM-dd HH:mm:ss')}
+        {format(new Date(update.timestamp), "yyyy-MM-dd HH:mm:ss")}
       </span>
       <span className="text-sm">Target Version: {update.targetVersion}</span>
       {update.details && (
@@ -154,7 +154,7 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
   );
 };
 export default function WorkerInfo() {
-  const { componentId = '', workerName = '' } = useParams();
+  const { componentId = "", workerName = "" } = useParams();
   const [workerDetails, setWorkerDetails] = useState({} as Worker);
 
   useEffect(() => {
@@ -169,7 +169,7 @@ export default function WorkerInfo() {
       <PluginStatus
         activePlugins={workerDetails.activePlugins || []}
         componentVersion={workerDetails.componentVersion || 0}
-        status={workerDetails.status || ''}
+        status={workerDetails.status || ""}
         updates={(workerDetails.updates || []).reverse()}
       />
     </div>

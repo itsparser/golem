@@ -1,15 +1,15 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -18,64 +18,64 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useState } from 'react';
-import { ComponentList } from '@/types/component';
-import { API } from '@/service';
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import { ComponentList } from "@/types/component";
+import { API } from "@/service";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+} from "@/components/ui/select";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
-    message: 'Plugin name must be at least 2 characters.',
+    message: "Plugin name must be at least 2 characters.",
   }),
   version: z.string().regex(/^v\d+$/, {
-    message: 'Version must be in the format v{0-9}',
+    message: "Version must be in the format v{0-9}",
   }),
   description: z.string().min(10, {
-    message: 'Description must be at least 10 characters.',
+    message: "Description must be at least 10 characters.",
   }),
   homepage: z.string().url({
-    message: 'Please enter a valid URL.',
+    message: "Please enter a valid URL.",
   }),
   icon: z.instanceof(File),
-  specs: z.discriminatedUnion('type', [
+  specs: z.discriminatedUnion("type", [
     z.object({
-      type: z.literal('OplogProcessor'),
+      type: z.literal("OplogProcessor"),
       componentId: z
         .string()
-        .uuid({ message: 'Component ID must be a valid UUID.' }),
+        .uuid({ message: "Component ID must be a valid UUID." }),
       componentVersion: z.number().min(0, {
-        message: 'Component version is mandatory',
+        message: "Component version is mandatory",
       }),
     }),
     z.object({
-      type: z.literal('ComponentTransformer'),
-      validateUrl: z.string().url({ message: 'Please enter a valid URL.' }),
-      transformUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+      type: z.literal("ComponentTransformer"),
+      validateUrl: z.string().url({ message: "Please enter a valid URL." }),
+      transformUrl: z.string().url({ message: "Please enter a valid URL." }),
       jsonSchema: z.string().optional(),
     }),
   ]),
-  scope: z.discriminatedUnion('type', [
+  scope: z.discriminatedUnion("type", [
     z.object({
-      type: z.literal('Global'),
+      type: z.literal("Global"),
     }),
     z.object({
-      type: z.literal('Component'),
+      type: z.literal("Component"),
       componentID: z
         .string()
-        .uuid({ message: 'Component ID must be a valid UUID.' }),
+        .uuid({ message: "Component ID must be a valid UUID." }),
     }),
   ]),
 });
@@ -85,20 +85,20 @@ export default function CreatePlugin() {
   const [componentApiList, setComponentApiList] = useState<{
     [key: string]: ComponentList;
   }>({});
-  const [activeSpecTab, setActiveSpecTab] = useState('OplogProcessor');
+  const [activeSpecTab, setActiveSpecTab] = useState("OplogProcessor");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      version: '',
-      description: '',
-      homepage: '',
+      name: "",
+      version: "",
+      description: "",
+      homepage: "",
       specs: {
-        type: 'OplogProcessor',
-        componentId: '',
+        type: "OplogProcessor",
+        componentId: "",
       },
       scope: {
-        type: 'Global',
+        type: "Global",
       },
     },
   });
@@ -111,8 +111,8 @@ export default function CreatePlugin() {
 
   useEffect(() => {
     form.setValue(
-      'specs.type',
-      activeSpecTab as 'OplogProcessor' | 'ComponentTransformer',
+      "specs.type",
+      activeSpecTab as "OplogProcessor" | "ComponentTransformer",
     );
   }, [activeSpecTab, form]);
 
@@ -135,7 +135,7 @@ export default function CreatePlugin() {
                 await API.createPlugin(values);
                 navigate(`/plugins`);
                 toast({
-                  title: 'Plugin created successfully',
+                  title: "Plugin created successfully",
                   duration: 3000,
                 });
               })}
@@ -156,7 +156,7 @@ export default function CreatePlugin() {
                           {...field}
                           className={cn(
                             form.formState.errors.name &&
-                              'border-red-500 focus-visible:ring-red-500',
+                              "border-red-500 focus-visible:ring-red-500",
                           )}
                         />
                       </FormControl>
@@ -181,7 +181,7 @@ export default function CreatePlugin() {
                           {...field}
                           className={cn(
                             form.formState.errors.version &&
-                              'border-red-500 focus-visible:ring-red-500',
+                              "border-red-500 focus-visible:ring-red-500",
                           )}
                         />
                       </FormControl>
@@ -207,7 +207,7 @@ export default function CreatePlugin() {
                         {...field}
                         className={cn(
                           form.formState.errors.description &&
-                            'border-red-500 focus-visible:ring-red-500',
+                            "border-red-500 focus-visible:ring-red-500",
                         )}
                       />
                     </FormControl>
@@ -234,12 +234,12 @@ export default function CreatePlugin() {
                           onChange={e => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              form.setValue('icon', file); // Update the form value manually
+                              form.setValue("icon", file); // Update the form value manually
                             }
                           }}
                           className={cn(
                             form.formState.errors.icon &&
-                              'border-red-500 focus-visible:ring-red-500',
+                              "border-red-500 focus-visible:ring-red-500",
                           )}
                         />
                       </FormControl>
@@ -264,7 +264,7 @@ export default function CreatePlugin() {
                           {...field}
                           className={cn(
                             form.formState.errors.homepage &&
-                              'border-red-500 focus-visible:ring-red-500',
+                              "border-red-500 focus-visible:ring-red-500",
                           )}
                         />
                       </FormControl>
@@ -317,7 +317,7 @@ export default function CreatePlugin() {
                                           componentId: string;
                                         }
                                       )?.componentId &&
-                                        'border-red-500 focus-visible:ring-red-500',
+                                        "border-red-500 focus-visible:ring-red-500",
                                     )}
                                   >
                                     <SelectValue placeholder="Select a Component" />
@@ -363,7 +363,7 @@ export default function CreatePlugin() {
                                           componentVersion: string;
                                         }
                                       )?.componentVersion &&
-                                        'border-red-500 focus-visible:ring-red-500',
+                                        "border-red-500 focus-visible:ring-red-500",
                                     )}
                                   >
                                     <SelectValue placeholder="Select a version">
@@ -373,7 +373,7 @@ export default function CreatePlugin() {
                                 </FormControl>
                                 <SelectContent>
                                   {componentApiList[
-                                    form.watch('specs.componentId')
+                                    form.watch("specs.componentId")
                                   ]?.versionList?.map((v: number) => (
                                     <SelectItem key={v} value={v.toString()}>
                                       V{v}
@@ -408,7 +408,7 @@ export default function CreatePlugin() {
                                         validateUrl: string;
                                       }
                                     )?.validateUrl &&
-                                      'border-red-500 focus-visible:ring-red-500',
+                                      "border-red-500 focus-visible:ring-red-500",
                                   )}
                                 />
                               </FormControl>
@@ -438,7 +438,7 @@ export default function CreatePlugin() {
                                         transformUrl: string;
                                       }
                                     )?.transformUrl &&
-                                      'border-red-500 focus-visible:ring-red-500',
+                                      "border-red-500 focus-visible:ring-red-500",
                                   )}
                                 />
                               </FormControl>
@@ -465,7 +465,7 @@ export default function CreatePlugin() {
                                         jsonSchema: string;
                                       }
                                     )?.jsonSchema &&
-                                      'border-red-500 focus-visible:ring-red-500',
+                                      "border-red-500 focus-visible:ring-red-500",
                                   )}
                                 />
                               </FormControl>
@@ -501,7 +501,7 @@ export default function CreatePlugin() {
                               <SelectTrigger
                                 className={cn(
                                   form.formState.errors.scope?.type &&
-                                    'border-red-500 focus-visible:ring-red-500',
+                                    "border-red-500 focus-visible:ring-red-500",
                                 )}
                               >
                                 <SelectValue placeholder="Select a scope type" />
@@ -519,7 +519,7 @@ export default function CreatePlugin() {
                       </FormItem>
                     )}
                   />
-                  {form.watch('scope.type') === 'Component' && (
+                  {form.watch("scope.type") === "Component" && (
                     <FormField
                       control={form.control}
                       name="scope.componentID"
@@ -541,7 +541,7 @@ export default function CreatePlugin() {
                                       componentID: string;
                                     }
                                   )?.componentID &&
-                                    'border-red-500 focus-visible:ring-red-500',
+                                    "border-red-500 focus-visible:ring-red-500",
                                 )}
                               >
                                 <SelectValue placeholder="Select a Component" />

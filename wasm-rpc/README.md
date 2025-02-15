@@ -28,6 +28,7 @@ cargo component build -p golem-wasm-rpc --no-default-features --features stub
 ```
 
 ## Feature flags
+
 - `arbitrary` adds an `Arbitrary` instance for `Value`
 - `bincode` adds Bincode codecs for some types
 - `host-bindings` enables WIT-generated types for wasmtime hosts

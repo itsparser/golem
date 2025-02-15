@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import * as React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
-} from '@/components/ui/card.tsx';
-import { Separator } from '@/components/ui/separator.tsx';
-import { API } from '@/service';
-import { Worker } from '@/types/worker.ts';
+} from "@/components/ui/card.tsx";
+import { Separator } from "@/components/ui/separator.tsx";
+import { API } from "@/service";
+import { Worker } from "@/types/worker.ts";
 
 export default function ComponentSettings() {
   const { toast } = useToast();
@@ -42,8 +42,8 @@ export default function ComponentSettings() {
       }),
     );
     toast({
-      title: 'All versions deleted',
-      description: 'All API versions have been deleted successfully.',
+      title: "All versions deleted",
+      description: "All API versions have been deleted successfully.",
       duration: 3000,
     });
     navigate(`/components/${componentId}`);
@@ -108,7 +108,7 @@ export default function ComponentSettings() {
                           onClick={handleDeleteAll}
                           disabled={isDeleting}
                         >
-                          {isDeleting ? 'Deleting...' : 'Yes, delete all'}
+                          {isDeleting ? "Deleting..." : "Yes, delete all"}
                         </Button>
                       </DialogFooter>
                     </DialogContent>

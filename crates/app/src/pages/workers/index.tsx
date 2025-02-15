@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { LayoutGrid, Plus, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useState } from "react";
+import { LayoutGrid, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card.tsx';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Worker } from '@/types/worker.ts';
-import { API } from '@/service';
+} from "@/components/ui/card.tsx";
+import { useNavigate, useParams } from "react-router-dom";
+import { Worker } from "@/types/worker.ts";
+import { API } from "@/service";
 
 export default function WorkerList() {
   const [workerList, setWorkerList] = useState([] as Worker[]);
   const [filteredWorkers, setFilteredWorkers] = useState([] as Worker[]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   // const [component, setComponent] = useState({} as ComponentList);
 
   const navigate = useNavigate();

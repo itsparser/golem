@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { ChevronRight, Copy, Layers, Plus, Trash } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Api } from '@/types/api';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useEffect, useState } from "react";
+import { ChevronRight, Copy, Layers, Plus, Trash } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Api } from "@/types/api";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -12,11 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { API } from '@/service';
-import { Deployment } from '@/types/deployments';
-import ErrorBoundary from '@/components/errorBoundary';
-import { removeDuplicateApis } from '@/lib/utils';
+} from "@/components/ui/dialog";
+import { API } from "@/service";
+import { Deployment } from "@/types/deployments";
+import ErrorBoundary from "@/components/errorBoundary";
+import { removeDuplicateApis } from "@/lib/utils";
 
 const RoutesCard = ({
   apiId,
@@ -45,7 +45,7 @@ const RoutesCard = ({
         setCopiedPath(endpoint.path);
         setTimeout(() => setCopiedPath(null), 2000);
       })
-      .catch(err => console.error('Failed to copy:', err));
+      .catch(err => console.error("Failed to copy:", err));
   };
 
   return (
@@ -82,7 +82,7 @@ const RoutesCard = ({
               >
                 <Copy className="w-4 h-4" />
                 <span className="text-xs">
-                  {copiedPath === endpoint.path ? '✅ Copied!' : 'Copy Curl'}
+                  {copiedPath === endpoint.path ? "✅ Copied!" : "Copy Curl"}
                 </span>
               </button>
             )}
@@ -116,7 +116,7 @@ export default function Deployments() {
 
         setDeployments(allDeployments.flat().filter(Boolean));
       } catch (error) {
-        console.error('Error fetching deployments:', error);
+        console.error("Error fetching deployments:", error);
       }
     };
 
@@ -132,7 +132,7 @@ export default function Deployments() {
         prev.filter(d => d.site.host !== selectedDeploymentHost),
       );
     } catch (error) {
-      console.error('Error deleting deployment:', error);
+      console.error("Error deleting deployment:", error);
     } finally {
       setIsDialogOpen(false);
       setSelectedDeploymentHost(null);
@@ -152,7 +152,7 @@ export default function Deployments() {
       <div className="p-6 mx-auto max-w-7xl">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-semibold">API Deployments</h1>
-          <Button size="sm" onClick={() => navigate('/deployments/create')}>
+          <Button size="sm" onClick={() => navigate("/deployments/create")}>
             <Plus className="w-4 h-4 mr-2" />
             New
           </Button>
@@ -191,7 +191,7 @@ export default function Deployments() {
                           <DialogHeader>
                             <DialogTitle>Delete Deployment</DialogTitle>
                             <DialogDescription>
-                              Are you sure you want to delete{' '}
+                              Are you sure you want to delete{" "}
                               <strong>{selectedDeploymentHost}</strong>? This
                               action cannot be undone.
                             </DialogDescription>
@@ -243,8 +243,8 @@ export default function Deployments() {
                                       expandedDeployment.includes(
                                         `${deployment.site.host}.${api.id}.${api.version}`,
                                       )
-                                        ? 'rotate-90'
-                                        : ''
+                                        ? "rotate-90"
+                                        : ""
                                     }`}
                                   />
                                 </button>

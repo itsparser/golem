@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { z } from 'zod';
-import { useFieldArray, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -20,16 +20,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { API } from '@/service';
-import { v4 as uuidv4 } from 'uuid';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+} from "@/components/ui/form";
+import { API } from "@/service";
+import { v4 as uuidv4 } from "uuid";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const formSchema = z.object({
   componentID: z.string(),
   name: z.string().min(4, {
-    message: 'worker name must be at least 4 characters',
+    message: "worker name must be at least 4 characters",
   }),
   env: z.array(
     z.object({
@@ -47,9 +47,9 @@ export default function CreateWorker() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       componentID: componentId,
-      name: '',
-      env: [{ key: '', value: '' }],
-      args: [' '],
+      name: "",
+      env: [{ key: "", value: "" }],
+      args: [" "],
     },
   });
 
@@ -69,7 +69,7 @@ export default function CreateWorker() {
     remove: removeEnv,
   } = useFieldArray({
     control: form.control,
-    name: 'env',
+    name: "env",
   });
 
   const {
@@ -78,11 +78,11 @@ export default function CreateWorker() {
     remove: removeArg,
   } = useFieldArray({
     control: form.control,
-    name: 'args',
+    name: "args",
   });
 
   function generateUUID() {
-    form.setValue('name', uuidv4());
+    form.setValue("name", uuidv4());
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -192,11 +192,11 @@ export default function CreateWorker() {
                       </div>
                     ))}
                     <Button
-                      className={'mt-4'}
+                      className={"mt-4"}
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => appendEnv({ key: '', value: '' })}
+                      onClick={() => appendEnv({ key: "", value: "" })}
                     >
                       Add Environment Variable
                     </Button>
@@ -232,11 +232,11 @@ export default function CreateWorker() {
                       </div>
                     ))}
                     <Button
-                      className={'mt-2'}
+                      className={"mt-2"}
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => appendArg('')}
+                      onClick={() => appendArg("")}
                     >
                       Add Arguments
                     </Button>
