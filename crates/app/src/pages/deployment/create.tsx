@@ -25,6 +25,7 @@ import {
 import ErrorBoundary from "@/components/errorBoundary";
 import { API } from "@/service";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Define API definition type
 interface ApiDefinition {
@@ -112,33 +113,25 @@ export default function CreateDeployment() {
         setFetchError(null);
         const response = await API.getApiList();
         const transformedData = Object.values(
-          response.reduce(
-            (acc, api) => {
-              if (!acc[api.id]) {
-                acc[api.id] = { id: api.id, versions: [] };
-              }
-              acc[api.id].versions.push(api.version);
-              // Sort versions in descending order
-              acc[api.id].versions.sort((a, b) =>
-                b.localeCompare(a, undefined, { numeric: true }),
-              );
-              return acc;
-            },
-            {} as Record<string, ApiDefinition>,
-          ),
-        ).sort((a, b) => a.id.localeCompare(b.id)); // Sort APIs alphabetically
+          response.reduce((acc, api) => {
+            if (!acc[api.id]) {
+              acc[api.id] = { id: api.id, versions: [] };
+            }
+            acc[api.id].versions.push(api.version);
+            acc[api.id].versions.sort((a, b) =>
+              b.localeCompare(a, undefined, { numeric: true }),
+            );
+            return acc;
+          }, {} as Record<string, ApiDefinition>),
+        ).sort((a, b) => a.id.localeCompare(b.id));
 
         setApiDefinitions(transformedData);
       } catch (error) {
         console.error("Failed to fetch API definitions:", error);
         setFetchError("Failed to load API definitions. Please try again.");
 
-        // Retry logic (max 3 attempts)
         if (retryCount < 3) {
-          setTimeout(
-            () => fetchApiDefinitions(retryCount + 1),
-            1000 * (retryCount + 1),
-          );
+          setTimeout(() => fetchApiDefinitions(retryCount + 1), 1000 * (retryCount + 1));
         }
       } finally {
         setIsLoading(false);
@@ -148,11 +141,8 @@ export default function CreateDeployment() {
     fetchApiDefinitions();
   }, []);
 
-  // Memoize getVersionsForApi to prevent unnecessary recalculations
   const getVersionsForApi = useMemo(() => {
-    return (apiId: string) => {
-      return apiDefinitions.find(api => api.id === apiId)?.versions || [];
-    };
+    return (apiId: string) => apiDefinitions.find(api => api.id === apiId)?.versions || [];
   }, [apiDefinitions]);
 
   const onSubmit = async (data: FormValues) => {
@@ -199,25 +189,19 @@ export default function CreateDeployment() {
   return (
     <ErrorBoundary>
       <div className="p-6 max-w-3xl mx-auto">
-        <div className="space-y-2 mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight">Deploy API</h1>
-          <p className="text-muted-foreground">
-            Create a new deployment with one or more API definitions
-          </p>
-        </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="domain"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Local Domain
-                    </FormLabel>
-                    <FormControl>
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            <h1 className="text-3xl font-semibold">Deploy API</h1>
+            <p className="text-muted-foreground">Create a new deployment with one or more API definitions</p>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="domain"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Local Domain</FormLabel>
+                      <FormControl>
                       <Input
                         placeholder="localhost:9006"
                         {...field}
@@ -230,21 +214,19 @@ export default function CreateDeployment() {
                         }}
                       />
                     </FormControl>
-                    <FormDescription className="text-sm text-muted-foreground">
+                    <FormDescription className="text-[11px] text-muted-foreground">
                       Enter localhost with a port number (e.g., localhost:9006).
                       The port must be between 1 and 65535.
                     </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="space-y-4">
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h2 className="text-base font-medium">API Definitions</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Select the APIs and their versions to deploy. Each API can
                     only be added once.
                   </p>
@@ -383,8 +365,10 @@ export default function CreateDeployment() {
                 )}
               </Button>
             </div>
-          </form>
-        </Form>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </ErrorBoundary>
   );

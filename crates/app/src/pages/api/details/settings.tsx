@@ -103,32 +103,23 @@ export default function APISettings() {
 
   return (
     <ErrorBoundary>
-      <div className="overflow-y-auto h-[85vh] max-w-4xl mx-auto p-8">
+      <div className="overflow-y-auto h-[85vh] max-w-4xl mx-auto p-8 text-white">
         <h1 className="text-3xl font-semibold mb-2">API Settings</h1>
-        <p className="text-muted-foreground text-lg mb-8">
-          Manage your API settings
-        </p>
+        <p className="text-gray-400 text-lg mb-8">Manage your API settings</p>
 
-        <div className="border border-destructive/20 rounded-lg bg-destructive/10 p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-destructive">
-            Danger Zone
-          </h2>
-          <p className="text-muted-foreground mb-8">Proceed with caution.</p>
+        <div className="border border-red-500 rounded-lg bg-red-900/20 p-6">
+          <h2 className="text-2xl font-semibold mb-4 text-red-500">Danger Zone</h2>
+          <p className="text-gray-400 mb-8">Proceed with caution.</p>
 
           <div className="space-y-8">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Delete API Version {version}
-                </h3>
-                <p className="text-muted-foreground">
-                  Once you delete an API, there is no going back. Please be
-                  certain.
-                </p>
+                <h3 className="text-xl font-semibold mb-2">Delete API Version {version}</h3>
+                <p className="text-gray-400">Once you delete an API, there is no going back. Please be certain.</p>
               </div>
               <Button
                 variant="outline"
-                className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                className="border-red-500 text-red-500 hover:bg-red-800/20"
                 onClick={() => setShowConfirmDialog(true)}
               >
                 Delete Version {version}
@@ -137,17 +128,12 @@ export default function APISettings() {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Delete all API Versions
-                </h3>
-                <p className="text-muted-foreground">
-                  Once you delete all API versions, there is no going back.
-                  Please be certain.
-                </p>
+                <h3 className="text-xl font-semibold mb-2">Delete all API Versions</h3>
+                <p className="text-gray-400">Once you delete all API versions, there is no going back. Please be certain.</p>
               </div>
               <Button
                 variant="outline"
-                className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                className="border-red-500 text-red-500 hover:bg-red-800/20"
                 onClick={() => setShowConfirmAllDialog(true)}
               >
                 Delete All Versions
@@ -155,17 +141,12 @@ export default function APISettings() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Delete All Routes
-                </h3>
-                <p className="text-muted-foreground">
-                  Once you delete all routes, there is no going back. Please be
-                  certain.
-                </p>
+                <h3 className="text-xl font-semibold mb-2">Delete All Routes</h3>
+                <p className="text-gray-400">Once you delete all routes, there is no going back. Please be certain.</p>
               </div>
               <Button
                 variant="outline"
-                className="border-destructive/20 text-destructive hover:bg-destructive/10"
+                className="border-red-500 text-red-500 hover:bg-red-800/20"
                 onClick={() => setShowConfirmAllRoutes(true)}
               >
                 Delete All Routes
@@ -173,7 +154,6 @@ export default function APISettings() {
             </div>
           </div>
         </div>
-
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent>
             <DialogHeader>

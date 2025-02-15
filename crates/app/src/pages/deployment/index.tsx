@@ -2,7 +2,7 @@ import ErrorBoundary from "@/components/errorBoundary";
 import { HTTP_METHOD_COLOR } from "@/components/nav-route";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -30,8 +30,7 @@ const RoutesCard = ({
   version: string;
   host: string;
   apiList: Api[];
-}) => {
-  const routes = apiList.find(
+}) => {  const routes = apiList.find(
     api => api.id === apiId && api.version === version,
   )?.routes;
   const navigate = useNavigate();
@@ -41,63 +40,59 @@ const RoutesCard = ({
   const copyToClipboard = (endpoint: { path: string; method: string }) => {
     const fullUrl = `${host}${endpoint.path}`;
     const curlCommand = `curl --location ${endpoint.method} http://${fullUrl} --header "Content-Type: application/json" -d '{}'`;
-    navigator.clipboard
-      .writeText(curlCommand)
-      .then(() => {
-        setCopiedPath(endpoint.path);
-        setTimeout(() => setCopiedPath(null), 2000);
-      })
-      .catch(err => console.error("Failed to copy:", err));
+    navigator.clipboard.writeText(curlCommand).then(() => {
+      setCopiedPath(endpoint.path);
+      setTimeout(() => setCopiedPath(null), 2000);
+    }).catch(err => console.error("Failed to copy:", err));
   };
 
   return (
     routes && (
-      <div className="space-y-2">
-        {routes.map((endpoint, index) => (
-          <div
-            key={index}
-            className="flex items-center space-x-2 cursor-pointer group"
-            onMouseEnter={() => setHoveredPath(endpoint.path)}
-            onMouseLeave={() => setHoveredPath(null)}
-            onClick={() =>
-              navigate(
-                `/apis/${apiId}/version/${version}/routes?path=${endpoint.path}&method=${endpoint.method}`,
-              )
-            }
-          >
-            {/* Left Side: API Method & Path */}
-            <div className="flex items-center space-x-2">
-              <Badge
-                variant="secondary"
-                className={
-                  HTTP_METHOD_COLOR[
-                    endpoint.method as keyof typeof HTTP_METHOD_COLOR
-                  ]
-                }
-              >
-                {endpoint.method}
-              </Badge>
-              <code className="text-sm font-mono">{endpoint.path}</code>
+      <Card >
+        <CardContent className="space-y-2 p-4">
+          {routes.map((endpoint, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-2 rounded-lg cursor-pointer group hover:bg-muted transition"
+              onMouseEnter={() => setHoveredPath(endpoint.path)}
+              onMouseLeave={() => setHoveredPath(null)}
+              onClick={() =>
+                navigate(
+                  `/apis/${apiId}/version/${version}/routes?path=${endpoint.path}&method=${endpoint.method}`
+                )
+              }
+            >
+              <div className="flex items-center gap-3">
+                <Badge
+                  variant="secondary"
+                  className={
+                    HTTP_METHOD_COLOR[
+                      endpoint.method as keyof typeof HTTP_METHOD_COLOR
+                    ]
+                  }
+                >
+                  {endpoint.method}
+                </Badge>
+                <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
+              </div>
+              {hoveredPath === endpoint.path && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    copyToClipboard(endpoint);
+                  }}
+                  className="flex items-center gap-1 text-muted-foreground hover:text-primary transition"
+                >
+                  <Copy className="w-4 h-4" />
+                  <span className="text-xs">
+                    {copiedPath === endpoint.path ? "✅ Copied!" : "Copy Curl"}
+                  </span>
+                </button>
+              )}
             </div>
-
-            {/* Right Side: Copy Button (Shown on Hover) */}
-            {hoveredPath === endpoint.path && (
-              <button
-                onClick={e => {
-                  e.stopPropagation(); // Prevent navigation when clicking copy
-                  copyToClipboard(endpoint);
-                }}
-                className="flex items-center space-x-1 text-muted-foreground hover:text-primary transition"
-              >
-                <Copy className="w-4 h-4" />
-                <span className="text-xs">
-                  {copiedPath === endpoint.path ? "✅ Copied!" : "Copy Curl"}
-                </span>
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+          ))}
+        </CardContent>
+      </Card>
     )
   );
 };
@@ -171,7 +166,7 @@ export default function Deployments() {
           {deployments.length > 0 ? (
             <div className="grid gap-6 overflow-scroll max-h-[80vh]">
               {deployments.map(deployment => (
-                <Card key={deployment.site.host} className="p-6">
+                <Card key={deployment.site.host} className="p-6 from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer" >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-base font-medium">
@@ -292,3 +287,4 @@ export default function Deployments() {
     </ErrorBoundary>
   );
 }
+

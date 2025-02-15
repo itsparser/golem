@@ -1,4 +1,4 @@
-import { ArrowRight, Layers, PlusCircle } from "lucide-react";
+import { ArrowRight, LayoutGrid, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button.tsx";
 import { useEffect, useState } from "react";
@@ -18,16 +18,18 @@ export const ComponentsSection = () => {
   const [components, setComponents] = useState<{
     [key: string]: ComponentList;
   }>({});
+
   useEffect(() => {
     API.getComponentByIdAsKey().then(response => setComponents(response));
   }, []);
-
   return (
     <ErrorBoundary>
-      <Card className={"rounded-lg lg:col-span-2"}>
+      <Card className="rounded-lg lg:col-span-2">
         <CardHeader>
           <div className="flex justify-between items-center mb-6">
-            <CardTitle>Components</CardTitle>
+            <CardTitle className="text-2xl font-bold text-primary">
+              Components
+            </CardTitle>
             <Button variant="ghost" onClick={() => navigate("/components")}>
               View All
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -35,39 +37,35 @@ export const ComponentsSection = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-scroll max-h-[70vh]">
-            {Object.keys(components).length > 0 ? (
-              <div className="p-4 pt-0 md:p-6 md:pt-0 flex-1 w-full">
-                <div className="grid w-full grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
-                  {Object.values(components).map((data: ComponentList) => (
-                    <ComponentCard
-                      key={data.componentId}
-                      data={data}
-                      onCardClick={() =>
-                        navigate(`/components/${data.componentId}`)
-                      }
-                    />
-                  ))}
-                </div>
+          {Object.keys(components).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 overflow-scroll max-h-[70vh] px-4">
+              {Object.values(components).map((data: ComponentList) => (
+                <ComponentCard
+                  key={data.componentId}
+                  data={data}
+                  onCardClick={() =>
+                    navigate(`/components/${data.componentId}`)
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <LayoutGrid className="h-8 w-8 text-gray-400" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
-                <Layers className="h-12 w-12 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Components</h3>
-                <p className="text-gray-500 mb-4">
-                  Create your first component to get started
-                </p>
-                <Button
-                  onClick={() => {
-                    navigate("/components/create");
-                  }}
-                >
-                  <PlusCircle className="mr-2 size-4" />
-                  Create Component
-                </Button>
-              </div>
-            )}
-          </div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                No Components
+              </h2>
+              <p className="text-gray-500 mb-6 text-center">
+                Create your first component to get started.
+              </p>
+              <Button onClick={() => navigate("/components/create")}>
+                <PlusCircle className="mr-2 size-4" />
+                Create Component
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </ErrorBoundary>

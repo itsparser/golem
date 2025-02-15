@@ -33,9 +33,9 @@ export function DeploymentSection() {
 
   return (
     <ErrorBoundary>
-      <Card className="transition-all hover:shadow-md max-h-[275px]">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold flex items-center gap-2 text-primary">
             <Globe className="w-5 h-5 text-muted-foreground" />
             Deployments
           </CardTitle>
@@ -49,23 +49,31 @@ export function DeploymentSection() {
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-2">
           {deployments.length > 0 ? (
-            deployments.map((deployment, index) => (
-              <div
-                key={index}
-                className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => {
-                  navigate(`/deployments`);
-                }}
-              >
-                <p className="text-sm font-medium">{deployment.site.host}</p>
+              deployments.map((deployment, index) => (
+                 <div
+                 key={index}
+                 className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-md transition-all"
+                 onClick={() => {
+                   navigate(`/deployments`);
+                 }}
+               >
+                 <p className="text-sm font-medium">{deployment.site.host}</p>
               </div>
-            ))
+                            ))
+
           ) : (
-            <div className="rounded-lg border-2 border-dashed border-border p-4 text-center grid place-items-center h-full w-full">
-              <Layers className="h-5 w-5 text-gray-400 mb-2" />
-              <h3 className="text-lg font-medium mb-1">No Deployments</h3>
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center">
+              <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <Layers className="h-8 w-8 text-gray-400" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                No Deployments
+              </h2>
+              <p className="text-gray-500 mb-6 text-center">
+                Create your first deployment to get started.
+              </p>
               <Button onClick={() => navigate("/deployments/create")}>
                 <PlusCircle className="mr-2 size-4" />
                 Create Deployment
