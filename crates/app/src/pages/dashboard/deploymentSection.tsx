@@ -54,7 +54,7 @@ export function DeploymentSection() {
               deployments.map((deployment, index) => (
                  <div
                  key={index}
-                 className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-md transition-all"
+                 className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-lg transition-all"
                  onClick={() => {
                    navigate(`/deployments`);
                  }}

@@ -166,7 +166,7 @@ export default function Deployments() {
           {deployments.length > 0 ? (
             <div className="grid gap-6 overflow-scroll max-h-[80vh]">
               {deployments.map(deployment => (
-                <Card key={deployment.site.host} className="p-6 from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer" >
+                <Card key={deployment.site.host} className="p-6 from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer hover:shadow-lg" >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-base font-medium">

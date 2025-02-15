@@ -71,7 +71,7 @@ export default function WorkerList() {
           ) : (
             <div className="overflow-auto max-h-[70vh] space-y-4">
               {filteredWorkers.map((worker, index) => (
-                <Card key={index} className="rounded-lg border border-border bg-muted hover:bg-muted/80 transition cursor-pointer" onClick={() => navigate(`/components/${componentId}/workers/${worker.workerId.workerName}`)}>
+                <Card key={index} className="rounded-lg border border-border bg-muted hover:bg-muted/80 hover:shadow-lg transition cursor-pointer" onClick={() => navigate(`/components/${componentId}/workers/${worker.workerId.workerName}`)}>
                   <CardHeader>
                     <CardTitle className="text-foreground font-mono">{worker.workerId.workerName}</CardTitle>
                   </CardHeader>
