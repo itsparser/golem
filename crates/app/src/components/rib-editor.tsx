@@ -31,24 +31,10 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
   ) => {
     const { theme } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
-    console.log("scriptKeys", scriptKeys);
-    const [scriptKeywords, setScriptKeywords] = useState<string[]>(
-      scriptKeys || [],
-    );
     const monacoInstance = useMonaco();
 
     useEffect(() => {
-      setScriptKeywords(scriptKeys || []);
-    }, [scriptKeys]);
-
-    useEffect(() => {
       if (monacoInstance) {
-        // Register Rib language
-        monacoInstance.languages.getLanguages().forEach((lang: any) => {
-          if (lang.id === "rig") {
-            monacoInstance.languages.deregister({ id: "rig" }); // Remove old language
-          }
-        });
         monacoInstance.languages.register({ id: "rib" });
 
         monacoInstance.languages.setLanguageConfiguration("rib", {
@@ -234,15 +220,15 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 search: "string",
               },
             };
-
+          
             try {
               const code = model.getValue();
-
+          
               // Extract local variables
               const variableRegex =
                 /let\s+(\w+)\s*=\s*(\{[\s\S]*?\}|\[[\s\S]*?\]|"[^"]*"|'[^']*'|\d+)/g;
               let localVariables: Record<string, any> = {};
-
+          
               let match;
               while ((match = variableRegex.exec(code)) !== null) {
                 const [_, varName, varValue] = match;
@@ -257,7 +243,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                   localVariables[varName] = varValue; // Store as string if parsing fails
                 }
               }
-
+          
               const wordUntilPosition = model.getWordUntilPosition(position);
               const range = {
                 startLineNumber: position.lineNumber,
@@ -265,16 +251,15 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 startColumn: wordUntilPosition.startColumn,
                 endColumn: wordUntilPosition.endColumn,
               };
-
-              const getObjectKeys = (obj: any, prefix = "") =>
+          
+              const getObjectKeys = (obj: any, prefix = ""): Array<{label: string; insertText: string; kind: any; range: any;}> =>
                 Object.entries(obj).flatMap(([key, value]) =>
                   typeof value === "object"
                     ? [
                         {
                           label: prefix + key,
                           insertText: prefix + key,
-                          kind: monacoInstance.languages.CompletionItemKind
-                            .Property,
+                          kind: monacoInstance.languages.CompletionItemKind.Property,
                           range,
                         },
                         ...getObjectKeys(value, `${prefix}${key}.`),
@@ -283,36 +268,35 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                         {
                           label: prefix + key,
                           insertText: prefix + key,
-                          kind: monacoInstance.languages.CompletionItemKind
-                            .Property,
+                          kind: monacoInstance.languages.CompletionItemKind.Property,
                           range,
                         },
                       ],
                 );
-
-              const requestSuggestions = getObjectKeys(
-                requestStructure,
-                "request.",
-              );
-
+          
+              const requestSuggestions = getObjectKeys(requestStructure, "request.");
+          
               // Get suggestions for each local variable
-              const localVariableSuggestions = Object.entries(
-                localVariables,
-              ).flatMap(([varName, value]) =>
-                typeof value === "object"
-                  ? getObjectKeys(value, `${varName}.`)
-                  : [
-                      {
-                        label: varName,
-                        insertText: varName,
-                        kind: monacoInstance.languages.CompletionItemKind
-                          .Variable,
-                        range,
-                      },
-                    ],
+              const localVariableSuggestions = Object.entries(localVariables).flatMap(
+                ([varName, value]) =>
+                  typeof value === "object"
+                    ? getObjectKeys(value, `${varName}.`)
+                    : [
+                        {
+                          label: varName,
+                          insertText: varName,
+                          kind: monacoInstance.languages.CompletionItemKind.Variable,
+                          range,
+                        },
+                      ],
               );
-
-              const functionSuggestions = (scriptKeys || []).map(fn => ({
+          
+              // Ensure scriptKeys is always an array and filter out invalid values
+              const validScriptKeys = (scriptKeys || []).filter(
+                (key) => typeof key === "string",
+              );
+          
+              const functionSuggestions = validScriptKeys.map((fn) => ({
                 label: fn,
                 kind: monacoInstance.languages.CompletionItemKind.Function,
                 insertText: fn,
@@ -320,22 +304,12 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 documentation: `Function: ${fn}`,
                 range,
               }));
-
-              // const customTypeSuggestions = customTypes.map(type => ({
-              //   label: type,
-              //   kind: monacoInstance.languages.CompletionItemKind.Struct,
-              //   insertText: type,
-              //   detail: "Custom Type",
-              //   documentation: `User-defined type: ${type}`,
-              //   range,
-              // }));
-
+          
               return {
                 suggestions: [
                   ...requestSuggestions,
                   ...localVariableSuggestions,
                   ...functionSuggestions,
-                  // ...customTypeSuggestions,
                 ],
               };
             } catch (e) {
@@ -410,7 +384,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
       <div
         ref={ref}
         className={cn(
-          "relative rounded-md border p-2 transition-all duration-200 ease-in-out overflow-hidden",
+          "relative rounded-md border p-2 transition-all duration-200 ease-in-out",
           isFocused && allowExpand ? "h-[300px] border-primary" : "h-[100px]",
           className,
         )}

@@ -275,6 +275,7 @@ const CreateRoute = () => {
 
   const onVersionChange = (version: string) => {
     form.setValue("binding.componentId.version", Number(version));
+    form.setValue("binding.response", "");
     const componentId = form.getValues("binding.componentId.componentId");
     loadResponseSuggestions(componentId, version);
   };
@@ -328,6 +329,7 @@ const CreateRoute = () => {
                                 "binding.componentId.componentId",
                                 componentId,
                               );
+                              form.setValue("binding.response", "");
                               loadResponseSuggestions(componentId, "0");
                             }}
                             value={field.value}
