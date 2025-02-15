@@ -252,6 +252,7 @@ const CreateRoute = () => {
     componentId: string,
     version: string,
   ) => {
+    console.log("loadResponseSuggestions.componentId", componentId);
     const exportedFunctions = componentList?.[componentId]?.versions?.find(
       (data: Component) =>
         data.versionedComponentId?.version?.toString() === version,
@@ -268,6 +269,7 @@ const CreateRoute = () => {
         return `${item.name}.{${func.name}}(${param})`;
       }),
     );
+    console.log("loadResponseSuggestions.componentId.output", output);
     setResponseSuggestions(output);
   };
 

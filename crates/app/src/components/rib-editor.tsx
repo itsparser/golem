@@ -31,12 +31,24 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
   ) => {
     const { theme } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
-    const [scriptKeywords, _] = useState<string[]>(scriptKeys || []);
+    console.log("scriptKeys", scriptKeys);
+    const [scriptKeywords, setScriptKeywords] = useState<string[]>(
+      scriptKeys || [],
+    );
     const monacoInstance = useMonaco();
+
+    useEffect(() => {
+      setScriptKeywords(scriptKeys || []);
+    }, [scriptKeys]);
 
     useEffect(() => {
       if (monacoInstance) {
         // Register Rib language
+        monacoInstance.languages.getLanguages().forEach((lang: any) => {
+          if (lang.id === "rig") {
+            monacoInstance.languages.deregister({ id: "rig" }); // Remove old language
+          }
+        });
         monacoInstance.languages.register({ id: "rib" });
 
         monacoInstance.languages.setLanguageConfiguration("rib", {
@@ -75,7 +87,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
             "then",
             "else",
             "for",
-            "in", 
+            "in",
             "yield",
             "reduce",
             "from",
@@ -92,7 +104,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
             "s8",
             "u8",
             "s16",
-            "u16", 
+            "u16",
             "s32",
             "u32",
             "s64",
@@ -109,7 +121,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
 
           operators: [
             ">=",
-            "<=", 
+            "<=",
             "==",
             "<",
             ">",
@@ -127,58 +139,52 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
 
           tokenizer: {
             root: [
-              [/\b[a-zA-Z_]\w*:\w+\/[\w\/]+\b/, ["namespace"]], // Fixed groups/actions mismatch 
-              [/\{\w+\}/, ["function"]], // Fixed groups/actions mismatch
-              [/\(\s*([\w]+)\s*:/, ["delimiter.parenthesis", "parameter"]], 
+              // Namespace (golem:todo)
+              [/\b[a-zA-Z_]\w*:\w+\b/, "namespace"],
+
+              // Package (profile)
+              [/(?<=:)[a-zA-Z_]\w*(?=\/)/, "package"],
+
+              // Function Name ({update-profile})
+              [/\{[\w-]+\}/, "function"],
+
+              // Function Call with String Argument (("input"))
+              [/\(\s*".*?"\s*\)/, "string.argument"],
+
+              // Function Call with Parameter (input: string)
+              [/\(\s*([\w]+)\s*:/, "parameter"], // Parameter name
               [
                 /\b(string|bool|s8|u8|s16|u16|s32|u32|s64|u64|f32|f64|char|list|tuple|option|result)\b/,
-                ["type"],
-              ],
-              [/[{}()\[\]]/, ["brackets"]], 
-              [/[.:/]/, ["operator"]],
+                "type",
+              ], // Data type
 
+              // Parentheses & Operators
+              [/[{}()\[\]]/, "@brackets"],
+              [/[.:/]/, "operator"],
+
+              // Include whitespace, numbers, and strings handling
               { include: "@whitespace" },
               { include: "@numbers" },
               { include: "@strings" },
             ],
 
-            string: [
-              [/[^\\"$]+/, ["string"]],
-              [/\$\{([a-zA-Z_]\w*)\}/, ["string", "variable", "string"]],
-              [/""/, ["string"]],
-              [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
-              [/\$/, ["string"]],
-              [/@escapes/, ["string.escape"]],
-              [/\\./, ["string.escape.invalid"]],
-              [
-                /\$\{/,
-                { token: "delimiter.bracket", next: "@bracketCounting" },
-              ],
+            whitespace: [
+              [/[ \t\r\n]+/, "white"],
+              [/\/\/.*$/, "comment"],
+              [/\/\*/, "comment", "@comment"],
             ],
 
             comment: [
-              [/[^/*]+/, ["comment"]],
-              [/\/\*/, ["comment"], "@push"],
-              ["\\*/", ["comment"], "@pop"],
-              [/[/*]/, ["comment"]],
-            ],
-
-            bracketCounting: [
-              [/\{/, ["delimiter.bracket"], "@bracketCounting"],
-              [/\}/, ["delimiter.bracket"], "@pop"],
-              { include: "root" },
-            ],
-
-            whitespace: [
-              [/[ \t\r\n]+/, ["white"]],
-              [/\/\/.*$/, ["comment"]],
-              [/\/\*/, ["comment"], "@comment"],
+              [/[^/*]+/, "comment"],
+              [/\/\*/, "comment", "@push"],
+              ["\\*/", "comment", "@pop"],
+              [/[/*]/, "comment"],
             ],
 
             numbers: [
-              [/\d*\.\d+([eE][-+]?\d+)?/, ["number.float"]],
-              [/0[xX][0-9a-fA-F]+/, ["number.hex"]],
-              [/\d+/, ["number"]],
+              [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
+              [/0[xX][0-9a-fA-F]+/, "number.hex"],
+              [/\d+/, "number"],
             ],
 
             strings: [
@@ -187,9 +193,60 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 { token: "string.quote", bracket: "@open", next: "@string" },
               ],
             ],
+
+            string: [
+              [/[^\\"$]+/, "string"],
+              [/@escapes/, "string.escape"],
+              [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+            ],
+
+            // string: [
+            //   [/[^\\"$]+/, "string"],
+            //   [/\$\{([a-zA-Z_]\w*)\}/, ["string", "variable", "string"]],
+            //   [/""/, "string"],
+            //   [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+            //   [/\$/, "string"],
+            //   [/@escapes/, "string.escape"],
+            //   [/\\./, "string.escape.invalid"],
+            //   [
+            //     /\$\{/,
+            //     { token: "delimiter.bracket", next: "@bracketCounting" },
+            //   ],
+            // ],
+
+            // comment: [
+            //   [/[^/*]+/, "comment"],
+            //   [/\/\*/, "comment", "@push"],
+            //   ["\\*/", "comment", "@pop"],
+            //   [/[/*]/, "comment"],
+            // ],
+
+            // bracketCounting: [
+            //   [/\{/, "delimiter.bracket", "@bracketCounting"],
+            //   [/\}/, "delimiter.bracket", "@pop"],
+            //   { include: "root" },
+            // ],
+
+            // whitespace: [
+            //   [/[ \t\r\n]+/, "white"],
+            //   [/\/\/.*$/, "comment"],
+            //   [/\/\*/, "comment", "@comment"],
+            // ],
+
+            // numbers: [
+            //   [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
+            //   [/0[xX][0-9a-fA-F]+/, "number.hex"],
+            //   [/\d+/, "number"],
+            // ],
+
+            // strings: [
+            //   [
+            //     /"/,
+            //     { token: "string.quote", bracket: "@open", next: "@string" },
+            //   ],
+            // ],
           },
         });
-
         // Rest of the code remains unchanged
         monacoInstance.languages.registerCompletionItemProvider("rib", {
           triggerCharacters: [
@@ -222,20 +279,10 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
                 username: "vasanth",
                 nav: "bar",
               },
-              query: {  
+              query: {
                 search: "string",
               },
             };
-
-            const functions = [
-              {
-                name: "this_is_function_name",
-                args: [
-                  { name: "args1", datatype: "string" },
-                  { name: "args2", datatype: "User" },
-                ],
-              },
-            ];
 
             const customTypes = ["User", "Profile", "Settings"];
 
@@ -262,8 +309,8 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
               console.error("Error parsing request object or types:", e);
             }
 
-            console.log("Extracted object:", requestStructure);
-            console.log("Custom Types:", customTypes);
+            // console.log("Extracted object:", requestStructure);
+            // console.log("Custom Types:", customTypes);
 
             const wordUntilPosition = model.getWordUntilPosition(position);
             const range = {
@@ -304,6 +351,9 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
 
             const variableSuggestions = getObjectKeys(variable, "variable.");
 
+            setScriptKeywords(scriptKeys || []);
+            console.log("scriptKeywords", scriptKeywords);
+
             const functionSuggestions = scriptKeywords.map(fn => ({
               label: fn,
               kind: monacoInstance.languages.CompletionItemKind.Function,
@@ -317,7 +367,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
               label: type,
               kind: monacoInstance.languages.CompletionItemKind.Struct,
               insertText: type,
-              detail: "Custom Type", 
+              detail: "Custom Type",
               documentation: `User-defined type: ${type}`,
               range,
             }));
@@ -333,7 +383,62 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
           },
         });
       }
-    }, [monacoInstance]);
+    }, [monacoInstance, scriptKeys, suggestVariable]);
+
+    useEffect(() => {
+      if (!monacoInstance) return;
+      // DARK MODE THEME
+      monacoInstance.editor.defineTheme("rigDarkTheme", {
+        base: "vs-dark", // Dark background
+        inherit: true,
+        rules: [
+          { token: "namespace", foreground: "8A2BE2" }, // Purple (Royal Blue Variant)
+          { token: "package", foreground: "20B2AA" }, // Teal (Greenish Blue)
+          { token: "function", foreground: "FFA500", fontStyle: "bold" }, // Orange (Bold)
+          { token: "string.argument", foreground: "FFD700" }, // Light Yellow
+          { token: "parameter", foreground: "00BFFF", fontStyle: "italic" }, // Light Blue (Italic)
+          { token: "type", foreground: "00FFFF" }, // Bright Cyan
+          { token: "operator", foreground: "808080" }, // Gray
+          { token: "comment", foreground: "808080", fontStyle: "italic" }, // Light Gray for comments
+        ],
+        colors: {
+          "editor.background": "#1E1E1E", // Dark background
+          "editor.foreground": "#D4D4D4", // Standard text color
+          "editor.lineHighlightBackground": "#2E2E2E",
+          "editorCursor.foreground": "#FFFFFF",
+        },
+      });
+
+      // LIGHT MODE THEME
+      monacoInstance.editor.defineTheme("rigLightTheme", {
+        base: "vs", // Light background
+        inherit: true,
+        rules: [
+          { token: "namespace", foreground: "8A2BE2" }, // Purple (Royal Blue Variant)
+          { token: "package", foreground: "20B2AA" }, // Teal (Greenish Blue)
+          { token: "function", foreground: "FFA500", fontStyle: "bold" }, // Orange (Bold)
+          { token: "string.argument", foreground: "FFD700" }, // Light Yellow
+          { token: "parameter", foreground: "00BFFF", fontStyle: "italic" }, // Light Blue (Italic)
+          { token: "type", foreground: "00FFFF" }, // Bright Cyan
+          { token: "operator", foreground: "808080" }, // Gray
+          { token: "comment", foreground: "808080", fontStyle: "italic" }, // Light Gray for comments
+        ],
+        colors: {
+          "editor.background": "#FFFFFF", // Light background
+          "editor.foreground": "#333333", // Darker text
+          "editor.lineHighlightBackground": "#F0F0F0",
+          "editorCursor.foreground": "#000000",
+        },
+      });
+      setRigEditorTheme(theme === "dark");
+    }, [theme, monacoInstance]);
+
+    function setRigEditorTheme(isDarkMode: boolean) {
+      if (!monacoInstance) return;
+      monacoInstance.editor.setTheme(
+        isDarkMode ? "rigDarkTheme" : "rigLightTheme",
+      );
+    }
 
     return (
       <div
@@ -348,7 +453,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
           value={value}
           onChange={onChange}
           language={"rib"}
-          theme={theme === "dark" ? "vs-dark" : "vs-light"}
+          theme={theme === "dark" ? "rigDarkTheme" : "rigLightTheme"}
           options={{
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
