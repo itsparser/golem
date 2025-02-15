@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use chrono::{DateTime, Utc};
 
 #[allow(unused)]
 #[rustfmt::skip]
@@ -69,20 +70,31 @@ pub mod wasmtime;
 
 #[cfg(any(feature = "host-bindings", feature = "stub"))]
 use crate::builder::WitValueBuilder;
+
 #[cfg(any(feature = "host-bindings", feature = "stub"))]
 pub use builder::{NodeBuilder, WitValueBuilderExtensions};
+
 #[cfg(any(feature = "host-bindings", feature = "stub"))]
 pub use extractor::{WitNodePointer, WitValueExtractor};
 
 #[cfg(not(feature = "host-bindings"))]
 #[cfg(feature = "stub")]
-pub use bindings::golem::rpc::types::{
+pub use bindings::golem::rpc0_1_3 as golem_rpc_0_1_x;
+
+#[cfg(not(feature = "host-bindings"))]
+#[cfg(feature = "stub")]
+pub use golem_rpc_0_1_x::types::{
     FutureInvokeResult, NodeIndex, ResourceMode, RpcError, Uri, WasmRpc, WitNode, WitType,
     WitTypeNode, WitValue,
 };
+
 #[cfg(not(feature = "host-bindings"))]
 #[cfg(feature = "stub")]
 pub use bindings::wasi::io::poll::Pollable;
+
+#[cfg(not(feature = "host-bindings"))]
+#[cfg(feature = "stub")]
+pub use bindings::wasi::clocks::wall_clock::Datetime as WasiDatetime;
 
 #[cfg(feature = "host-bindings")]
 pub use wasmtime_wasi::Pollable;
@@ -90,16 +102,16 @@ pub use wasmtime_wasi::Pollable;
 #[cfg(feature = "host-bindings")]
 mod generated {
     use ::wasmtime::component::bindgen;
-
     bindgen!({
         path: "wit",
-        world: "wit-value",
+        world: "wasm-rpc",
         tracing: false,
         async: true,
         trappable_imports: true,
         with: {
             "golem:rpc/types/wasm-rpc": super::WasmRpcEntry,
             "golem:rpc/types/future-invoke-result": super::FutureInvokeResultEntry,
+            "golem:rpc/types/cancellation-token": super::CancellationTokenEntry,
             "wasi:io/poll/pollable": super::Pollable,
         },
         wasmtime_crate: ::wasmtime
@@ -107,13 +119,23 @@ mod generated {
 }
 
 #[cfg(feature = "host-bindings")]
-pub use generated::golem;
+pub use generated::golem::rpc0_1_3 as golem_rpc_0_1_x;
 
 #[cfg(feature = "host-bindings")]
-pub use generated::golem::rpc::types::{
+pub use golem_rpc_0_1_x::types::{
     Host, HostWasmRpc, NodeIndex, ResourceMode, RpcError, Uri, WitNode, WitType, WitTypeNode,
     WitValue,
 };
+
+#[cfg(feature = "host-bindings")]
+pub use generated::wasi::clocks::wall_clock::Datetime as WasiDatetime;
+
+impl From<WasiDatetime> for DateTime<Utc> {
+    fn from(value: WasiDatetime) -> DateTime<Utc> {
+        DateTime::from_timestamp(value.seconds as i64, value.nanoseconds)
+            .expect("Received invalid datetime from wasi")
+    }
+}
 
 #[cfg(feature = "host-bindings")]
 pub struct WasmRpcEntry {
@@ -139,6 +161,11 @@ impl wasmtime_wasi::Subscribe for FutureInvokeResultEntry {
     async fn ready(&mut self) {
         self.payload.ready().await
     }
+}
+
+#[cfg(feature = "host-bindings")]
+pub struct CancellationTokenEntry {
+    pub schedule_id: Vec<u8>, // ScheduleId is defined locally in the worker-executor, so store a serialized version here
 }
 
 #[cfg(all(feature = "typeinfo", feature = "protobuf"))]
@@ -431,11 +458,6 @@ impl<'a> arbitrary::Arbitrary<'a> for WitValue {
         Ok(arbitrary_value.into())
     }
 }
-
-#[cfg(feature = "host-bindings")]
-pub const WASM_RPC_WIT: &str = include_str!("../wit/wasm-rpc.wit");
-#[cfg(feature = "host-bindings")]
-pub const WASI_POLL_WIT: &str = include_str!("../wit/deps/io/poll.wit");
 
 pub const WASM_RPC_VERSION: &str = version::lib_version!();
 

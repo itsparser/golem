@@ -1,30 +1,30 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
-import { DndProvider } from "react-dnd";
-import JSZip from "jszip";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useParams, useNavigate } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import JSZip from 'jszip';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   Card,
   CardContent,
   CardDescription,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { FileUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { API } from "@/service";
-import { toast } from "@/hooks/use-toast";
-import { FileManager, FileItem } from "../create/fileManager";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { FileUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { API } from '@/service';
+import { toast } from '@/hooks/use-toast';
+import { FileManager, FileItem } from '../create/fileManager';
 
 /**
  * Example Zod schema that checks:
@@ -35,11 +35,11 @@ import { FileManager, FileItem } from "../create/fileManager";
 const formSchema = z.object({
   component: z
     .instanceof(File)
-    .refine((file) => file.size < 50_000_000, {
-      message: "Your file must be less than 50MB.",
+    .refine(file => file.size < 50_000_000, {
+      message: 'Your file must be less than 50MB.',
     })
-    .refine((file) => file.name.toLowerCase().endsWith(".wasm"), {
-      message: "Only .wasm files are allowed.",
+    .refine(file => file.name.toLowerCase().endsWith('.wasm'), {
+      message: 'Only .wasm files are allowed.',
     }),
 });
 
@@ -63,14 +63,14 @@ export default function ComponentUpdate() {
   });
 
   async function addFilesToZip(zipFolder: JSZip, parentId: string | null) {
-    const children = fileSystem.filter((file) => file.parentId === parentId);
+    const children = fileSystem.filter(file => file.parentId === parentId);
     for (const child of children) {
-      if (child.type === "folder") {
+      if (child.type === 'folder') {
         const folder = zipFolder.folder(child.name);
         if (folder) {
           await addFilesToZip(folder, child.id);
         }
-      } else if (child.type === "file") {
+      } else if (child.type === 'file') {
         if (child.fileObject) {
           zipFolder.file(child.name, child.fileObject);
         }
@@ -81,18 +81,18 @@ export default function ComponentUpdate() {
   // Recursive helper function to compute full path of a file item.
   function getFullPath(file: FileItem, allFiles: FileItem[]): string {
     if (!file.parentId) return `/${file.name}`;
-    const parent = allFiles.find((f) => f.id === file.parentId);
+    const parent = allFiles.find(f => f.id === file.parentId);
     if (!parent) return file.name;
     return `${getFullPath(parent, allFiles)}/${file.name}`;
   }
 
   function captureFileMetadata(allFiles: FileItem[]) {
     const filesPath: { path: string; permissions: string }[] = [];
-    allFiles.forEach((file) => {
-      if (file.type != "folder") {
+    allFiles.forEach(file => {
+      if (file.type != 'folder') {
         filesPath.push({
           path: getFullPath(file, allFiles),
-          permissions: file.isLocked ? "read-only" : "read-write",
+          permissions: file.isLocked ? 'read-only' : 'read-write',
         });
       }
     });
@@ -105,24 +105,24 @@ export default function ComponentUpdate() {
   async function onSubmit() {
     if (!file) {
       toast({
-        title: "No file selected",
-        description: "Please select a .wasm file before updating.",
-        variant: "destructive",
+        title: 'No file selected',
+        description: 'Please select a .wasm file before updating.',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
       const formData = new FormData();
-      formData.append("component", file);
+      formData.append('component', file);
       const zip = new JSZip();
       await addFilesToZip(zip, null);
-      const blob = await zip.generateAsync({ type: "blob" });
+      const blob = await zip.generateAsync({ type: 'blob' });
       formData.append(
-        "filesPermissions",
-        JSON.stringify(captureFileMetadata(fileSystem))
+        'filesPermissions',
+        JSON.stringify(captureFileMetadata(fileSystem)),
       );
-      formData.append("files", blob, "temp.zip");
+      formData.append('files', blob, 'temp.zip');
       await API.updateComponent(componentId!, formData);
 
       form.reset();
@@ -130,16 +130,16 @@ export default function ComponentUpdate() {
       setFileSystem([]);
 
       toast({
-        title: "Component was updated successfully",
+        title: 'Component was updated successfully',
         duration: 3000,
       });
       navigate(`/components/${componentId}`);
     } catch (err) {
-      console.error("Error updating component:", err);
+      console.error('Error updating component:', err);
       toast({
-        title: "Failed to update component",
+        title: 'Failed to update component',
         description: String(err),
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   }
@@ -183,13 +183,13 @@ export default function ComponentUpdate() {
                               className="hidden"
                               name={name}
                               onBlur={onBlur}
-                              ref={(e) => {
+                              ref={e => {
                                 ref(e); // Forward the ref to react-hook-form
                                 (
                                   fileInputRef as React.MutableRefObject<HTMLInputElement | null>
                                 ).current = e; // Assign to your local ref
                               }}
-                              onChange={(event) => {
+                              onChange={event => {
                                 const selectedFile = event.target.files?.[0];
                                 if (selectedFile) {
                                   setFile(selectedFile);
@@ -201,7 +201,7 @@ export default function ComponentUpdate() {
                               File up to 50MB
                             </p>
                             <p className="font-medium mb-1">
-                              {file ? file.name : "Upload Component WASM"}
+                              {file ? file.name : 'Upload Component WASM'}
                             </p>
                           </div>
                         </div>

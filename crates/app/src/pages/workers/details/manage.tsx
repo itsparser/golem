@@ -1,6 +1,6 @@
-import { API } from "@/service";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { API } from '@/service';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,46 +10,46 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { CircleFadingArrowUp, Pause, Play, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label.tsx";
-import { Worker } from "@/types/worker.ts";
+} from '@/components/ui/card';
+import { CircleFadingArrowUp, Pause, Play, Trash2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label.tsx';
+import { Worker } from '@/types/worker.ts';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select.tsx";
-import { ComponentList } from "@/types/component.ts";
+} from '@/components/ui/select.tsx';
+import { ComponentList } from '@/types/component.ts';
 
 export default function WorkerManage() {
-  const { componentId = "", workerName = "" } = useParams();
+  const { componentId = '', workerName = '' } = useParams();
   const navigate = useNavigate();
   const [workerDetails, setWorkerDetails] = useState({} as Worker);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showWorkerUpgrade, setShowWorkerUpgrade] = useState(false);
-  const [upgradeTo, setUpgradeTo] = useState("0");
-  const [upgradeType, setUpgradeType] = useState("Automatic");
+  const [upgradeTo, setUpgradeTo] = useState('0');
+  const [upgradeType, setUpgradeType] = useState('Automatic');
 
   const [componentList, setComponentList] = useState<ComponentList>({});
 
   useEffect(() => {
     if (componentId && workerName) {
-      API.getComponentByIdAsKey().then((response) => {
+      API.getComponentByIdAsKey().then(response => {
         setComponentList(response[componentId]);
       });
-      API.getParticularWorker(componentId, workerName).then((response) => {
+      API.getParticularWorker(componentId, workerName).then(response => {
         setWorkerDetails(response);
         setUpgradeTo(`${response?.componentVersion}`);
       });
@@ -60,10 +60,10 @@ export default function WorkerManage() {
     API.upgradeWorker(
       workerDetails?.workerId?.componentId,
       workerDetails?.workerId?.workerName,
-      Number(upgradeTo)
+      Number(upgradeTo),
     ).then(() => {
       toast({
-        title: "Worker upgraded",
+        title: 'Worker upgraded',
         duration: 3000,
       });
       // navigate(`/components/${componentId}/workers/${workerName}`);
@@ -73,7 +73,7 @@ export default function WorkerManage() {
   const handleDelete = () => {
     API.deleteWorker(componentId, workerName).then(() => {
       toast({
-        title: "Worker deleted",
+        title: 'Worker deleted',
         duration: 3000,
       });
       navigate(`/components/${componentId}`);
@@ -83,7 +83,7 @@ export default function WorkerManage() {
   const onResumeWorker = () => {
     API.resumeWorker(componentId, workerName).then(() => {
       toast({
-        title: "Worker resumed",
+        title: 'Worker resumed',
         duration: 3000,
       });
     });
@@ -92,7 +92,7 @@ export default function WorkerManage() {
   const onInterruptWorker = () => {
     API.interruptWorker(componentId, workerName).then(() => {
       toast({
-        title: "Worker interrupted",
+        title: 'Worker interrupted',
         duration: 3000,
       });
     });
@@ -100,7 +100,7 @@ export default function WorkerManage() {
 
   const versionListGreaterThan =
     componentList.versionList?.filter(
-      (version) => version > workerDetails?.componentVersion
+      version => version > workerDetails?.componentVersion,
     ) || [];
 
   return (
@@ -225,14 +225,14 @@ export default function WorkerManage() {
                       Upgrade To
                     </Label>
                     <Select
-                      defaultValue={"Automatic"}
+                      defaultValue={'Automatic'}
                       onValueChange={setUpgradeType}
                     >
                       <SelectTrigger id="upgradeTo" className="col-span-3">
                         <SelectValue>{upgradeType}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {["Automatic", "Manual"].map((version) => (
+                        {['Automatic', 'Manual'].map(version => (
                           <SelectItem key={version} value={version}>
                             {version}
                           </SelectItem>
@@ -253,7 +253,7 @@ export default function WorkerManage() {
                       </SelectTrigger>
                       <SelectContent>
                         {versionListGreaterThan?.length > 0 ? (
-                          versionListGreaterThan.map((version) => (
+                          versionListGreaterThan.map(version => (
                             <SelectItem key={version} value={String(version)}>
                               v{version}
                             </SelectItem>

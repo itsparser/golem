@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from '@/components/ui/collapsible';
 import {
   SidebarGroup,
   SidebarMenu,
@@ -14,8 +14,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
+} from '@/components/ui/sidebar';
+import { useNavigate } from 'react-router-dom';
 
 export interface SidebarMenuProps {
   title: string;
@@ -45,15 +45,15 @@ export function NavMain({
   // Define your active/inactive classes.
   // Feel free to adjust these classes to match your dark theme.
   const activeClasses =
-    "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100";
+    'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100';
   const inactiveClasses =
-    "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400";
+    'hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400';
 
   return (
     <SidebarGroup>
       <SidebarMenu>
         {items.map(
-          (item) =>
+          item =>
             !item.isHidden &&
             (item.items ? (
               // Render collapsible menu for items with sub-items
@@ -79,7 +79,7 @@ export function NavMain({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items.map((subItem) => (
+                      {item.items.map(subItem => (
                         <SidebarMenuSubItem
                           key={subItem.title}
                           className={`${
@@ -110,7 +110,7 @@ export function NavMain({
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            ))
+            )),
         )}
       </SidebarMenu>
     </SidebarGroup>

@@ -7,6 +7,7 @@ class Api(exports.Api):
       global state
       print("add " + str(value))
       state = state + value 
+      
 
     def get(self) -> int:
        global state

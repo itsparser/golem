@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' http://localhost:9881;",
+      "csp": "default-src 'self'; connect-src 'self' *;",
       "headers": {
         "Cross-Origin-Opener-Policy": "cross-origin",
         "Timing-Allow-Origin": "*"

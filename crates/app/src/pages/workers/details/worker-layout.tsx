@@ -1,16 +1,16 @@
-import { API } from "@/service";
-import { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
+import { API } from '@/service';
+import { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar.tsx";
-import { SidebarMenu } from "@/components/sidebar.tsx";
-import { Separator } from "@/components/ui/separator.tsx";
-import ErrorBoundary from "@/components/errorBoundary.tsx";
-import { ComponentList } from "@/types/component.ts";
-import { Container, Home, Info, Settings, Tv, Workflow } from "lucide-react";
+} from '@/components/ui/sidebar.tsx';
+import { SidebarMenu } from '@/components/sidebar.tsx';
+import { Separator } from '@/components/ui/separator.tsx';
+import ErrorBoundary from '@/components/errorBoundary.tsx';
+import { ComponentList } from '@/types/component.ts';
+import { Container, Home, Info, Settings, Tv, Workflow } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,36 +18,36 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb.tsx";
+} from '@/components/ui/breadcrumb.tsx';
 
 const MenuItems = (componentId: string, workerName: string) => [
   {
-    title: "Overview",
+    title: 'Overview',
     url: `/components/${componentId}/workers/${workerName}`,
     icon: Home,
   },
   {
-    title: "Live",
+    title: 'Live',
     url: `/components/${componentId}/workers/${workerName}/live`,
     icon: Tv,
   },
   {
-    title: "Environment",
+    title: 'Environment',
     url: `/components/${componentId}/workers/${workerName}/environments`,
     icon: Container,
   },
   {
-    title: "Invoke",
+    title: 'Invoke',
     url: `/components/${componentId}/workers/${workerName}/invoke`,
     icon: Workflow,
   },
   {
-    title: "Info",
+    title: 'Info',
     url: `/components/${componentId}/workers/${workerName}/info`,
     icon: Info,
   },
   {
-    title: "Manage",
+    title: 'Manage',
     url: `/components/${componentId}/workers/${workerName}/manage`,
     icon: Settings,
   },
@@ -56,30 +56,30 @@ const MenuItems = (componentId: string, workerName: string) => [
 export const WorkerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { componentId = "", workerName = "" } = useParams();
+  const { componentId = '', workerName = '' } = useParams();
   const [currentComponent, setCurrentComponent] = useState({} as ComponentList);
-  const [currentMenu, setCurrentMenu] = useState("Overview");
+  const [currentMenu, setCurrentMenu] = useState('Overview');
 
   useEffect(() => {
     if (componentId) {
-      API.getComponentByIdAsKey().then((response) => {
+      API.getComponentByIdAsKey().then(response => {
         setCurrentComponent(response[componentId]);
       });
     }
   }, [componentId]);
 
   useEffect(() => {
-    if (location.pathname.includes("live")) setCurrentMenu("Live");
-    else if (location.pathname.includes("environments"))
-      setCurrentMenu("Environment");
-    else if (location.pathname.includes("invoke")) setCurrentMenu("Invoke");
-    else if (location.pathname.includes("manage")) setCurrentMenu("Manage");
-    else if (location.pathname.includes("info")) setCurrentMenu("Info");
+    if (location.pathname.includes('live')) setCurrentMenu('Live');
+    else if (location.pathname.includes('environments'))
+      setCurrentMenu('Environment');
+    else if (location.pathname.includes('invoke')) setCurrentMenu('Invoke');
+    else if (location.pathname.includes('manage')) setCurrentMenu('Manage');
+    else if (location.pathname.includes('info')) setCurrentMenu('Info');
   }, [location.pathname]);
 
   const navigateHome = () => {
     navigate(`/components/${componentId}/workers/${workerName}`);
-    setCurrentMenu("Overview");
+    setCurrentMenu('Overview');
   };
 
   return (
@@ -89,7 +89,7 @@ export const WorkerLayout = () => {
           menus={MenuItems(componentId, workerName)}
           activeItem={currentMenu}
           setActiveItem={setCurrentMenu}
-          title={"Worker"}
+          title={'Worker'}
         />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b">
@@ -104,7 +104,7 @@ export const WorkerLayout = () => {
                       <span
                         onClick={() => navigate(`/components/${componentId}`)}
                       >
-                        <span className="text-gray-500">Component:</span>{" "}
+                        <span className="text-gray-500">Component:</span>{' '}
                         {currentComponent.componentName}
                       </span>
                     </BreadcrumbLink>
@@ -116,7 +116,7 @@ export const WorkerLayout = () => {
                         onClick={() => navigateHome()}
                         className="cursor-pointer"
                       >
-                        <span className="text-gray-500">Worker:</span>{" "}
+                        <span className="text-gray-500">Worker:</span>{' '}
                         {workerName}
                       </span>
                     </BreadcrumbLink>

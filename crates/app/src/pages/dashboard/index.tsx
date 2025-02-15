@@ -1,6 +1,6 @@
-import { ComponentsSection } from "@/pages/dashboard/componentSection.tsx";
-import { APISection } from "@/pages/dashboard/apiSection.tsx";
-import { DeploymentSection } from "@/pages/dashboard/deploymentSection.tsx";
+import { ComponentsSection } from '@/pages/dashboard/componentSection.tsx';
+import { APISection } from '@/pages/dashboard/apiSection.tsx';
+import { DeploymentSection } from '@/pages/dashboard/deploymentSection.tsx';
 
 export const Dashboard = () => {
   return (

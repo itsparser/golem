@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { API } from "@/service";
-import { Api } from "@/types/api";
-import ErrorBoundary from "@/components/errorBoundary";
+} from '@/components/ui/dialog';
+import { API } from '@/service';
+import { Api } from '@/types/api';
+import ErrorBoundary from '@/components/errorBoundary';
 
 export default function APISettings() {
   const { toast } = useToast();
@@ -27,9 +27,9 @@ export default function APISettings() {
 
   useEffect(() => {
     if (apiName) {
-      API.getApi(apiName).then((response) => {
+      API.getApi(apiName).then(response => {
         setApiDetails(response);
-        const selectedApi = response.find((api) => api.version === version);
+        const selectedApi = response.find(api => api.version === version);
         setActiveApiDetails(selectedApi!);
       });
     }
@@ -40,7 +40,7 @@ export default function APISettings() {
     API.deleteApi(activeApiDetails.id, activeApiDetails.version)
       .then(() => {
         toast({
-          title: "Version deleted",
+          title: 'Version deleted',
           description: `API version ${activeApiDetails.version} has been deleted successfully.`,
           duration: 3000,
         });
@@ -48,7 +48,7 @@ export default function APISettings() {
           navigate(`/apis`);
         } else {
           const newVersion = apiDetails.find(
-            (api) => api.version !== activeApiDetails.version
+            api => api.version !== activeApiDetails.version,
           );
           navigate(`/apis/${apiName}/version/${newVersion?.version}`);
         }
@@ -62,14 +62,12 @@ export default function APISettings() {
 
   const handleDeleteAll = async () => {
     setIsDeleting(true);
-    const promises = apiDetails.map((api) =>
-      API.deleteApi(api.id, api.version)
-    );
+    const promises = apiDetails.map(api => API.deleteApi(api.id, api.version));
     Promise.all(promises)
       .then(() => {
         toast({
-          title: "All versions deleted",
-          description: "All API versions have been deleted successfully.",
+          title: 'All versions deleted',
+          description: 'All API versions have been deleted successfully.',
           duration: 3000,
         });
         setShowConfirmAllDialog(false);
@@ -90,8 +88,8 @@ export default function APISettings() {
     API.putApi(activeApiDetails.id, activeApiDetails.version, payload)
       .then(() => {
         toast({
-          title: "All routes deleted",
-          description: "All routes have been deleted successfully.",
+          title: 'All routes deleted',
+          description: 'All routes have been deleted successfully.',
           duration: 3000,
         });
         navigate(`/apis/${apiName}/version/${version}`);
@@ -191,7 +189,7 @@ export default function APISettings() {
                 onClick={handleDeleteVersion}
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Yes, delete"}
+                {isDeleting ? 'Deleting...' : 'Yes, delete'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -217,7 +215,7 @@ export default function APISettings() {
                 onClick={handleDeleteAll}
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Yes, delete all"}
+                {isDeleting ? 'Deleting...' : 'Yes, delete all'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -243,7 +241,7 @@ export default function APISettings() {
                 onClick={handleDeleteAllRoutes}
                 disabled={isDeleting}
               >
-                {isDeleting ? "Deleting..." : "Yes, delete all"}
+                {isDeleting ? 'Deleting...' : 'Yes, delete all'}
               </Button>
             </DialogFooter>
           </DialogContent>

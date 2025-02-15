@@ -1,32 +1,32 @@
-import type React from "react";
-import { useEffect, useState } from "react";
-import { ComponentExportFunction } from "@/types/component";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CircleSlash2, Info, Play, TimerReset } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { ComponentExportFunction } from '@/types/component';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CircleSlash2, Info, Play, TimerReset } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   parseToJsonEditor,
   parseTooltipTypesData,
   safeFormatJSON,
   validateJsonStructure,
-} from "@/lib/worker";
-import { CodeBlock, dracula } from "react-code-blocks";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+} from '@/lib/worker';
+import { CodeBlock, dracula } from 'react-code-blocks';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { sanitizeInput } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,22 +35,22 @@ type FieldType = {
   name: string;
   typ: {
     type: string;
-    inner?: FieldType["typ"];
+    inner?: FieldType['typ'];
     cases?: string[];
   };
 };
 
 const nonStringPrimitives = [
-  "S64",
-  "S32",
-  "S16",
-  "S8",
-  "U64",
-  "U32",
-  "U16",
-  "U8",
-  "bool",
-  "enum",
+  'S64',
+  'S32',
+  'S16',
+  'S8',
+  'U64',
+  'U32',
+  'U16',
+  'U8',
+  'bool',
+  'enum',
 ];
 
 export const DynamicForm = ({
@@ -71,17 +71,17 @@ export const DynamicForm = ({
 
   const initialFormData = () => {
     const initialData = functionDetails.parameters.reduce((acc, field) => {
-      if (field.typ.type === "Str" || field.typ.type === "Chr") {
-        acc[field.name] = "";
+      if (field.typ.type === 'Str' || field.typ.type === 'Chr') {
+        acc[field.name] = '';
       } else if (!nonStringPrimitives.includes(field.typ.type)) {
         acc[field.name] = JSON.stringify(
           parseToJsonEditor({
             parameters: [{ ...field }],
-            name: "",
+            name: '',
             results: [],
           })[0],
           null,
-          2
+          2,
         );
       }
       return acc;
@@ -90,8 +90,8 @@ export const DynamicForm = ({
   };
 
   const handleInputChange = (name: string, value: unknown) => {
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-    setErrors((prevErrors) => {
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+    setErrors(prevErrors => {
       const updatedErrors = { ...prevErrors };
       delete updatedErrors[name];
       return updatedErrors;
@@ -101,32 +101,32 @@ export const DynamicForm = ({
 
   const validateForm = (): Record<string, string> => {
     const validationErrors: Record<string, string> = {};
-    functionDetails.parameters.forEach((field) => {
+    functionDetails.parameters.forEach(field => {
       let value = formData[field.name];
       if (nonStringPrimitives.includes(field.typ.type) && value === undefined) {
         validationErrors[field.name] = `${field.name} is required`;
       } else {
         if (
           !nonStringPrimitives.includes(field.typ.type) &&
-          field.typ.type !== "Str" &&
-          field.typ.type !== "Chr"
+          field.typ.type !== 'Str' &&
+          field.typ.type !== 'Chr'
         ) {
           const sanitizedValue = sanitizeInput(value);
           value = JSON.parse(sanitizedValue);
         } else if (
-          ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
-            field.typ.type
+          ['S64', 'S32', 'S16', 'S8', 'U64', 'U32', 'U16', 'U8'].includes(
+            field.typ.type,
           )
         ) {
           value = Number.parseInt(value);
         } else if (value !== undefined) {
           if (
-            ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
-              field.typ.type
+            ['S64', 'S32', 'S16', 'S8', 'U64', 'U32', 'U16', 'U8'].includes(
+              field.typ.type,
             )
           ) {
             value = Number.parseInt(value);
-          } else if (field.typ.type === "bool") {
+          } else if (field.typ.type === 'bool') {
             value = Boolean(value);
           }
         }
@@ -145,12 +145,12 @@ export const DynamicForm = ({
       setErrors(validationErrors);
     } else {
       const result: unknown[] = [];
-      functionDetails.parameters.forEach((field) => {
-        const value = formData[field.name] || "";
+      functionDetails.parameters.forEach(field => {
+        const value = formData[field.name] || '';
         if (
           !nonStringPrimitives.includes(field.typ.type) &&
-          field.typ.type !== "Str" &&
-          field.typ.type !== "Chr"
+          field.typ.type !== 'Str' &&
+          field.typ.type !== 'Chr'
         ) {
           try {
             const sanitizedValue = sanitizeInput(value);
@@ -159,19 +159,19 @@ export const DynamicForm = ({
             console.error(`Error parsing JSON for field ${field.name}:`, error);
           }
         } else if (
-          ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
-            field.typ.type
+          ['S64', 'S32', 'S16', 'S8', 'U64', 'U32', 'U16', 'U8'].includes(
+            field.typ.type,
           )
         ) {
           result.push(Number.parseInt(value));
         } else if (value !== undefined) {
           if (
-            ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
-              field.typ.type
+            ['S64', 'S32', 'S16', 'S8', 'U64', 'U32', 'U16', 'U8'].includes(
+              field.typ.type,
             )
           ) {
             result.push(Number.parseInt(value));
-          } else if (field.typ.type === "bool") {
+          } else if (field.typ.type === 'bool') {
             result.push(Boolean(value));
           } else {
             result.push(value);
@@ -185,52 +185,52 @@ export const DynamicForm = ({
   const buildInput = (field: FieldType, isOptional: boolean) => {
     const { name, typ } = field;
     const type = isOptional ? typ.inner?.type : typ.type;
-    const value = formData[name] ?? "";
+    const value = formData[name] ?? '';
 
     switch (type) {
-      case "S64":
-      case "S32":
-      case "S16":
-      case "S8":
+      case 'S64':
+      case 'S32':
+      case 'S16':
+      case 'S8':
         return (
           <Input
             type="number"
             step="1"
             value={value}
-            className={errors[name] ? "border-red-500" : ""}
-            onChange={(e) => handleInputChange(name, e.target.value)}
+            className={errors[name] ? 'border-red-500' : ''}
+            onChange={e => handleInputChange(name, e.target.value)}
           />
         );
-      case "U64":
-      case "U32":
-      case "U16":
-      case "U8":
+      case 'U64':
+      case 'U32':
+      case 'U16':
+      case 'U8':
         return (
           <Input
             type="number"
             min="0"
             value={value}
-            className={errors[name] ? "border-red-500" : ""}
-            onChange={(e) => {
+            className={errors[name] ? 'border-red-500' : ''}
+            onChange={e => {
               handleInputChange(name, e.target.value);
             }}
           />
         );
-      case "Str":
-      case "Chr":
+      case 'Str':
+      case 'Chr':
         return (
           <Input
             type="text"
             value={value}
-            className={errors[name] ? "border-red-500" : ""}
-            onChange={(e) => handleInputChange(name, e.target.value)}
+            className={errors[name] ? 'border-red-500' : ''}
+            onChange={e => handleInputChange(name, e.target.value)}
           />
         );
-      case "Bool":
+      case 'Bool':
         return (
           <RadioGroup
             value={value}
-            onValueChange={(checked) => handleInputChange(name, checked)}
+            onValueChange={checked => handleInputChange(name, checked)}
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="true" id="r1" />
@@ -242,11 +242,11 @@ export const DynamicForm = ({
             </div>
           </RadioGroup>
         );
-      case "Enum":
+      case 'Enum':
         return (
           <Select
             value={value}
-            onValueChange={(selectedValue) =>
+            onValueChange={selectedValue =>
               handleInputChange(name, selectedValue)
             }
           >
@@ -254,7 +254,7 @@ export const DynamicForm = ({
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {(typ.cases || []).map((option) => (
+              {(typ.cases || []).map(option => (
                 <SelectItem key={option} value={option}>
                   {option}
                 </SelectItem>
@@ -266,12 +266,12 @@ export const DynamicForm = ({
         return (
           <Textarea
             value={value}
-            onChange={(e) => {
+            onChange={e => {
               const newValue = safeFormatJSON(e.target.value);
               handleInputChange(name, newValue);
             }}
             className={`min-h-[400px] font-mono text-sm mt-2 ${
-              errors[name] ? "border-red-500" : ""
+              errors[name] ? 'border-red-500' : ''
             }`}
           />
         );
@@ -280,7 +280,7 @@ export const DynamicForm = ({
 
   const renderField = (field: FieldType): React.ReactNode => {
     const { name, typ } = field;
-    const isOptional = typ.type === "Option";
+    const isOptional = typ.type === 'Option';
     const isPrimitive = nonStringPrimitives.includes(typ.type);
     const dataType = typ.type;
 
@@ -288,10 +288,10 @@ export const DynamicForm = ({
       parameters: [
         {
           ...field,
-          type: "",
+          type: '',
         },
       ],
-      name: "",
+      name: '',
       results: [],
     });
 
@@ -347,8 +347,8 @@ export const DynamicForm = ({
         <form>
           <CardContent className="p-6">
             {functionDetails.parameters.length > 0 ? (
-              functionDetails.parameters.map((parameter) =>
-                renderField(parameter as FieldType)
+              functionDetails.parameters.map(parameter =>
+                renderField(parameter as FieldType),
               )
             ) : (
               <div className="flex flex-col items-center justify-center text-center gap-4">

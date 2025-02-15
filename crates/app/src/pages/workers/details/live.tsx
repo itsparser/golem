@@ -1,29 +1,29 @@
-import { Invocation, Terminal, WsMessage, OplogEntry } from "@/types/worker.ts";
-import { useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { useParams } from "react-router-dom";
-import { WSS } from "@/service/wss";
-import { API } from "@/service";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Invocation, Terminal, WsMessage, OplogEntry } from '@/types/worker.ts';
+import { useEffect, useRef, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { useParams } from 'react-router-dom';
+import { WSS } from '@/service/wss';
+import { API } from '@/service';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
-import { RotateCw, X, Search } from "lucide-react";
-import { formatTimestampInDateTimeFormat } from "@/lib/utils";
-import { useDebounce } from "@/hooks/debounce"; // Import the debounce hook
+} from '@/components/ui/select';
+import { RotateCw, X, Search } from 'lucide-react';
+import { formatTimestampInDateTimeFormat } from '@/lib/utils';
+import { useDebounce } from '@/hooks/debounce'; // Import the debounce hook
 
 export default function WorkerLive() {
-  const { componentId = "", workerName = "" } = useParams();
+  const { componentId = '', workerName = '' } = useParams();
   const wsRef = useRef<WSS | null>(null);
   const [invocationData, setInvocationData] = useState<Invocation[]>([]);
   const [terminal, setTerminal] = useState<Terminal[]>([]);
-  const [activeTab, setActiveTab] = useState("log");
-  const [count, setCount] = useState("100");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState('log');
+  const [count, setCount] = useState('100');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Debounced values to prevent rapid API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -38,23 +38,23 @@ export default function WorkerLive() {
       const initWebSocket = async () => {
         try {
           const ws = await WSS.getConnection(
-            `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`
+            `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`,
           );
           wsRef.current = ws;
 
           ws.onMessage((data: unknown) => {
             const message = data as WsMessage;
-            if (message["InvocationStart"]) {
-              setInvocationData((prev) => [
+            if (message['InvocationStart']) {
+              setInvocationData(prev => [
                 ...prev,
                 {
                   timestamp: message.InvocationStart.timestamp,
                   function: message.InvocationStart.function,
                 },
               ]);
-            } else if (message["StdOut"]) {
+            } else if (message['StdOut']) {
               const bytes = message.StdOut.bytes || [];
-              setTerminal((prev) => [
+              setTerminal(prev => [
                 ...prev,
                 {
                   timestamp: message.StdOut.timestamp,
@@ -64,7 +64,7 @@ export default function WorkerLive() {
             }
           });
         } catch (error) {
-          console.error("Failed to connect WebSocket:", error);
+          console.error('Failed to connect WebSocket:', error);
         }
       };
 
@@ -88,18 +88,18 @@ export default function WorkerLive() {
       workerName,
       Number(count),
       `${
-        debouncedActiveTab === "log" ? "log" : "ExportedFunctionInvoked"
-      } ${search}`
-    ).then((response) => {
+        debouncedActiveTab === 'log' ? 'log' : 'ExportedFunctionInvoked'
+      } ${search}`,
+    ).then(response => {
       const terminalData = [] as Terminal[];
       const invocationList = [] as Invocation[];
       response.entries.forEach((item: OplogEntry) => {
-        if (item.entry.type === "Log") {
+        if (item.entry.type === 'Log') {
           terminalData.push({
             timestamp: item.entry.timestamp,
             message: item.entry.message,
           });
-        } else if (item.entry.type === "ExportedFunctionInvoked") {
+        } else if (item.entry.type === 'ExportedFunctionInvoked') {
           invocationList.push({
             timestamp: item.entry.timestamp,
             function: item.entry.function_name,
@@ -142,25 +142,25 @@ export default function WorkerLive() {
                     placeholder="Search..."
                     className="pl-9"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={e => setSearchQuery(e.target.value)}
                   />
                   {searchQuery && (
                     <button
-                      onClick={() => setSearchQuery("")}
+                      onClick={() => setSearchQuery('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     >
                       <X size={18} />
                     </button>
                   )}
                 </div>
-                <Select defaultValue={count} onValueChange={(e) => setCount(e)}>
+                <Select defaultValue={count} onValueChange={e => setCount(e)}>
                   <SelectTrigger className="w-[80px]">{count}</SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={"10"}>10</SelectItem>
-                    <SelectItem value={"25"}>25</SelectItem>
-                    <SelectItem value={"50"}>50</SelectItem>
-                    <SelectItem value={"75"}>75</SelectItem>
-                    <SelectItem value={"100"}>100</SelectItem>
+                    <SelectItem value={'10'}>10</SelectItem>
+                    <SelectItem value={'25'}>25</SelectItem>
+                    <SelectItem value={'50'}>50</SelectItem>
+                    <SelectItem value={'75'}>75</SelectItem>
+                    <SelectItem value={'100'}>100</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button
@@ -190,7 +190,7 @@ export default function WorkerLive() {
             <TabsContent value="log" className="m-0">
               <div className="p-4 font-mono text-sm">
                 {terminal.length > 0 ? (
-                  terminal.map((log) => (
+                  terminal.map(log => (
                     <div
                       key={log.timestamp}
                       className="group flex py-1 hover:bg-muted/50 border-b"
@@ -214,7 +214,7 @@ export default function WorkerLive() {
             <TabsContent value="invocations" className="m-0">
               <div className="p-4 font-mono text-sm">
                 {invocationData.length > 0 ? (
-                  invocationData.map((log) => (
+                  invocationData.map(log => (
                     <div
                       key={log.timestamp}
                       className="group flex py-1 hover:bg-muted/50 border-b"

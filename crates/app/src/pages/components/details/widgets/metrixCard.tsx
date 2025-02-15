@@ -1,11 +1,11 @@
-import ErrorBoundary from "@/components/errorBoundary";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Activity, Play, AlertCircle } from "lucide-react";
+import ErrorBoundary from '@/components/errorBoundary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Layers, Activity, Play, AlertCircle } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
   value: string | number;
-  type: "version" | "active" | "running" | "failed";
+  type: 'version' | 'active' | 'running' | 'failed';
 }
 
 export function MetricCard({ title, value, type }: MetricCardProps) {
