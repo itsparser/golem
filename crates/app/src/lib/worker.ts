@@ -93,8 +93,7 @@ export function parseToJsonEditor(data: ComponentExportFunction) {
 
 export function safeFormatJSON(input: string): string {
   try {
-    const data = input.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-    const parsed = JSON.parse(data);
+    const parsed = JSON.parse(input);
     return JSON.stringify(parsed, null, 2);
   } catch {
     return input; // Return as-is if parse fails

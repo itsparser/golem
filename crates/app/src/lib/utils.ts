@@ -39,8 +39,9 @@ export function formatRelativeTime(dateString: string | number | Date) {
 }
 
 export const sanitizeInput = (input: string): string => {
-  return input.replace(/\u201c|\u201d/g, '"').replace(/'/g, '"');
+    return input.replace(/[“”\u201c\u201d]/g, '"').replace(/[‘’]/g, "'");
 };
+
 
 export function formatTimestampInDateTimeFormat(timestamp: string) {
   const date = new Date(timestamp);

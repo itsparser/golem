@@ -27,6 +27,7 @@ import {
 import { CodeBlock, dracula } from 'react-code-blocks';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { sanitizeInput } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FormData = Record<string, any>;
@@ -110,7 +111,8 @@ export const DynamicForm = ({
           field.typ.type !== 'Str' &&
           field.typ.type !== 'Chr'
         ) {
-          value = JSON.parse(value);
+          const sanitizedValue = sanitizeInput(value);
+          value = JSON.parse(sanitizedValue);
         } else if (
           ['S64', 'S32', 'S16', 'S8', 'U64', 'U32', 'U16', 'U8'].includes(
             field.typ.type,
@@ -151,7 +153,8 @@ export const DynamicForm = ({
           field.typ.type !== 'Chr'
         ) {
           try {
-            result.push(JSON.parse(value));
+            const sanitizedValue = sanitizeInput(value);
+            result.push(JSON.parse(sanitizedValue));
           } catch (error) {
             console.error(`Error parsing JSON for field ${field.name}:`, error);
           }
