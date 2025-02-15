@@ -21,18 +21,21 @@ import {
   TableIcon,
   TimerReset,
   Info,
+  Check,
 } from "lucide-react";
 import { cn, sanitizeInput } from "@/lib/utils";
 import ReactJson from "react-json-view";
+import { useTheme } from "@/components/theme-provider.tsx";
 import { Textarea } from "@/components/ui/textarea";
 import {
   parseToJsonEditor,
   parseTypesData,
   safeFormatJSON,
   parseTooltipTypesData,
-} from "@/lib/worker";
-import { toast } from "@/hooks/use-toast";
-import { DynamicForm } from "@/pages/workers/details/dynamic-form.tsx";
+  validateJsonStructure,
+} from '@/lib/worker';
+import { toast } from '@/hooks/use-toast';
+import { DynamicForm, nonStringPrimitives } from '@/pages/workers/details/dynamic-form.tsx';
 
 export default function ComponentInvoke() {
   const { componentId = "" } = useParams();
@@ -183,8 +186,8 @@ export default function ComponentInvoke() {
               {componentDetails?.metadata?.exports?.map(exportItem => (
                 <div key={exportItem.name}>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 font-bold pb-4">
-                      {exportItem.name}
+                  <span className="text-sm text-neutral-600 font-bold pb-4">
+                  {exportItem.name}
                     </span>
                   </div>
                   <ul className="space-y-1">
@@ -202,9 +205,9 @@ export default function ComponentInvoke() {
                               className={cn(
                                 "w-full flex items-center px-3 py-2 rounded-md text-sm font-medium justify-start",
                                 urlFn === fn.name
-                                  ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                  : "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-600 dark:text-gray-400",
-                              )}
+                                  ? "bg-gray-300 dark:bg-neutral-800 text-gray-900 dark:text-gray-100"
+                                  : "hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300"
+                              )}                              
                             >
                               <span>{fn.name}</span>
                             </Button>
@@ -294,11 +297,7 @@ export default function ComponentInvoke() {
                         setValue(JSON.stringify(initialJson, null, 2));
                       }
                     }}
-                    onInvoke={() => {
-                      const sanitizedValue = sanitizeInput(value);
-                      const parsedValue = JSON.parse(sanitizedValue);
-                      onInvoke(parsedValue);
-                    }}
+                    onInvoke={onInvoke}
                   />
                 )}
 
@@ -354,7 +353,7 @@ interface SectionCardProps {
   copyToClipboard?: () => void;
   readOnly?: boolean;
   functionDetails?: ComponentExportFunction;
-  onInvoke?: () => void;
+  onInvoke?: (args: unknown[]) => void;
   onReset?: () => void;
 }
 
@@ -369,6 +368,49 @@ function SectionCard({
   onInvoke = () => {},
   onReset = () => {},
 }: SectionCardProps) {
+  const { theme } = useTheme();
+  const [copied, setCopied] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleCopy = () => {
+    if (copyToClipboard) {
+      copyToClipboard();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const onSubmit = () => {
+    const sanitizedValue = sanitizeInput(value);
+    const parsedValue = JSON.parse(sanitizedValue);
+    const validationErrors = validateForm(parsedValue);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+    } else {
+      onInvoke(parsedValue);
+    }
+    
+  };
+
+  const validateForm = (parsedValue: any[]): Record<string, string> => {
+      const validationErrors: Record<string, string> = {};
+      if (!functionDetails) {
+        throw new Error("No function details loaded.");
+      }
+      functionDetails.parameters.forEach((field, index) => {
+        let value = parsedValue[index];
+        if (nonStringPrimitives.includes(field.typ.type) && value === undefined) {
+          validationErrors[field.name] = `${field.name} is required`;
+        } else {
+          const error = validateJsonStructure(value, field);
+          if (error) {
+            validationErrors[field.name] = error;
+          }
+        }
+      });
+      return validationErrors;
+    };
+
   return (
     <div>
       <Card className="w-full bg-background">
@@ -404,9 +446,18 @@ function SectionCard({
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>
             {copyToClipboard && (
-              <Button variant="outline" size="sm" onClick={copyToClipboard}>
-                <ClipboardCopy className="h-4 w-4 mr-1" />
-                Copy
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1 text-green-500" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <ClipboardCopy className="h-4 w-4 mr-1" />
+                    Copy
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -416,7 +467,7 @@ function SectionCard({
             <ReactJson
               src={JSON.parse(value || "{}")}
               name={null}
-              theme="rjv-default"
+              theme={theme == "dark" ? "brewer" : "bright:inverted"}
               collapsed={false}
               enableClipboard={false}
               displayDataTypes={false}
@@ -425,10 +476,17 @@ function SectionCard({
           ) : (
             <Textarea
               value={value}
-              onChange={e => onValueChange?.(e.target.value)}
-              className={cn("min-h-[400px] font-mono text-sm mt-2")}
+              onChange={e => {
+                setErrors({});
+                onValueChange?.(e.target.value)}}
+              className={`min-h-[400px] font-mono text-sm mt-2 ${Object.keys(errors).length > 0 ? "border-red-500" : ""}`}
               placeholder="Enter JSON data..."
             />
+          )}
+          {Object.keys(errors).length > 0 && (
+            <div className="text-red-500 text-sm mt-2">
+             {Object.values(errors).join(", ")}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -442,7 +500,7 @@ function SectionCard({
             <TimerReset className="h-4 w-4 mr-1" />
             Reset
           </Button>
-          <Button onClick={onInvoke}>
+          <Button onClick={onSubmit}>
             <Play className="h-4 w-4 mr-1" />
             Invoke
           </Button>

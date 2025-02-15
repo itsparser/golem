@@ -40,7 +40,7 @@ type FieldType = {
   };
 };
 
-const nonStringPrimitives = [
+export const nonStringPrimitives = [
   "S64",
   "S32",
   "S16",
@@ -302,7 +302,7 @@ export const DynamicForm = ({
             <div>{name}</div>
             {isOptional && <div className="ml-2 text-zinc-400">(Optional)</div>}
             <div className="text-emerald-400 inline-flex items-center mr-2">
-              : &nbsp; {dataType}
+              :{dataType}
             </div>
             {!isPrimitive && (
               <Popover>

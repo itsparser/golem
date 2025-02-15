@@ -42,8 +42,9 @@ export default function WorkerList() {
 
   useEffect(() => {
     API.findWorker(componentId!).then(res => {
-      setWorkerList(res.workers);
-      setFilteredWorkers(res.workers); // Initially, show all workers
+      const sortedData = res.workers.sort((a: Worker, b: Worker) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      setWorkerList(sortedData);
+      setFilteredWorkers(sortedData); // Initially, show all workers
     });
   }, [componentId]);
 
