@@ -22,8 +22,25 @@ export async function saveFile(fileName: string, data: Uint8Array) {
   }
 }
 
-export async function update_backend(url: string): Promise<void> {
-  await invoke("update_ip", { url: url }).catch((e)=> console.log("error", e));
+export async function updateIP(newIP: string) {
+  try {
+    console.log("newIP", newIP)
+    await invoke("update_backend_ip", { newIp: newIP });
+    console.log("Backend IP updated!");
+  } catch (error) {
+    console.error("Failed to update IP:", error);
+  }
+}
+
+// Retrieve the backend IP (for example, on app startup)
+export async function fetchCurrentIP() {
+  try {
+    const ip: string = await invoke("get_backend_ip");
+    console.log("Current backend IP:", ip);
+    return ip;
+  } catch (error) {
+    console.error("Failed to get current IP:", error);
+  }
 }
 
 export async function fetchData(

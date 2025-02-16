@@ -203,6 +203,7 @@ const CreateRoute = () => {
   }, [apiName, version, path, method, form]);
 
   const onSubmit = async (values: RouteFormValues) => {
+    console.log("activeApiDetails", activeApiDetails);
     if (!activeApiDetails) return;
 
     try {
@@ -219,10 +220,12 @@ const CreateRoute = () => {
         });
         return;
       }
+      console.log("selectedApi", selectedApi);
       selectedApi.routes = selectedApi.routes.filter(
         route => !(route.path === path && route.method === method),
       );
       selectedApi.routes.push(values);
+      console.log("selectedApi", selectedApi);
       await API.putApi(
         activeApiDetails.id,
         activeApiDetails.version,
@@ -519,7 +522,7 @@ const CreateRoute = () => {
                               suggestVariable={{ request: variableSuggestions }}
                             />
                           </FormControl>
-                          <FormDescription>
+                          <div>
                             <div className="flex gap-1 items-center">
                               <Popover>
                                 <PopoverTrigger asChild>
@@ -555,9 +558,11 @@ const CreateRoute = () => {
                                   </div>
                                 </PopoverContent>
                               </Popover>
-                              Interpolate variables into your Worker ID
+                              <span>
+                                Interpolate variables into your Worker ID
+                              </span>
                             </div>
-                          </FormDescription>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}

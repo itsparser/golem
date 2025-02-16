@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,8 +57,7 @@ const endpointSchema = z.string().refine(
 );
 
 export function BackendEndpointInput() {
-  const [endpoint, setEndpoint] = useState(window.backend);
-  const [currentEndpoint, setCurrentEndpoint] = useState(window.backend);
+  const [endpoint, setEndpoint] = useState(API.baseUrl);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,10 +66,8 @@ export function BackendEndpointInput() {
       endpointSchema.parse(endpoint);
       // Validation passed
       console.log("Saving endpoint:", endpoint);
-      setCurrentEndpoint(endpoint);
-      await API.updateBackendEndpoint(endpoint);
-      window.backend = endpoint;
-      updateService(endpoint);
+      await updateService(endpoint);
+      window.location.reload();
       setOpen(false);
       setError(null);
     } catch (err) {
@@ -124,7 +120,7 @@ export function BackendEndpointInput() {
           <DialogTitle>Backend Endpoint</DialogTitle>
           <DialogDescription>
             Set the backend endpoint for your application. Current endpoint:{" "}
-            {currentEndpoint}
+            {endpoint}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

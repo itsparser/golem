@@ -4,15 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { removeDuplicateApis } from "@/lib/utils";
+import { cn, removeDuplicateApis } from "@/lib/utils";
 import { API } from "@/service";
 import { Api } from "@/types/api";
 import { Deployment } from "@/types/deployments";
@@ -30,7 +30,8 @@ const RoutesCard = ({
   version: string;
   host: string;
   apiList: Api[];
-}) => {  const routes = apiList.find(
+}) => {
+  const routes = apiList.find(
     api => api.id === apiId && api.version === version,
   )?.routes;
   const navigate = useNavigate();
@@ -40,10 +41,13 @@ const RoutesCard = ({
   const copyToClipboard = (endpoint: { path: string; method: string }) => {
     const fullUrl = `${host}${endpoint.path}`;
     const curlCommand = `curl --location ${endpoint.method} http://${fullUrl} --header "Content-Type: application/json" -d '{}'`;
-    navigator.clipboard.writeText(curlCommand).then(() => {
-      setCopiedPath(endpoint.path);
-      setTimeout(() => setCopiedPath(null), 2000);
-    }).catch(err => console.error("Failed to copy:", err));
+    navigator.clipboard
+      .writeText(curlCommand)
+      .then(() => {
+        setCopiedPath(endpoint.path);
+        setTimeout(() => setCopiedPath(null), 2000);
+      })
+      .catch(err => console.error("Failed to copy:", err));
   };
 
   return (
@@ -58,22 +62,25 @@ const RoutesCard = ({
               onMouseLeave={() => setHoveredPath(null)}
               onClick={() =>
                 navigate(
-                  `/apis/${apiId}/version/${version}/routes?path=${endpoint.path}&method=${endpoint.method}`
+                  `/apis/${apiId}/version/${version}/routes?path=${endpoint.path}&method=${endpoint.method}`,
                 )
               }
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-row gap-3">
                 <Badge
                   variant="secondary"
-                  className={
+                  className={cn(
                     HTTP_METHOD_COLOR[
                       endpoint.method as keyof typeof HTTP_METHOD_COLOR
-                    ]
-                  }
+                    ],
+                    "w-16 text-center justify-center",
+                  )}
                 >
                   {endpoint.method}
                 </Badge>
-                <code className="text-sm font-mono text-foreground">{endpoint.path}</code>
+                <code className="text-sm font-mono text-foreground">
+                  {endpoint.path}
+                </code>
               </div>
               {hoveredPath === endpoint.path && (
                 <button
@@ -166,7 +173,10 @@ export default function Deployments() {
           {deployments.length > 0 ? (
             <div className="grid gap-6 overflow-scroll max-h-[80vh]">
               {deployments.map(deployment => (
-                <Card key={deployment.site.host} className="p-6 from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer hover:shadow-lg" >
+                <Card
+                  key={deployment.site.host}
+                  className="p-6 from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer hover:shadow-lg"
+                >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-base font-medium">

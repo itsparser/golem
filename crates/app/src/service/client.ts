@@ -1,22 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Component, ComponentList} from "@/types/component.ts";
-import {ENDPOINT} from "@/service/endpoints.ts";
-import {Api} from "@/types/api.ts";
-import {fetchData, update_backend} from "@/lib/tauri&web.ts";
-import {toast} from "@/hooks/use-toast";
-import {Plugin} from "@/types/plugin";
-import {parseErrorResponse} from "@/service/error-handler.ts";
+import { toast } from "@/hooks/use-toast";
+import { fetchData, updateIP } from "@/lib/tauri&web.ts";
+import { ENDPOINT } from "@/service/endpoints.ts";
+import { parseErrorResponse } from "@/service/error-handler.ts";
+import { Api } from "@/types/api.ts";
+import { Component, ComponentList } from "@/types/component.ts";
+import { Plugin } from "@/types/plugin";
 
 export class Service {
-  private baseUrl: string;
+  public baseUrl: string;
 
-  // @ts-ignore
-  constructor(baseUrl: string = window.backend) {
+  constructor(baseUrl: string) {
+    this.baseUrl = ""; // Initialize with empty string
+    // this.initializeBaseUrl(baseUrl); // Call async initialization
+    console.log("baseUrl", this.baseUrl);
     this.baseUrl = baseUrl;
   }
 
   public updateBackendEndpoint = async (url: string) => {
-    await update_backend(url);
+    await updateIP(url);
+    this.baseUrl = url;
+  };
+
+  /**
+   * getComponents: Get the list of all components
+   * Note: Sample Endpoint https://release.api.golem.cloud/v1/components
+   * @returns {Promise<Component[]>}
+   */
+  public checkHealth = async () => {
+    const r = await this.callApi("/healthcheck");
+    return r ;
   };
 
   /**
