@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -55,23 +54,32 @@ const UpdateLog: React.FC<{ update: Update }> = ({ update }) => {
   };
 
   return (
-    <div className="mb-3 flex items-center space-x-3">
-      <Badge
-        variant="outline"
-        className={`${getStatusColor(update.type)} text-white px-3 py-1`}
-      >
-        {getStatusText(update.type)}
-      </Badge>
-      <span className="text-sm text-gray-600">
-        {format(new Date(update.timestamp), "yyyy-MM-dd HH:mm:ss")}
-      </span>
-      <span className="text-sm font-medium">Target: v{update.targetVersion}</span>
-      {update.details && (
-        <span className="text-sm text-gray-500 truncate w-full max-w-[200px]">
-          {update.details}
-        </span>
-      )}
-    </div>
+    <Card className="p-4 border border-gray-200 shadow-sm">
+      <CardContent className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Badge
+            variant="outline"
+            className={`${getStatusColor(update.type)} text-white px-3 py-1`}
+          >
+            {getStatusText(update.type)}
+          </Badge>
+          <span className="text-sm text-gray-600">
+            {format(new Date(update.timestamp), "yyyy-MM-dd HH:mm:ss")}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between text-sm font-medium text-gray-700">
+          <span>Target Version:</span>
+          <span className="font-semibold">v{update.targetVersion}</span>
+        </div>
+
+        {update.details && (
+          <div className="text-sm text-gray-600 border-t pt-2">
+            {update.details}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -133,11 +141,9 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
         </CardHeader>
         <CardContent>
           {updates.length > 0 ? (
-            <ScrollArea className="h-[300px] w-full rounded-md border p-4 overflow-y-auto">
-              {updates.map((update, index) => (
+              updates.map((update, index) => (
                 <UpdateLog key={index} update={update} />
-              ))}
-            </ScrollArea>
+              ))
           ) : (
             <div className="text-center text-gray-500 py-6">No updates found.</div>
           )}
