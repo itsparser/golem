@@ -202,39 +202,51 @@ function parseType(typ: any): any {
       return typ.items.map((item: any) => parseType(item));
 
     case "List":
-      return { List: parseType(typ.inner) };
+      return [parseType(typ.inner)]; // Annotate as <List>
 
     case "Flags":
-      return { Flags: typ.names };
+      return typ.names;
 
     case "Option":
-      return { Option: parseType(typ.inner) };
+      return parseType(typ.inner); // Annotate as <Option>
 
     case "Result":
       return { ok: parseType(typ.ok.inner), err: { Enum: typ.err.cases } };
 
     case "Record":
-      return Object.fromEntries(typ.fields.map((field: any) => [field.name, parseType(field.typ)]));
+      return Object.fromEntries(
+        typ.fields.map((field: any) => {
+          if(field.typ.type === "Option" && field.typ.inner.type === "List") {
+            return [`${field.name}<${field.typ.type}<List>>`, parseType(field.typ)];
+          } else if (field.typ.type === "Option" || field.typ.type === "List" || field.typ.type === "Flags" || field.typ.type === "Enum") {
+            return [`${field.name}<${field.typ.type}>`, parseType(field.typ)];
+          } else {
+            return [`${field.name}`, parseType(field.typ)];
+          }
+        })
+      );
 
     case "Enum":
-      return { Enum: typ.cases };
+      return `${typ.cases.join(" | ")}`; // Format Enum as "case1 | case2 | case3"
 
     case "Variant":
-      return Object.fromEntries(typ.cases.map((variant: any) => [variant.name, parseType(variant.typ)]));
+      return Object.fromEntries(
+        typ.cases.map((variant: any) => [
+          `${variant.name}<${variant.typ.type}>`, // Annotate variant name with type
+          parseType(variant.typ),
+        ])
+      );
 
     default:
       return "unknown";
   }
 }
 
-export function parseTooltipTypesData(data: ComponentExportFunction) {
-  return data.parameters.map(item => 
+export function parseTooltipTypesData(data: any) {
+  return data.parameters.map((item: any) => 
     parseType(item.typ)
   );
 }
-
-
-
 
 export function parseTypesData(input: any): any {
   function transformType(typ: any): any {
