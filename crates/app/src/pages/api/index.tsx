@@ -41,17 +41,16 @@ export const APIs = () => {
               onChange={e =>
                 setSearchedApi(
                   apis.filter(api =>
-                    api.id.toLocaleLowerCase().includes(e.target.value.toLocaleLowerCase())
-                  )
+                    api.id
+                      .toLocaleLowerCase()
+                      .includes(e.target.value.toLocaleLowerCase()),
+                  ),
                 )
               }
               className="pl-10 text-white"
             />
           </div>
-          <Button
-            onClick={() => navigate("/apis/create")}
-            variant="default"
-          >
+          <Button onClick={() => navigate("/apis/create")} variant="default">
             <Plus className="h-5 w-5" />
             <span>New</span>
           </Button>
@@ -73,7 +72,9 @@ export const APIs = () => {
           <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-muted rounded-lg">
             <Layers className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No APIs</h3>
-            <p className="text-muted-foreground mb-4">Create your first API to get started</p>
+            <p className="text-muted-foreground mb-4">
+              Create your first API to get started
+            </p>
           </div>
         )}
       </div>
@@ -90,13 +91,15 @@ interface APICardProps {
 
 const APICard = ({ name, version, routes, count }: APICardProps) => {
   const navigate = useNavigate();
-    return (
+  return (
     <Card
       className="from-background to-muted bg-gradient-to-br border-border w-full cursor-pointer hover:shadow-lg"
       onClick={() => navigate(`/apis/${name}/version/${version}`)}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-semibold text-emerald-400">{name}</CardTitle>
+        <CardTitle className="text-base font-semibold text-emerald-400">
+          {name}
+        </CardTitle>
         <Badge
           variant="outline"
           className="bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600"

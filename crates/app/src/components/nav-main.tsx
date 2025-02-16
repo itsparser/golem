@@ -45,9 +45,9 @@ export function NavMain({
   // Define your active/inactive classes.
   // Feel free to adjust these classes to match your dark theme.
   const activeClasses =
-  "bg-gray-300 dark:bg-neutral-800 text-gray-900 dark:text-gray-100";
-const inactiveClasses =
-  "hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300";
+    "bg-gray-300 dark:bg-neutral-800 text-gray-900 dark:text-gray-100";
+  const inactiveClasses =
+    "hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300";
 
   return (
     <SidebarGroup>

@@ -1,6 +1,3 @@
-import { API } from "@/service";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +9,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -20,10 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CircleFadingArrowUp, Pause, Play, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label.tsx";
-import { Worker } from "@/types/worker.ts";
 import {
   Select,
   SelectContent,
@@ -31,7 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
+import { toast } from "@/hooks/use-toast";
+import { API } from "@/service";
 import { ComponentList } from "@/types/component.ts";
+import { Worker } from "@/types/worker.ts";
+import { CircleFadingArrowUp, Pause, Play, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function WorkerManage() {
   const { componentId = "", workerName = "" } = useParams();
@@ -63,7 +63,7 @@ export default function WorkerManage() {
       upgradeType,
     ).then(() => {
       toast({
-        title: "Worker upgraded successfully",
+        title: "Worker upgraded Initiated",
         duration: 3000,
       });
     });
@@ -108,7 +108,9 @@ export default function WorkerManage() {
       <Card className="w-full shadow-lg rounded-xl border border-border/30">
         <CardHeader>
           <CardTitle>Worker Execution</CardTitle>
-          <CardDescription>Manage the worker and its execution.</CardDescription>
+          <CardDescription>
+            Manage the worker and its execution.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between p-3 bg-muted/10 rounded-lg">
@@ -118,7 +120,11 @@ export default function WorkerManage() {
                 Upgrade Worker With New Component Version
               </p>
             </div>
-            <Button variant="default" onClick={() => setShowWorkerUpgrade(true)} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button
+              variant="default"
+              onClick={() => setShowWorkerUpgrade(true)}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
               <CircleFadingArrowUp className="mr-2 h-4 w-4" />
               Upgrade Worker
             </Button>
@@ -159,10 +165,14 @@ export default function WorkerManage() {
             <div>
               <h3 className="text-lg font-semibold">Delete this Worker</h3>
               <p className="text-sm text-muted-foreground">
-                Once you delete a worker, there is no going back. Please be certain.
+                Once you delete a worker, there is no going back. Please be
+                certain.
               </p>
             </div>
-            <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Worker
             </Button>
@@ -170,129 +180,139 @@ export default function WorkerManage() {
         </CardContent>
       </Card>
       <AlertDialog open={showWorkerUpgrade} onOpenChange={setShowWorkerUpgrade}>
-  <AlertDialogContent className="sm:max-w-[600px]">
-    <AlertDialogHeader>
-      <AlertDialogTitle className="text-xl font-semibold">
-        Upgrade Worker
-      </AlertDialogTitle>
-      <AlertDialogDescription className="text-sm text-muted-foreground">
-        This action cannot be undone. This will permanently upgrade the worker to
-        the selected version.
-      </AlertDialogDescription>
-    </AlertDialogHeader>
+        <AlertDialogContent className="sm:max-w-[600px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-semibold">
+              Upgrade Worker
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground">
+              This action cannot be undone. This will permanently upgrade the
+              worker to the selected version.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-    <div className="grid gap-6 py-4">
-      {/* Component ID */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="componentId" className="text-right text-sm font-medium">
-          Component ID
-        </Label>
-        <Input
-          id="componentId"
-          defaultValue={workerDetails?.workerId?.componentId || "N/A"}
-          className="col-span-3 bg-muted/50"
-          disabled
-        />
-      </div>
+          <div className="grid gap-6 py-4">
+            {/* Component ID */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label
+                htmlFor="componentId"
+                className="text-right text-sm font-medium"
+              >
+                Component ID
+              </Label>
+              <Input
+                id="componentId"
+                defaultValue={workerDetails?.workerId?.componentId || "N/A"}
+                className="col-span-3 bg-muted/50"
+                disabled
+              />
+            </div>
 
-      {/* Current Component Version */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="componentVersion" className="text-right text-sm font-medium">
-          Current Version
-        </Label>
-        <Input
-          id="componentVersion"
-          defaultValue={workerDetails?.componentVersion || "N/A"}
-          className="col-span-3 bg-muted/50"
-          disabled
-        />
-      </div>
+            {/* Current Component Version */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label
+                htmlFor="componentVersion"
+                className="text-right text-sm font-medium"
+              >
+                Current Version
+              </Label>
+              <Input
+                id="componentVersion"
+                defaultValue={workerDetails?.componentVersion || "N/A"}
+                className="col-span-3 bg-muted/50"
+                disabled
+              />
+            </div>
 
-      {/* Upgrade Type (Automatic/Manual) */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="upgradeType" className="text-right text-sm font-medium">
-          Upgrade Type
-        </Label>
-        <Select defaultValue="Automatic" onValueChange={setUpgradeType}>
-          <SelectTrigger id="upgradeType" className="col-span-3">
-            <SelectValue>{upgradeType}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {["Automatic", "Manual"].map((version) => (
-              <SelectItem key={version} value={version}>
-                {version}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+            {/* Upgrade Type (Automatic/Manual) */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label
+                htmlFor="upgradeType"
+                className="text-right text-sm font-medium"
+              >
+                Upgrade Type
+              </Label>
+              <Select defaultValue="Automatic" onValueChange={setUpgradeType}>
+                <SelectTrigger id="upgradeType" className="col-span-3">
+                  <SelectValue>{upgradeType}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {["Automatic", "Manual"].map(version => (
+                    <SelectItem key={version} value={version}>
+                      {version}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Upgrade To Version */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="upgradeTo" className="text-right text-sm font-medium">
-          Upgrade To
-        </Label>
-        <Select defaultValue={upgradeTo} onValueChange={setUpgradeTo}>
-          <SelectTrigger id="upgradeTo" className="col-span-3">
-            <SelectValue>
-              {upgradeTo ? `v${upgradeTo}` : "Select a version"}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {versionListGreaterThan?.length > 0 ? (
-              versionListGreaterThan.map((version) => (
-                <SelectItem key={version} value={String(version)}>
-                  v{version}
-                </SelectItem>
-              ))
-            ) : (
-              <div className="p-2 text-center text-sm text-muted-foreground">
-                No versions available above v{workerDetails?.componentVersion}
-              </div>
-            )}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-
-    {/* Dialog Footer */}
-    <AlertDialogFooter>
-      <AlertDialogCancel className="border border-muted-foreground/20 hover:bg-muted/50">
-        Cancel
-      </AlertDialogCancel>
-      <AlertDialogAction
-        onClick={handleUpgrade}
-        className="bg-primary hover:bg-primary/90"
-      >
-        Upgrade
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
-
-            <AlertDialog
-              open={showDeleteDialog}
-              onOpenChange={setShowDeleteDialog}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the worker and remove all associated data.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Upgrade To Version */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label
+                htmlFor="upgradeTo"
+                className="text-right text-sm font-medium"
+              >
+                Upgrade To
+              </Label>
+              <Select defaultValue={upgradeTo} onValueChange={setUpgradeTo}>
+                <SelectTrigger id="upgradeTo" className="col-span-3">
+                  <SelectValue>
+                    {upgradeTo ? `v${upgradeTo}` : "Select a version"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {versionListGreaterThan?.length > 0 ? (
+                    versionListGreaterThan.map(version => (
+                      <SelectItem key={version} value={String(version)}>
+                        v{version}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-center text-sm text-muted-foreground">
+                      No versions available above v
+                      {workerDetails?.componentVersion}
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          {/* Dialog Footer */}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border border-muted-foreground/20 hover:bg-muted/50">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUpgrade}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Upgrade
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              worker and remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

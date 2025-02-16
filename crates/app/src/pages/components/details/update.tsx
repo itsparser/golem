@@ -29,10 +29,10 @@ import { FileManager, FileItem } from "../create/fileManager";
 const formSchema = z.object({
   component: z
     .instanceof(File)
-    .refine((file) => file.size < 50_000_000, {
+    .refine(file => file.size < 50_000_000, {
       message: "Your file must be less than 50MB.",
     })
-    .refine((file) => file.name.toLowerCase().endsWith(".wasm"), {
+    .refine(file => file.name.toLowerCase().endsWith(".wasm"), {
       message: "Only .wasm files are allowed.",
     }),
 });
@@ -87,7 +87,11 @@ export default function ComponentUpdate() {
   }
   async function onSubmit() {
     if (!file) {
-      toast({ title: "No file selected", description: "Please select a .wasm file.", variant: "destructive" });
+      toast({
+        title: "No file selected",
+        description: "Please select a .wasm file.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -112,15 +116,23 @@ export default function ComponentUpdate() {
       navigate(`/components/${componentId}`);
     } catch (err) {
       console.error("Error updating component:", err);
-      toast({ title: "Failed to update component", description: String(err), variant: "destructive" });
+      toast({
+        title: "Failed to update component",
+        description: String(err),
+        variant: "destructive",
+      });
     }
   }
 
   return (
     <div className="flex justify-center px-6 py-10">
       <Card className="max-w-3xl w-full border border-gray-200 shadow-lg rounded-lg p-6">
-        <CardTitle className="text-2xl font-semibold mb-2">Update Component</CardTitle>
-        <CardDescription className="text-gray-600">Modify and update your component below.</CardDescription>
+        <CardTitle className="text-2xl font-semibold mb-2">
+          Update Component
+        </CardTitle>
+        <CardDescription className="text-gray-600">
+          Modify and update your component below.
+        </CardDescription>
         <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -129,7 +141,9 @@ export default function ComponentUpdate() {
                 name="component"
                 render={({ field: { onChange, onBlur, name, ref } }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700 font-medium">Component File</FormLabel>
+                    <FormLabel className="text-gray-700 font-medium">
+                      Component File
+                    </FormLabel>
                     <FormControl>
                       <div
                         className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-500"
@@ -148,7 +162,7 @@ export default function ComponentUpdate() {
                               fileInputRef as React.MutableRefObject<HTMLInputElement | null>
                             ).current = e; // Assign to your local ref
                           }}
-                          onChange={(event) => {
+                          onChange={event => {
                             const selectedFile = event.target.files?.[0];
                             if (selectedFile) {
                               setFile(selectedFile);
@@ -157,7 +171,9 @@ export default function ComponentUpdate() {
                           }}
                         />
                         <p className="text-gray-500">Max file size: 50MB</p>
-                        <p className="font-medium text-gray-400 mt-2">{file ? file.name : "Upload WASM File"}</p>
+                        <p className="font-medium text-gray-400 mt-2">
+                          {file ? file.name : "Upload WASM File"}
+                        </p>
                       </div>
                     </FormControl>
                   </FormItem>
@@ -167,7 +183,9 @@ export default function ComponentUpdate() {
                 <FileManager files={fileSystem} setFiles={setFileSystem} />
               </DndProvider>
               <div className="flex justify-end">
-                <Button type="submit" className="px-6 py-2">Update</Button>
+                <Button type="submit" className="px-6 py-2">
+                  Update
+                </Button>
               </div>
             </form>
           </Form>

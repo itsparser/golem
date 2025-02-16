@@ -77,33 +77,25 @@ export default function ComponentSettings() {
             <CardTitle>
               <h2 className="text-red-500">Danger Zone</h2>
             </CardTitle>
-            <CardDescription>
-              Proceed with caution.
-            </CardDescription>
+            <CardDescription>Proceed with caution.</CardDescription>
             <Separator className="my-4" />
 
             <CardContent className="px-0 py-2">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-medium">
-                    Delete All Workers
-                  </h3>
+                  <h3 className="text-lg font-medium">Delete All Workers</h3>
                   <p className="text-sm text-muted-foreground">
                     This will permanently delete all workers associated with
                     this component. This action cannot be undone.
                   </p>
                 </div>
-                
+
                 <Dialog
                   open={showConfirmAllDialog}
                   onOpenChange={setShowConfirmAllDialog}
                 >
                   <DialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                    >
-                      Delete All Workers
-                    </Button>
+                    <Button variant="destructive">Delete All Workers</Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader className="text-center">

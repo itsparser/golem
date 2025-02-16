@@ -29,7 +29,7 @@ export class Service {
    */
   public checkHealth = async () => {
     const r = await this.callApi("/healthcheck");
-    return r ;
+    return r;
   };
 
   /**

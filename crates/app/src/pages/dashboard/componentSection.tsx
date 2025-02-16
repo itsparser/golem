@@ -1,10 +1,10 @@
 import ErrorBoundary from "@/components/errorBoundary";
 import { Button } from "@/components/ui/button.tsx";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card.tsx";
 import { API } from "@/service";
 import { ComponentList } from "@/types/component.ts";

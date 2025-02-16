@@ -51,18 +51,17 @@ export function DeploymentSection() {
         </CardHeader>
         <CardContent className="space-y-2">
           {deployments.length > 0 ? (
-              deployments.map((deployment, index) => (
-                 <div
-                 key={index}
-                 className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-lg transition-all"
-                 onClick={() => {
-                   navigate(`/deployments`);
-                 }}
-               >
-                 <p className="text-sm font-medium">{deployment.site.host}</p>
+            deployments.map((deployment, index) => (
+              <div
+                key={index}
+                className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer bg-gradient-to-br from-background to-muted hover:shadow-lg transition-all"
+                onClick={() => {
+                  navigate(`/deployments`);
+                }}
+              >
+                <p className="text-sm font-medium">{deployment.site.host}</p>
               </div>
-                            ))
-
+            ))
           ) : (
             <div className="border-2 border-dashed border-gray-200 rounded-lg p-12 flex flex-col items-center justify-center">
               <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center mb-4">

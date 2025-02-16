@@ -33,7 +33,7 @@ export default function ComponentInfo() {
 
   useEffect(() => {
     if (componentId) {
-      API.getComponentByIdAsKey().then((response) => {
+      API.getComponentByIdAsKey().then(response => {
         const componentData = response[componentId];
         const versionList = componentData?.versionList || [];
         setVersionList(versionList);
@@ -52,7 +52,7 @@ export default function ComponentInfo() {
   async function downloadFile() {
     try {
       API.downloadComponent(componentId!, versionChange).then(
-        async (response) => {
+        async response => {
           const blob = await response.blob();
           const arrayBuffer = await blob.arrayBuffer();
 
@@ -62,7 +62,7 @@ export default function ComponentInfo() {
             title: "File downloaded successfully",
             duration: 3000,
           });
-        }
+        },
       );
     } catch (error) {
       console.error("Error downloading the file:", error);
@@ -88,7 +88,7 @@ export default function ComponentInfo() {
             {versionList.length > 0 && (
               <Select
                 defaultValue={versionChange.toString()}
-                onValueChange={(version) => handleVersionChange(+version)}
+                onValueChange={version => handleVersionChange(+version)}
               >
                 <SelectTrigger className="w-[100px] border rounded-md">
                   <SelectValue>v{versionChange}</SelectValue>
@@ -115,10 +115,16 @@ export default function ComponentInfo() {
         <CardContent>
           <div className="space-y-4 text-sm">
             {[
-              ["Component ID", componentDetails.versionedComponentId?.componentId],
+              [
+                "Component ID",
+                componentDetails.versionedComponentId?.componentId,
+              ],
               ["Version", versionChange],
               ["Name", componentDetails.componentName],
-              ["Size", `${Math.round((componentDetails?.componentSize || 0) / 1024)} KB`],
+              [
+                "Size",
+                `${Math.round((componentDetails?.componentSize || 0) / 1024)} KB`,
+              ],
               [
                 "Created At",
                 componentDetails.createdAt

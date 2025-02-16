@@ -95,7 +95,8 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
         <CardHeader>
           <CardTitle className="text-lg">Worker Information</CardTitle>
           <CardDescription>
-            Current Version: <span className="font-semibold">v{componentVersion}</span> | Status: {" "}
+            Current Version:{" "}
+            <span className="font-semibold">v{componentVersion}</span> | Status:{" "}
             <Badge className="bg-blue-500 text-white px-2 py-1">{status}</Badge>
           </CardDescription>
         </CardHeader>
@@ -119,13 +120,18 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
                       </TableCell>
                       <TableCell className="font-medium">{plugin}</TableCell>
                       <TableCell className="text-right">
-                        <Badge className="bg-green-500 text-white px-2 py-1">Active</Badge>
+                        <Badge className="bg-green-500 text-white px-2 py-1">
+                          Active
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-gray-500 py-6">
+                    <TableCell
+                      colSpan={3}
+                      className="text-center text-gray-500 py-6"
+                    >
                       No plugins found.
                     </TableCell>
                   </TableRow>
@@ -141,11 +147,13 @@ export const PluginStatus: React.FC<PluginStatusProps> = ({
         </CardHeader>
         <CardContent>
           {updates.length > 0 ? (
-              updates.map((update, index) => (
-                <UpdateLog key={index} update={update} />
-              ))
+            updates.map((update, index) => (
+              <UpdateLog key={index} update={update} />
+            ))
           ) : (
-            <div className="text-center text-gray-500 py-6">No updates found.</div>
+            <div className="text-center text-gray-500 py-6">
+              No updates found.
+            </div>
           )}
         </CardContent>
       </Card>

@@ -42,7 +42,7 @@ function buildJsonSkeleton(field: Field): any {
     }
 
     case "List": {
-      if(inner) {
+      if (inner) {
         return [buildJsonSkeleton({ ...field, typ: inner })];
       }
       return [];
@@ -216,14 +216,22 @@ function parseType(typ: any): any {
     case "Record":
       return Object.fromEntries(
         typ.fields.map((field: any) => {
-          if(field.typ.type === "Option" && field.typ.inner.type === "List") {
-            return [`${field.name}<${field.typ.type}<List>>`, parseType(field.typ)];
-          } else if (field.typ.type === "Option" || field.typ.type === "List" || field.typ.type === "Flags" || field.typ.type === "Enum") {
+          if (field.typ.type === "Option" && field.typ.inner.type === "List") {
+            return [
+              `${field.name}<${field.typ.type}<List>>`,
+              parseType(field.typ),
+            ];
+          } else if (
+            field.typ.type === "Option" ||
+            field.typ.type === "List" ||
+            field.typ.type === "Flags" ||
+            field.typ.type === "Enum"
+          ) {
             return [`${field.name}<${field.typ.type}>`, parseType(field.typ)];
           } else {
             return [`${field.name}`, parseType(field.typ)];
           }
-        })
+        }),
       );
 
     case "Enum":
@@ -234,7 +242,7 @@ function parseType(typ: any): any {
         typ.cases.map((variant: any) => [
           `${variant.name}<${variant.typ.type}>`, // Annotate variant name with type
           parseType(variant.typ),
-        ])
+        ]),
       );
 
     default:
@@ -243,9 +251,7 @@ function parseType(typ: any): any {
 }
 
 export function parseTooltipTypesData(data: any) {
-  return data.parameters.map((item: any) => 
-    parseType(item.typ)
-  );
+  return data.parameters.map((item: any) => parseType(item.typ));
 }
 
 export function parseTypesData(input: any): any {

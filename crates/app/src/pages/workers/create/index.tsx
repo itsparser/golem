@@ -35,7 +35,7 @@ const formSchema = z.object({
     z.object({
       key: z.string(),
       value: z.string(),
-    })
+    }),
   ),
   args: z.array(z.string()),
 });
@@ -53,17 +53,23 @@ export default function CreateWorker() {
     },
   });
 
-  const { fields: envFields, append: appendEnv, remove: removeEnv } =
-    useFieldArray({
-      control: form.control,
-      name: "env",
-    });
+  const {
+    fields: envFields,
+    append: appendEnv,
+    remove: removeEnv,
+  } = useFieldArray({
+    control: form.control,
+    name: "env",
+  });
 
-  const { fields: argFields, append: appendArg, remove: removeArg } =
-    useFieldArray({
-      control: form.control,
-      name: "args",
-    });
+  const {
+    fields: argFields,
+    append: appendArg,
+    remove: removeArg,
+  } = useFieldArray({
+    control: form.control,
+    name: "args",
+  });
 
   function generateUUID() {
     form.setValue("name", uuidv4());
@@ -75,10 +81,12 @@ export default function CreateWorker() {
       if (arg.key) acc[arg.key] = arg.value;
       return acc;
     }, {});
-    rest.args = rest.args.filter((x) => x.trim().length > 0);
+    rest.args = rest.args.filter(x => x.trim().length > 0);
 
-    API.createWorker(componentID, rest).then((response) => {
-      navigate(`/components/${componentId}/workers/${response.workerId.workerName}`);
+    API.createWorker(componentID, rest).then(response => {
+      navigate(
+        `/components/${componentId}/workers/${response.workerId.workerName}`,
+      );
     });
   }
 
@@ -101,14 +109,18 @@ export default function CreateWorker() {
                     <FormControl>
                       <div className="flex gap-2">
                         <Input {...field} />
-                        <Button type="button" variant="secondary" onClick={generateUUID}>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={generateUUID}
+                        >
                           Generate
                         </Button>
                       </div>
                     </FormControl>
                     <FormDescription>
-                          The name must be unique for this component.
-                        </FormDescription>
+                      The name must be unique for this component.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -119,14 +131,31 @@ export default function CreateWorker() {
                 <div className="space-y-2 pt-2">
                   {envFields.map((field, index) => (
                     <div key={field.id} className="flex gap-2">
-                      <Input placeholder="Key" {...form.register(`env.${index}.key`)} />
-                      <Input placeholder="Value" type="password" {...form.register(`env.${index}.value`)} />
-                      <Button type="button" variant="destructive" size="sm" onClick={() => removeEnv(index)}>
+                      <Input
+                        placeholder="Key"
+                        {...form.register(`env.${index}.key`)}
+                      />
+                      <Input
+                        placeholder="Value"
+                        type="password"
+                        {...form.register(`env.${index}.value`)}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeEnv(index)}
+                      >
                         Remove
                       </Button>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" size="sm" onClick={() => appendEnv({ key: "", value: "" })}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendEnv({ key: "", value: "" })}
+                  >
                     Add Environment Variable
                   </Button>
                 </div>
@@ -138,17 +167,33 @@ export default function CreateWorker() {
                   {argFields.map((field, index) => (
                     <div key={field.id} className="flex gap-2">
                       <Input {...form.register(`args.${index}`)} />
-                      <Button type="button" variant="destructive" size="sm" onClick={() => removeArg(index)}>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeArg(index)}
+                      >
                         Remove
                       </Button>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" size="sm" onClick={() => appendArg("")}>Add Argument</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendArg("")}
+                  >
+                    Add Argument
+                  </Button>
                 </div>
               </div>
 
               <div className="flex justify-between">
-                <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => navigate(-1)}
+                >
                   <ArrowLeft className="mr-2 h-5 w-5" /> Back
                 </Button>
                 <Button type="submit">Submit</Button>

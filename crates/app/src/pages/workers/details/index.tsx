@@ -8,7 +8,7 @@ import {
 } from "@/types/worker.ts";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Activity, Clock, Cog, LayoutGrid, ActivityIcon} from "lucide-react";
+import { Activity, Clock, Cog, LayoutGrid, ActivityIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvocationsChart } from "./widgets/invocationCharts";
 import { formatRelativeTime } from "@/lib/utils";
@@ -43,7 +43,7 @@ export default function WorkerDetails() {
           ws.onMessage((data: unknown) => {
             const message = data as WsMessage;
             if (message["InvocationStart"]) {
-              setInvocationData((prev) => [
+              setInvocationData(prev => [
                 ...prev,
                 {
                   timestamp: message.InvocationStart.timestamp,
@@ -52,7 +52,7 @@ export default function WorkerDetails() {
               ]);
             } else if (message["StdOut"]) {
               const bytes = message.StdOut.bytes || [];
-              setTerminal((prev) => [
+              setTerminal(prev => [
                 ...prev,
                 {
                   timestamp: message.StdOut.timestamp,
@@ -78,7 +78,7 @@ export default function WorkerDetails() {
   }, []);
 
   const getopLog = async () => {
-    API.getOplog(componentId, workerName, 100, "").then((response) => {
+    API.getOplog(componentId, workerName, 100, "").then(response => {
       const terminalData = [] as Terminal[];
       const invocationList = [] as Invocation[];
       response.entries.forEach((item: OplogEntry) => {
@@ -189,7 +189,7 @@ export default function WorkerDetails() {
             <div>
               {terminal.length > 0 ? (
                 <div className="bg-background border rounded-md p-4 font-mono text-sm space-y-2 min-h-[200px]">
-                  {terminal.map((message) => (
+                  {terminal.map(message => (
                     <div key={message.timestamp} className="border-b">
                       {message.message}
                     </div>

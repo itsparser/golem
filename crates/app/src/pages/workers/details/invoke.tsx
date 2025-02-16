@@ -33,9 +33,12 @@ import {
   safeFormatJSON,
   parseTooltipTypesData,
   validateJsonStructure,
-} from '@/lib/worker';
-import { toast } from '@/hooks/use-toast';
-import { DynamicForm, nonStringPrimitives } from '@/pages/workers/details/dynamic-form.tsx';
+} from "@/lib/worker";
+import { toast } from "@/hooks/use-toast";
+import {
+  DynamicForm,
+  nonStringPrimitives,
+} from "@/pages/workers/details/dynamic-form.tsx";
 
 export default function WorkerInvoke() {
   const { componentId = "", workerName = "" } = useParams();
@@ -187,8 +190,8 @@ export default function WorkerInvoke() {
               {componentDetails?.metadata?.exports?.map(exportItem => (
                 <div key={exportItem.name}>
                   <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-600 font-bold pb-4">
-                  {exportItem.name}
+                    <span className="text-sm text-neutral-600 font-bold pb-4">
+                      {exportItem.name}
                     </span>
                   </div>
                   <ul className="space-y-1">
@@ -207,8 +210,8 @@ export default function WorkerInvoke() {
                                 "w-full flex items-center px-3 py-2 rounded-md text-sm font-medium justify-start",
                                 urlFn === fn.name
                                   ? "bg-gray-300 dark:bg-neutral-800 text-gray-900 dark:text-gray-100"
-                                  : "hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300"
-                              )}                              
+                                  : "hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-700 dark:text-gray-300",
+                              )}
                             >
                               <span>{fn.name}</span>
                             </Button>
@@ -390,27 +393,26 @@ function SectionCard({
     } else {
       onInvoke(parsedValue);
     }
-    
   };
 
   const validateForm = (parsedValue: any[]): Record<string, string> => {
-      const validationErrors: Record<string, string> = {};
-      if (!functionDetails) {
-        throw new Error("No function details loaded.");
-      }
-      functionDetails.parameters.forEach((field, index) => {
-        let value = parsedValue[index];
-        if (nonStringPrimitives.includes(field.typ.type) && value === undefined) {
-          validationErrors[field.name] = `${field.name} is required`;
-        } else {
-          const error = validateJsonStructure(value, field);
-          if (error) {
-            validationErrors[field.name] = error;
-          }
+    const validationErrors: Record<string, string> = {};
+    if (!functionDetails) {
+      throw new Error("No function details loaded.");
+    }
+    functionDetails.parameters.forEach((field, index) => {
+      let value = parsedValue[index];
+      if (nonStringPrimitives.includes(field.typ.type) && value === undefined) {
+        validationErrors[field.name] = `${field.name} is required`;
+      } else {
+        const error = validateJsonStructure(value, field);
+        if (error) {
+          validationErrors[field.name] = error;
         }
-      });
-      return validationErrors;
-    };
+      }
+    });
+    return validationErrors;
+  };
 
   return (
     <div>
@@ -479,14 +481,15 @@ function SectionCard({
               value={value}
               onChange={e => {
                 setErrors({});
-                onValueChange?.(e.target.value)}}
+                onValueChange?.(e.target.value);
+              }}
               className={`min-h-[400px] font-mono text-sm mt-2 ${Object.keys(errors).length > 0 ? "border-red-500" : ""}`}
               placeholder="Enter JSON data..."
             />
           )}
           {Object.keys(errors).length > 0 && (
             <div className="text-red-500 text-sm mt-2">
-             {Object.values(errors).join(", ")}
+              {Object.values(errors).join(", ")}
             </div>
           )}
         </CardContent>

@@ -37,7 +37,9 @@ export default function WorkerEnvironments() {
     <div className="flex justify-center p-6">
       <Card className="w-full max-w-2xl border rounded-lg shadow-lg p-6">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">Environment Variables</CardTitle>
+          <CardTitle className="text-xl font-semibold">
+            Environment Variables
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {workerDetails.env && Object.entries(workerDetails.env).length > 0 ? (
@@ -54,7 +56,7 @@ export default function WorkerEnvironments() {
                       value={value}
                       readOnly
                       className="w-64 bg-transparent border-none hover:border-none hover:border-transparent focus:border-none shadow-none"
-                      />
+                    />
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -89,7 +91,9 @@ export default function WorkerEnvironments() {
               ))}
             </div>
           ) : (
-            <div className="text-gray-500 text-sm text-center">No Environment Variables</div>
+            <div className="text-gray-500 text-sm text-center">
+              No Environment Variables
+            </div>
           )}
         </CardContent>
       </Card>

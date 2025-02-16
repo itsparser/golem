@@ -3,7 +3,12 @@ import { LayoutGrid, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
 import { useNavigate, useParams } from "react-router-dom";
 import { Worker } from "@/types/worker.ts";
 import { API } from "@/service";
@@ -25,7 +30,10 @@ export default function WorkerList() {
 
   useEffect(() => {
     API.findWorker(componentId!).then(res => {
-      const sortedData = res.workers.sort((a: Worker, b: Worker) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      const sortedData = res.workers.sort(
+        (a: Worker, b: Worker) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
       setWorkerList(sortedData);
       setFilteredWorkers(sortedData);
     });
@@ -33,9 +41,10 @@ export default function WorkerList() {
 
   useEffect(() => {
     const lowerCaseQuery = searchQuery.toLowerCase();
-    const filtered = workerList.filter(worker =>
-      worker.workerId.workerName.toLowerCase().includes(lowerCaseQuery) ||
-      worker.status.toLowerCase().includes(lowerCaseQuery)
+    const filtered = workerList.filter(
+      worker =>
+        worker.workerId.workerName.toLowerCase().includes(lowerCaseQuery) ||
+        worker.status.toLowerCase().includes(lowerCaseQuery),
     );
     setFilteredWorkers(filtered);
   }, [searchQuery, workerList]);
@@ -54,7 +63,12 @@ export default function WorkerList() {
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="default" onClick={() => navigate(`/components/${componentId}/workers/create`)}>
+            <Button
+              variant="default"
+              onClick={() =>
+                navigate(`/components/${componentId}/workers/create`)
+              }
+            >
               <Plus className="h-4 w-4" />
               New Worker
             </Button>
@@ -65,39 +79,77 @@ export default function WorkerList() {
               <div className="h-16 w-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mb-4">
                 <LayoutGrid className="h-8 w-8 text-gray-400" />
               </div>
-              <h2 className="text-xl font-semibold text-foreground">No Workers Found</h2>
-              <p className="text-muted-foreground">Create a new worker to get started.</p>
+              <h2 className="text-xl font-semibold text-foreground">
+                No Workers Found
+              </h2>
+              <p className="text-muted-foreground">
+                Create a new worker to get started.
+              </p>
             </div>
           ) : (
             <div className="overflow-auto max-h-[70vh] space-y-4">
               {filteredWorkers.map((worker, index) => (
-                <Card key={index} className="rounded-lg border border-border bg-muted hover:bg-muted/80 hover:shadow-lg transition cursor-pointer" onClick={() => navigate(`/components/${componentId}/workers/${worker.workerId.workerName}`)}>
+                <Card
+                  key={index}
+                  className="rounded-lg border border-border bg-muted hover:bg-muted/80 hover:shadow-lg transition cursor-pointer"
+                  onClick={() =>
+                    navigate(
+                      `/components/${componentId}/workers/${worker.workerId.workerName}`,
+                    )
+                  }
+                >
                   <CardHeader>
-                    <CardTitle className="text-foreground font-mono">{worker.workerId.workerName}</CardTitle>
+                    <CardTitle className="text-foreground font-mono">
+                      {worker.workerId.workerName}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="py-2">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
-                        <div className="text-sm text-muted-foreground">Status</div>
-                        <div className={`text-lg font-semibold ${WORKER_COLOR_MAPPER[worker.status as keyof typeof WORKER_COLOR_MAPPER]}`}>{worker.status}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Status
+                        </div>
+                        <div
+                          className={`text-lg font-semibold ${WORKER_COLOR_MAPPER[worker.status as keyof typeof WORKER_COLOR_MAPPER]}`}
+                        >
+                          {worker.status}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Memory</div>
-                        <div className="text-lg font-semibold">{worker.totalLinearMemorySize / 1024} KB</div>
+                        <div className="text-sm text-muted-foreground">
+                          Memory
+                        </div>
+                        <div className="text-lg font-semibold">
+                          {worker.totalLinearMemorySize / 1024} KB
+                        </div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Pending Invocations</div>
-                        <div className="text-lg font-semibold">{worker.pendingInvocationCount}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Pending Invocations
+                        </div>
+                        <div className="text-lg font-semibold">
+                          {worker.pendingInvocationCount}
+                        </div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Version</div>
-                        <div className="text-lg font-semibold">v{worker.componentVersion}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Version
+                        </div>
+                        <div className="text-lg font-semibold">
+                          v{worker.componentVersion}
+                        </div>
                       </div>
                     </div>
                     <div className="py-2 flex gap-2 text-sm">
-                      <Badge variant="outline" className="rounded-sm">Args: {worker.args.length}</Badge>
-                      <Badge variant="outline" className="rounded-sm">Env: {Object.keys(worker.env).length}</Badge>
-                      <span className="text-muted-foreground ml-auto">{new Date(worker.createdAt).toLocaleString()}</span>
+                      <Badge variant="outline" className="rounded-sm">
+                        Args: {worker.args.length}
+                      </Badge>
+                      <Badge variant="outline" className="rounded-sm">
+                        Env: {Object.keys(worker.env).length}
+                      </Badge>
+                      <span className="text-muted-foreground ml-auto">
+                        {new Date(worker.createdAt).toLocaleString()}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>

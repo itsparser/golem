@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -48,11 +54,19 @@ export default function APISettings() {
           description: `API version ${activeApiDetails.version} has been deleted successfully.`,
           duration: 3000,
         });
-        const newVersion = apiDetails.find(api => api.version !== activeApiDetails.version);
-        navigate(newVersion ? `/apis/${apiName}/version/${newVersion.version}` : `/apis`);
+        const newVersion = apiDetails.find(
+          api => api.version !== activeApiDetails.version,
+        );
+        navigate(
+          newVersion
+            ? `/apis/${apiName}/version/${newVersion.version}`
+            : `/apis`,
+        );
         setShowConfirmDialog(false);
       } else if (type === "all") {
-        await Promise.all(apiDetails.map(api => API.deleteApi(api.id, api.version)));
+        await Promise.all(
+          apiDetails.map(api => API.deleteApi(api.id, api.version)),
+        );
         toast({
           title: "All versions deleted",
           description: "All API versions have been deleted successfully.",
@@ -61,7 +75,10 @@ export default function APISettings() {
         navigate(`/apis`);
         setShowConfirmAllDialog(false);
       } else {
-        await API.putApi(activeApiDetails.id, activeApiDetails.version, { ...activeApiDetails, routes: [] });
+        await API.putApi(activeApiDetails.id, activeApiDetails.version, {
+          ...activeApiDetails,
+          routes: [],
+        });
         toast({
           title: "All routes deleted",
           description: "All routes have been deleted successfully.",
@@ -89,29 +106,41 @@ export default function APISettings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {[{
-              title: `Delete API Version ${version}`,
-              description: "Once you delete an API, there is no going back. Please be certain.",
-              action: () => setShowConfirmDialog(prev => !prev),
-              confirm: showConfirmDialog,
-              handler: () => handleDelete("version"),
-            }, {
-              title: "Delete all API Versions",
-              description: "Once you delete all API versions, there is no going back. Please be certain.",
-              action: () => setShowConfirmAllDialog(prev => !prev),
-              confirm: showConfirmAllDialog,
-              handler: () => handleDelete("all"),
-            }, {
-              title: "Delete All Routes",
-              description: "Once you delete all routes, there is no going back. Please be certain.",
-              action: () => setShowConfirmAllRoutes(prev => !prev),
-              confirm: showConfirmAllRoutes,
-              handler: () => handleDelete("routes"),
-            }].map(({ title, description, action, confirm, handler }, index) => (
-              <div key={index} className="flex items-center justify-between border-b border-red-500 pb-4 last:border-b-0">
+            {[
+              {
+                title: `Delete API Version ${version}`,
+                description:
+                  "Once you delete an API, there is no going back. Please be certain.",
+                action: () => setShowConfirmDialog(prev => !prev),
+                confirm: showConfirmDialog,
+                handler: () => handleDelete("version"),
+              },
+              {
+                title: "Delete all API Versions",
+                description:
+                  "Once you delete all API versions, there is no going back. Please be certain.",
+                action: () => setShowConfirmAllDialog(prev => !prev),
+                confirm: showConfirmAllDialog,
+                handler: () => handleDelete("all"),
+              },
+              {
+                title: "Delete All Routes",
+                description:
+                  "Once you delete all routes, there is no going back. Please be certain.",
+                action: () => setShowConfirmAllRoutes(prev => !prev),
+                confirm: showConfirmAllRoutes,
+                handler: () => handleDelete("routes"),
+              },
+            ].map(({ title, description, action, confirm, handler }, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between border-b border-red-500 pb-4 last:border-b-0"
+              >
                 <div>
                   <h3 className="text-lg font-semibold">{title}</h3>
-                  <p className="text-sm text-muted-foreground pr-2">{description}</p>
+                  <p className="text-sm text-muted-foreground pr-2">
+                    {description}
+                  </p>
                 </div>
                 <Button variant="destructive" onClick={action}>
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -124,7 +153,11 @@ export default function APISettings() {
                       <DialogDescription>{description}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                      <Button variant="destructive" onClick={handler} disabled={isDeleting}>
+                      <Button
+                        variant="destructive"
+                        onClick={handler}
+                        disabled={isDeleting}
+                      >
                         {isDeleting ? "Deleting..." : "Yes, delete"}
                       </Button>
                     </DialogFooter>

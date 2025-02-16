@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import {useTheme} from "@/components/theme-provider.tsx";
-import {cn} from "@/lib/utils";
-import Editor, {type EditorProps, useMonaco} from "@monaco-editor/react";
-import {forwardRef, useEffect, useState} from "react";
+import { useTheme } from "@/components/theme-provider.tsx";
+import { cn } from "@/lib/utils";
+import Editor, { type EditorProps, useMonaco } from "@monaco-editor/react";
+import { forwardRef, useEffect, useState } from "react";
 
 interface MonacoEditorProps extends EditorProps {
   value?: string;
@@ -78,7 +78,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
             "for",
             "in",
             "yield",
-            "reduce", 
+            "reduce",
             "from",
             "true",
             "false",
@@ -310,7 +310,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
               );
 
               // Add suggestVariable suggestions
-              const suggestVariableSuggestions = suggestVariable 
+              const suggestVariableSuggestions = suggestVariable
                 ? getObjectKeys(suggestVariable)
                 : [];
 

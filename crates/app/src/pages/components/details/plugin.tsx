@@ -37,14 +37,22 @@ import { Label } from "@/components/ui/label";
 
 export default function Plugins() {
   const { componentId = "" } = useParams();
-  const [component, setComponent] = useState<ComponentList>({} as ComponentList);
+  const [component, setComponent] = useState<ComponentList>(
+    {} as ComponentList,
+  );
   const [plugins, setPlugins] = useState<InstalledPlugin[]>([]);
   const [filteredPlugins, setFilteredPlugins] = useState<InstalledPlugin[]>([]);
   const [versionList, setVersionList] = useState<number[]>([]);
   const [versionChange, setVersionChange] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newPlugin, setNewPlugin] = useState({ name: "", priority: 1, version: "" });
-  const [availabePlugin, setAvailabePlugin] = useState<Record<string, string[]>>({});
+  const [newPlugin, setNewPlugin] = useState({
+    name: "",
+    priority: 1,
+    version: "",
+  });
+  const [availabePlugin, setAvailabePlugin] = useState<
+    Record<string, string[]>
+  >({});
 
   useEffect(() => {
     const fetchPlugins = async () => {
@@ -59,7 +67,12 @@ export default function Plugins() {
         });
         setAvailabePlugin(pluginMap);
       } catch (error) {
-        toast({ title: "Failed to fetch plugins", description: `An error occurred while fetching the plugin list. ${error}`, variant: "destructive", duration: 5000 });
+        toast({
+          title: "Failed to fetch plugins",
+          description: `An error occurred while fetching the plugin list. ${error}`,
+          variant: "destructive",
+          duration: 5000,
+        });
       }
     };
 
@@ -103,48 +116,48 @@ export default function Plugins() {
     );
   };
 
-// Handle delete action
-const handleDeletePlugin = (pluginId: string) => {
-  const versionList = component.versionList || [];
-  const latestVersion = versionList[versionList.length - 1];
-  if (latestVersion === versionChange) {
-    API.deletePluginToComponent(componentId, pluginId).then(() => {
-      toast({
-        title: "Plugin deleted successfully",
-        description:
-          "Plugin has been deleted successfully. Please check the latest version of the component.",
-        duration: 3000,
-      });
-      refreshComponent();
-    });
-  }
-};
-
-    const handleAddPlugin = () => {
-      const pluginData = {
-        name: newPlugin.name,
-        priority: newPlugin.priority,
-        version: newPlugin.version,
-        parameters: {},
-      };
-      API.addPluginToComponent(componentId, pluginData)
-        .then(() => {
-          toast({
-            title: "Plugin added successfully",
-            description: "The new plugin has been added successfully.",
-            duration: 3000,
-          });
-          refreshComponent();
-          setIsDialogOpen(false);
-        })
-        .catch(error => {
-          toast({
-            title: "Failed to add plugin",
-            description: `An error occurred while adding the plugin. ${error}`,
-            variant: "destructive",
-            duration: 5000,
-          });
+  // Handle delete action
+  const handleDeletePlugin = (pluginId: string) => {
+    const versionList = component.versionList || [];
+    const latestVersion = versionList[versionList.length - 1];
+    if (latestVersion === versionChange) {
+      API.deletePluginToComponent(componentId, pluginId).then(() => {
+        toast({
+          title: "Plugin deleted successfully",
+          description:
+            "Plugin has been deleted successfully. Please check the latest version of the component.",
+          duration: 3000,
         });
+        refreshComponent();
+      });
+    }
+  };
+
+  const handleAddPlugin = () => {
+    const pluginData = {
+      name: newPlugin.name,
+      priority: newPlugin.priority,
+      version: newPlugin.version,
+      parameters: {},
+    };
+    API.addPluginToComponent(componentId, pluginData)
+      .then(() => {
+        toast({
+          title: "Plugin added successfully",
+          description: "The new plugin has been added successfully.",
+          duration: 3000,
+        });
+        refreshComponent();
+        setIsDialogOpen(false);
+      })
+      .catch(error => {
+        toast({
+          title: "Failed to add plugin",
+          description: `An error occurred while adding the plugin. ${error}`,
+          variant: "destructive",
+          duration: 5000,
+        });
+      });
   };
 
   return (
@@ -152,10 +165,17 @@ const handleDeletePlugin = (pluginId: string) => {
       <div className="flex items-center justify-between gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input placeholder="Search plugins..." className="pl-10" onChange={handleSearch} />
+          <Input
+            placeholder="Search plugins..."
+            className="pl-10"
+            onChange={handleSearch}
+          />
         </div>
         {versionList.length > 0 && (
-          <Select defaultValue={String(versionChange)} onValueChange={value => handleVersionChange(Number(value))}>
+          <Select
+            defaultValue={String(versionChange)}
+            onValueChange={value => handleVersionChange(Number(value))}
+          >
             <SelectTrigger className="w-[100px]">
               <SelectValue>v{versionChange}</SelectValue>
             </SelectTrigger>
@@ -173,83 +193,85 @@ const handleDeletePlugin = (pluginId: string) => {
             <Button>Add Plugin</Button>
           </DialogTrigger>
           <DialogContent>
-                <DialogTitle>Add New Plugin</DialogTitle>
-                <DialogDescription>
-                  Enter the details of the new plugin you want to add.
-                </DialogDescription>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="plugin-name">Plugin Name</Label>
-                    <Select
-                      onValueChange={value => {
-                        setNewPlugin({ ...newPlugin, name: value });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue>
-                          {newPlugin.name || "Select a plugin"}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(availabePlugin).length > 0 ? (
-                          Object.keys(availabePlugin).map(plugin => (
-                            <SelectItem key={plugin} value={plugin}>
-                              {plugin}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="text-center text-muted-foreground">No plugins found.</div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="plugin-version">Version</Label>
-                    <Select
-                      name="plugin-version"
-                      disabled={!newPlugin.name}
-                      onValueChange={value => {
-                        setNewPlugin({ ...newPlugin, version: value });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue>
-                          {newPlugin.version || "Select a Plugin Version"}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(availabePlugin[newPlugin.name || ""] || []).map(
-                          version => (
-                            <SelectItem key={version} value={version}>
-                              {version}
-                            </SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="plugin-priority">Priority</Label>
-                    <Input
-                      id="plugin-priority"
-                      placeholder="Priority"
-                      value={newPlugin.priority}
-                      onChange={e =>
-                        setNewPlugin({
-                          ...newPlugin,
-                          priority: Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end mt-4 gap-2">
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button onClick={handleAddPlugin}>Add</Button>
-                </div>
-              </DialogContent>
+            <DialogTitle>Add New Plugin</DialogTitle>
+            <DialogDescription>
+              Enter the details of the new plugin you want to add.
+            </DialogDescription>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="plugin-name">Plugin Name</Label>
+                <Select
+                  onValueChange={value => {
+                    setNewPlugin({ ...newPlugin, name: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      {newPlugin.name || "Select a plugin"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(availabePlugin).length > 0 ? (
+                      Object.keys(availabePlugin).map(plugin => (
+                        <SelectItem key={plugin} value={plugin}>
+                          {plugin}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="text-center text-muted-foreground">
+                        No plugins found.
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="plugin-version">Version</Label>
+                <Select
+                  name="plugin-version"
+                  disabled={!newPlugin.name}
+                  onValueChange={value => {
+                    setNewPlugin({ ...newPlugin, version: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      {newPlugin.version || "Select a Plugin Version"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(availabePlugin[newPlugin.name || ""] || []).map(
+                      version => (
+                        <SelectItem key={version} value={version}>
+                          {version}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="plugin-priority">Priority</Label>
+                <Input
+                  id="plugin-priority"
+                  placeholder="Priority"
+                  value={newPlugin.priority}
+                  onChange={e =>
+                    setNewPlugin({
+                      ...newPlugin,
+                      priority: Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="flex justify-end mt-4 gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleAddPlugin}>Add</Button>
+            </div>
+          </DialogContent>
         </Dialog>
       </div>
       <div className="border rounded-lg shadow-sm">
@@ -265,12 +287,15 @@ const handleDeletePlugin = (pluginId: string) => {
           <TableBody>
             {filteredPlugins.length > 0 ? (
               filteredPlugins.map(plugin => (
-                <TableRow key={plugin.id} >
+                <TableRow key={plugin.id}>
                   <TableCell>{plugin.name}</TableCell>
                   <TableCell>{plugin.version}</TableCell>
                   <TableCell>{plugin.priority}</TableCell>
                   <TableCell className="text-right">
-                    <button onClick={() => handleDeletePlugin(plugin.id)} className="text-red-500 hover:text-red-700">
+                    <button
+                      onClick={() => handleDeletePlugin(plugin.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
                       <Trash2 className="h-5 w-5" />
                     </button>
                   </TableCell>
@@ -278,7 +303,12 @@ const handleDeletePlugin = (pluginId: string) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-4 text-gray-500">No plugins found.</TableCell>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-4 text-gray-500"
+                >
+                  No plugins found.
+                </TableCell>
               </TableRow>
             )}
           </TableBody>

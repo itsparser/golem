@@ -34,7 +34,7 @@ export function APISection() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-2">
-        {apis && apis.length > 0 ? (
+          {apis && apis.length > 0 ? (
             apis.map(api => (
               <div
                 key={api.id}

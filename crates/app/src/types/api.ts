@@ -19,10 +19,7 @@ export type MethodPattern =
   | "Options"
   | "Trace"
   | "Connect";
-export type GatewayBindingType =
-  | "default"
-  | "file-server"
-  | "cors-preflight";
+export type GatewayBindingType = "default" | "file-server" | "cors-preflight";
 
 export interface RouteRequestData {
   method: MethodPattern;

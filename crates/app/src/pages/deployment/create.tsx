@@ -113,16 +113,19 @@ export default function CreateDeployment() {
         setFetchError(null);
         const response = await API.getApiList();
         const transformedData = Object.values(
-          response.reduce((acc, api) => {
-            if (!acc[api.id]) {
-              acc[api.id] = { id: api.id, versions: [] };
-            }
-            acc[api.id].versions.push(api.version);
-            acc[api.id].versions.sort((a, b) =>
-              b.localeCompare(a, undefined, { numeric: true }),
-            );
-            return acc;
-          }, {} as Record<string, ApiDefinition>),
+          response.reduce(
+            (acc, api) => {
+              if (!acc[api.id]) {
+                acc[api.id] = { id: api.id, versions: [] };
+              }
+              acc[api.id].versions.push(api.version);
+              acc[api.id].versions.sort((a, b) =>
+                b.localeCompare(a, undefined, { numeric: true }),
+              );
+              return acc;
+            },
+            {} as Record<string, ApiDefinition>,
+          ),
         ).sort((a, b) => a.id.localeCompare(b.id));
 
         setApiDefinitions(transformedData);
@@ -131,7 +134,10 @@ export default function CreateDeployment() {
         setFetchError("Failed to load API definitions. Please try again.");
 
         if (retryCount < 3) {
-          setTimeout(() => fetchApiDefinitions(retryCount + 1), 1000 * (retryCount + 1));
+          setTimeout(
+            () => fetchApiDefinitions(retryCount + 1),
+            1000 * (retryCount + 1),
+          );
         }
       } finally {
         setIsLoading(false);
@@ -142,7 +148,8 @@ export default function CreateDeployment() {
   }, []);
 
   const getVersionsForApi = useMemo(() => {
-    return (apiId: string) => apiDefinitions.find(api => api.id === apiId)?.versions || [];
+    return (apiId: string) =>
+      apiDefinitions.find(api => api.id === apiId)?.versions || [];
   }, [apiDefinitions]);
 
   const onSubmit = async (data: FormValues) => {
@@ -192,9 +199,14 @@ export default function CreateDeployment() {
         <Card>
           <CardContent className="p-6 space-y-6">
             <h1 className="text-3xl font-semibold">Deploy API</h1>
-            <p className="text-muted-foreground">Create a new deployment with one or more API definitions</p>
+            <p className="text-muted-foreground">
+              Create a new deployment with one or more API definitions
+            </p>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="domain"
@@ -202,169 +214,171 @@ export default function CreateDeployment() {
                     <FormItem>
                       <FormLabel>Local Domain</FormLabel>
                       <FormControl>
-                      <Input
-                        placeholder="localhost:9006"
-                        {...field}
-                        onChange={e => {
-                          // Remove any http/https if user pastes them
-                          const value = e.target.value
-                            .replace(/^https?:\/\//, "")
-                            .toLowerCase();
-                          field.onChange(value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription className="text-[11px] text-muted-foreground">
-                      Enter localhost with a port number (e.g., localhost:9006).
-                      The port must be between 1 and 65535.
-                    </FormDescription>
+                        <Input
+                          placeholder="localhost:9006"
+                          {...field}
+                          onChange={e => {
+                            // Remove any http/https if user pastes them
+                            const value = e.target.value
+                              .replace(/^https?:\/\//, "")
+                              .toLowerCase();
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-[11px] text-muted-foreground">
+                        Enter localhost with a port number (e.g.,
+                        localhost:9006). The port must be between 1 and 65535.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <h2 className="text-base font-medium">API Definitions</h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    Select the APIs and their versions to deploy. Each API can
-                    only be added once.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    // Check if there are any empty definitions before adding new one
-                    const hasEmptyDefinition = form
-                      .getValues("definitions")
-                      .some(def => !def.id || !def.version);
-                    if (!hasEmptyDefinition) {
-                      append({ id: "", version: "" });
-                    }
-                  }}
-                  disabled={
-                    isLoading ||
-                    form
-                      .getValues("definitions")
-                      .some(def => !def.id || !def.version)
-                  }
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add API
-                </Button>
-              </div>
-
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="ml-2">Loading API definitions...</span>
-                </div>
-              ) : (
                 <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className="grid gap-4 items-start md:grid-cols-[1fr,1fr,auto] p-4 border rounded-lg"
-                    >
-                      <FormField
-                        control={form.control}
-                        name={`definitions.${index}.id`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium">
-                              API Definition
-                            </FormLabel>
-                            <Select
-                              onValueChange={value => {
-                                field.onChange(value);
-                                form.setValue(
-                                  `definitions.${index}.version`,
-                                  "",
-                                );
-                              }}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select API" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {apiDefinitions.map(api => (
-                                  <SelectItem key={api.id} value={api.id}>
-                                    {api.id}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`definitions.${index}.version`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium">
-                              Version
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              disabled={!form.watch(`definitions.${index}.id`)}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select version" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {getVersionsForApi(
-                                  form.watch(`definitions.${index}.id`),
-                                ).map(version => (
-                                  <SelectItem key={version} value={version}>
-                                    {version}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        disabled={fields.length === 1}
-                        className="mt-8 bg-destructive/20 hover:bg-destructive/50"
-                        onClick={() => remove(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <h2 className="text-base font-medium">API Definitions</h2>
+                      <p className="text-[11px] text-muted-foreground">
+                        Select the APIs and their versions to deploy. Each API
+                        can only be added once.
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Check if there are any empty definitions before adding new one
+                        const hasEmptyDefinition = form
+                          .getValues("definitions")
+                          .some(def => !def.id || !def.version);
+                        if (!hasEmptyDefinition) {
+                          append({ id: "", version: "" });
+                        }
+                      }}
+                      disabled={
+                        isLoading ||
+                        form
+                          .getValues("definitions")
+                          .some(def => !def.id || !def.version)
+                      }
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add API
+                    </Button>
+                  </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting || isLoading}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Deploying...
-                  </>
-                ) : (
-                  "Deploy"
-                )}
-              </Button>
-            </div>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <span className="ml-2">Loading API definitions...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {fields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="grid gap-4 items-start md:grid-cols-[1fr,1fr,auto] p-4 border rounded-lg"
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`definitions.${index}.id`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                  API Definition
+                                </FormLabel>
+                                <Select
+                                  onValueChange={value => {
+                                    field.onChange(value);
+                                    form.setValue(
+                                      `definitions.${index}.version`,
+                                      "",
+                                    );
+                                  }}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select API" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {apiDefinitions.map(api => (
+                                      <SelectItem key={api.id} value={api.id}>
+                                        {api.id}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`definitions.${index}.version`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                  Version
+                                </FormLabel>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  disabled={
+                                    !form.watch(`definitions.${index}.id`)
+                                  }
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select version" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {getVersionsForApi(
+                                      form.watch(`definitions.${index}.id`),
+                                    ).map(version => (
+                                      <SelectItem key={version} value={version}>
+                                        {version}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={fields.length === 1}
+                            className="mt-8 bg-destructive/20 hover:bg-destructive/50"
+                            onClick={() => remove(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={isSubmitting || isLoading}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deploying...
+                      </>
+                    ) : (
+                      "Deploy"
+                    )}
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
