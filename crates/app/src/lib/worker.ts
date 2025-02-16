@@ -177,11 +177,9 @@ export function getCaretCoordinates(
 }
 
 function parseType(typ: any): any {
-  if (!typ) {
-    return "null";
-  }
+  if (!typ) return null;
 
-  const typeMap = {
+  const typeMap: Record<string, string> = {
     Bool: "bool",
     S8: "i8",
     S16: "i16",
@@ -190,74 +188,53 @@ function parseType(typ: any): any {
     U8: "u8",
     U16: "u16",
     U32: "u32",
-    U64: "U64",
+    U64: "u64",
     F32: "f32",
     F64: "f64",
     Char: "char",
     Str: "string",
   };
 
-  if (typeMap[typ.type as keyof typeof typeMap]) {
-    return typeMap[typ.type as keyof typeof typeMap];
-  }
+  if (typeMap[typ.type]) return typeMap[typ.type];
 
   switch (typ.type) {
     case "Tuple":
-      return `(${(typ.items || []).map((item: any) => parseType(item)).join(", ")})`;
-    case "List": {
-      return `List<${parseType(typ.inner)}>`;
-    }
-    case "Flags": {
-      return `flags (${typ.names.join(", ")})`;
-    }
-    case "Option": {
-      return `Option<${JSON.stringify(parseType(typ.inner))}>`;
-    }
-    case "Result": {
-      return {
-        ok: parseType(typ.ok.inner),
-        err: `enum (${typ.err.cases.join(", ")})`,
-      };
-    }
-    case "Record": {
-      const result: Record<string, any> = {};
-      (typ.fields || []).forEach((field: { name: string; typ: any }) => {
-        result[field.name] = parseType(field.typ);
-      });
-      return result;
-    }
-    case "Enum": {
-      return `enum (${typ.cases.join(", ")})`;
-    }
-    case "Variant": {
-      const variantCases: Record<string | number, any> = {};
-      (typ.cases || []).forEach(
-        (variant: { name: string | number; typ: any }) => {
-          variantCases[variant.name] = parseType(variant.typ);
-        },
-      );
-      return variantCases;
-    }
+      return typ.items.map((item: any) => parseType(item));
+
+    case "List":
+      return { List: parseType(typ.inner) };
+
+    case "Flags":
+      return { Flags: typ.names };
+
+    case "Option":
+      return { Option: parseType(typ.inner) };
+
+    case "Result":
+      return { ok: parseType(typ.ok.inner), err: { Enum: typ.err.cases } };
+
+    case "Record":
+      return Object.fromEntries(typ.fields.map((field: any) => [field.name, parseType(field.typ)]));
+
+    case "Enum":
+      return { Enum: typ.cases };
+
+    case "Variant":
+      return Object.fromEntries(typ.cases.map((variant: any) => [variant.name, parseType(variant.typ)]));
+
     default:
       return "unknown";
   }
 }
 
 export function parseTooltipTypesData(data: ComponentExportFunction) {
-  const result: { name: string; datatype: any }[] = [];
-
-  data.parameters.forEach(item => {
-    if (item.type === "Result") {
-      result.push(parseType(item));
-    } else if (item.typ.type === "Record") {
-      result.push(parseType(item.typ));
-    } else {
-      result.push(parseType(item.typ));
-    }
-  });
-
-  return result;
+  return data.parameters.map(item => 
+    parseType(item.typ)
+  );
 }
+
+
+
 
 export function parseTypesData(input: any): any {
   function transformType(typ: any): any {

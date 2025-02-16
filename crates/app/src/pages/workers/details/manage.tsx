@@ -60,6 +60,7 @@ export default function WorkerManage() {
       workerDetails?.workerId?.componentId,
       workerDetails?.workerId?.workerName,
       Number(upgradeTo),
+      upgradeType,
     ).then(() => {
       toast({
         title: "Worker upgraded successfully",

@@ -125,12 +125,13 @@ export class Service {
     componentId: string,
     workerName: string,
     version: number,
+    upgradeType: string,
   ) => {
     return await this.callApi(
       ENDPOINT.updateWorker(componentId, workerName),
       "POST",
       JSON.stringify({
-        mode: "Automatic",
+        mode: upgradeType,
         targetVersion: version,
       }),
       {

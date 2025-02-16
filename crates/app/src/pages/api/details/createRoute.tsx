@@ -184,11 +184,17 @@ const CreateRoute = () => {
             route => route.path === path && route.method === method,
           );
           if (route) {
-            // @ts-ignore
-            form.reset(route);
-            if (!route.binding.bindingType) {
-              form.setValue("binding.bindingType", "default");
-            }
+            // Manually set form values instead of using form.reset()
+          form.setValue("path", route.path);
+          form.setValue("method", route.method);
+          form.setValue("binding.bindingType", route.binding.bindingType || "default");
+          form.setValue("binding.componentId.componentId", route.binding.componentId?.componentId || "");
+          form.setValue("binding.componentId.version", route.binding.componentId?.version || 0);
+          form.setValue("binding.workerName", route.binding.workerName || "");
+          form.setValue("binding.response", route.binding.response || "");
+          form.setValue("binding.idempotencyKey", route.binding.idempotencyKey || "");
+          form.setValue("cors", route.cors || undefined);
+          form.setValue("security", route.security || "");
           }
         }
       } catch (error) {
