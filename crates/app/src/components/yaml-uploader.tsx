@@ -1,25 +1,52 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input.tsx";
+import {Button} from "@/components/ui/button";
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,} from "@/components/ui/dialog";
+import {Input} from "@/components/ui/input.tsx";
 import * as yaml from "js-yaml";
-import { Upload } from "lucide-react";
-import { useState } from "react";
-import { YamlEditor } from "./yaml-editor";
+import {Upload} from "lucide-react";
+import {useEffect, useState} from "react";
+import {YamlEditor} from "./yaml-editor";
+import {API} from "@/service";
+import {Api} from "@/types/api.ts";
+import {useNavigate, useParams, useSearchParams} from "react-router-dom";
+import {ENDPOINT} from "@/service/endpoints.ts";
 
 export default function YamlUploader() {
+  const { apiName, version } = useParams();
+  const navigate = useNavigate();
+  const [queryParams] = useSearchParams();
+  const path = queryParams.get("path");
+  const method = queryParams.get("method");
+  const [isLoading, setIsLoading] = useState(false);
   const [yamlContent, setYamlContent] = useState<string>("");
   const [fileName, setFileName] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeApiDetails, setActiveApiDetails] = useState<Api | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!apiName) return;
+      try {
+        setIsLoading(true);
+        const [apiResponse, componentResponse] = await Promise.all([
+          API.getApi(apiName),
+          API.getComponentByIdAsKey(),
+        ]);
+        const selectedApi = apiResponse.find(api => api.version === version);
+        setActiveApiDetails(selectedApi!);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        setFetchError("Failed to load required data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [apiName, version, path, method]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,6 +65,29 @@ export default function YamlUploader() {
     }
   };
 
+  const onSubmit = async (payload: any) => {
+    console.log("selectedApi", payload);
+    try {
+      setIsSubmitting(true);
+
+      const apiResponse = await API.getApi(apiName!);
+      const selectedApi = apiResponse.find(api => api.version === version);
+      console.log("selectedApi", apiName, version, payload);
+      const r = await API.callApi(
+        ENDPOINT.putApi(apiName, version),
+        "PUT",
+        payload,
+        { "Content-Type": "application/yaml" },
+      ).then(() => {
+        window.location.reload();
+      });
+    } catch (error) {
+      console.error("Failed to create route:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
@@ -45,17 +95,7 @@ export default function YamlUploader() {
       // Validate YAML before submitting
       yaml.load(yamlContent);
 
-      const response = await fetch("/api/upload-yaml", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: yamlContent, fileName }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      onSubmit(yamlContent);
 
       // Reset state and close dialog
       setYamlContent("");
