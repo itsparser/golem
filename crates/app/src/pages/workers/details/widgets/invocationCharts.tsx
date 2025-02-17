@@ -1,6 +1,6 @@
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Invocation } from "@/types/worker";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 interface ProcessedData {
   date: string;
@@ -11,13 +11,20 @@ const processData = (data: Invocation[]): ProcessedData[] => {
   const groupedData: Record<string, ProcessedData> = {};
   const functionSet = new Set<string>();
 
-  // Group data by date and collect unique function names
+  // Group data by 4 hour intervals and collect unique function names
   data.forEach(curr => {
     const date = new Date(curr.timestamp);
+    date.setMinutes(0, 0, 0);
+    const hour = date.getHours();
+    const intervalStart = hour - (hour % 4);
+    date.setHours(intervalStart);
+
     const dateKey = date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
+      hour: "numeric",
     });
+
     const functionName = curr.function.match(/{(.*)}/)?.[1];
 
     if (!functionName) return;
@@ -61,22 +68,27 @@ export function InvocationsChart({ data = [] as Invocation[] }) {
           content={({ active, payload }) => {
             if (active && payload?.length) {
               return (
-                <div className="rounded-lg border bg-background p-2 shadow-sm">
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-3 shadow-md">
+                  <div className="grid grid-cols-1 gap-3">
                     <div className="flex flex-col">
-                      <span className="text-[0.70rem] uppercase text-muted-foreground">
+                      <span className="text-[0.70rem] uppercase text-muted-foreground font-medium">
                         Date
                       </span>
-                      <span className="font-bold">
+                      <span className="font-bold text-foreground">
                         {payload[0].payload.date}
                       </span>
                     </div>
                     {payload.map(entry => (
                       <div key={entry.name} className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
+                        <span className="text-[0.70rem] text-muted-foreground font-medium">
                           {entry.name}
                         </span>
-                        <span className="font-bold">{entry.value}</span>
+                        <span
+                          className="font-bold"
+                          style={{ color: entry.color }}
+                        >
+                          {entry.value}
+                        </span>
                       </div>
                     ))}
                   </div>
