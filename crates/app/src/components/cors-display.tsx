@@ -24,10 +24,10 @@ export function CorsDisplay({ cors }: { cors: HttpCors }) {
   return (
     <div className="grid gap-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-1xl font-bold tracking-tight">
           CORS Configuration
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-1xl text-muted-foreground">
           Manage Cross-Origin Resource Sharing settings for your API
         </p>
       </div>
@@ -35,7 +35,7 @@ export function CorsDisplay({ cors }: { cors: HttpCors }) {
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Origins</CardTitle>
+            <CardTitle className="text-1xl">Origins</CardTitle>
             <CardDescription>Allowed origin configuration</CardDescription>
           </CardHeader>
           <CardContent>
@@ -50,7 +50,7 @@ export function CorsDisplay({ cors }: { cors: HttpCors }) {
 
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Security</CardTitle>
+            <CardTitle className="text-1xl">Security</CardTitle>
             <CardDescription>Credentials and headers</CardDescription>
           </CardHeader>
           <CardContent>
@@ -69,7 +69,7 @@ export function CorsDisplay({ cors }: { cors: HttpCors }) {
 
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Cache</CardTitle>
+            <CardTitle className="text-1xl">Cache</CardTitle>
             <CardDescription>Preflight cache duration</CardDescription>
           </CardHeader>
           <CardContent>

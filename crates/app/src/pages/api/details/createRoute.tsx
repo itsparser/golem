@@ -187,19 +187,31 @@ const CreateRoute = () => {
           if (route) {
             // Manually set form values instead of using form.reset()
             form.setValue("path", route.path);
+            if (route.path) {
+              extractDynamicParams(path);
+            }
             form.setValue("method", route.method);
             form.setValue(
               "binding.bindingType",
               route.binding.bindingType || "default",
             );
-            form.setValue(
-              "binding.componentId.componentId",
-              route.binding.componentId?.componentId || "",
-            );
-            form.setValue(
-              "binding.componentId.version",
-              route.binding.componentId?.version || 0,
-            );
+            const componentId = route.binding.componentId?.componentId;
+            const versionId = route.binding.componentId?.version;
+            if (componentId && versionId) {
+              loadResponseSuggestions(
+                componentId,
+                String(versionId),
+                componentResponse,
+              );
+              form.setValue(
+                "binding.componentId.componentId",
+                route.binding.componentId?.componentId || "",
+              );
+              form.setValue(
+                "binding.componentId.version",
+                route.binding.componentId?.version || 0,
+              );
+            }
             form.setValue("binding.workerName", route.binding.workerName || "");
             form.setValue("binding.response", route.binding.response || "");
             if (
@@ -282,9 +294,11 @@ const CreateRoute = () => {
   const loadResponseSuggestions = async (
     componentId: string,
     version: string,
+    componentResponse: {
+      [key: string]: ComponentList;
+    },
   ) => {
-    console.log("loadResponseSuggestions.componentId", componentId);
-    const exportedFunctions = componentList?.[componentId]?.versions?.find(
+    const exportedFunctions = componentResponse?.[componentId]?.versions?.find(
       (data: Component) =>
         data.versionedComponentId?.version?.toString() === version,
     );
@@ -300,14 +314,13 @@ const CreateRoute = () => {
         return `${item.name}.{${func.name}}(${param})`;
       }),
     );
-    console.log("loadResponseSuggestions.componentId.output", output);
     setResponseSuggestions(output);
   };
 
   const onVersionChange = (version: string) => {
     form.setValue("binding.componentId.version", Number(version));
     const componentId = form.getValues("binding.componentId.componentId");
-    loadResponseSuggestions(componentId, version);
+    loadResponseSuggestions(componentId, version, componentList);
   };
 
   const togglePopover = () => {
@@ -326,6 +339,7 @@ const CreateRoute = () => {
       </div>
     );
   }
+
   return (
     <ErrorBoundary>
       <div className="overflow-y-auto h-[80vh]">
@@ -397,7 +411,11 @@ const CreateRoute = () => {
                                 "binding.componentId.componentId",
                                 componentId,
                               );
-                              loadResponseSuggestions(componentId, "0");
+                              loadResponseSuggestions(
+                                componentId,
+                                "0",
+                                componentList,
+                              );
                             }}
                             value={field.value}
                           >
@@ -608,7 +626,7 @@ const CreateRoute = () => {
                             >
                               <PopoverTrigger asChild>
                                 <button
-                                  className="p-1 hover:bg-muted rounded-full transition-colors"
+                                  className=" pl-2 hover:bg-muted rounded-full transition-colors"
                                   aria-label="Show interpolation info"
                                   onClick={togglePopover}
                                 >

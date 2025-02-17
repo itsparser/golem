@@ -4,7 +4,7 @@
 import { useTheme } from "@/components/theme-provider.tsx";
 import { cn } from "@/lib/utils";
 import Editor, { type EditorProps, useMonaco } from "@monaco-editor/react";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useState, useRef } from "react";
 
 interface MonacoEditorProps extends EditorProps {
   value?: string;
@@ -35,6 +35,7 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
     const { theme } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
     const monacoInstance = useMonaco();
+    const monoRef = useRef(null);
 
     useEffect(() => {
       if (monacoInstance) {
@@ -198,149 +199,148 @@ export const RibEditor = forwardRef<HTMLDivElement, MonacoEditorProps>(
           },
         });
 
-        monacoInstance.languages.registerCompletionItemProvider("rib", {
-          triggerCharacters: [
-            ".",
-            "r",
-            "e",
-            "q",
-            "u",
-            "e",
-            "s",
-            "t",
-            "v",
-            "a",
-            "r",
-          ],
+        monoRef.current =
+          monacoInstance.languages.registerCompletionItemProvider("rib", {
+            triggerCharacters: [
+              ".",
+              "r",
+              "e",
+              "q",
+              "u",
+              "e",
+              "s",
+              "t",
+              "v",
+              "a",
+              "r",
+            ],
 
-          provideCompletionItems: (model, position) => {
-            let requestStructure = {
-              path: {
-                username: "vasanth",
-                nav: "bar",
-              },
-              query: {
-                search: "string",
-              },
-            };
+            provideCompletionItems: (model, position) => {
+              try {
+                const code = model.getValue();
 
-            try {
-              const code = model.getValue();
+                // Extract local variables
+                const variableRegex =
+                  /let\s+(\w+)\s*=\s*(\{[\s\S]*?\}|\[[\s\S]*?\]|"[^"]*"|'[^']*'|\d+)/g;
+                let localVariables: Record<string, any> = {};
 
-              // Extract local variables
-              const variableRegex =
-                /let\s+(\w+)\s*=\s*(\{[\s\S]*?\}|\[[\s\S]*?\]|"[^"]*"|'[^']*'|\d+)/g;
-              let localVariables: Record<string, any> = {};
-
-              let match;
-              while ((match = variableRegex.exec(code)) !== null) {
-                const [_, varName, varValue] = match;
-                try {
-                  // Parse the value, handling different types
-                  const value =
-                    varValue.startsWith("{") || varValue.startsWith("[")
-                      ? JSON.parse(varValue.replace(/(\w+):/g, '"$1":'))
-                      : varValue.replace(/['"]/g, "");
-                  localVariables[varName] = value;
-                } catch (e) {
-                  localVariables[varName] = varValue; // Store as string if parsing fails
+                let match;
+                while ((match = variableRegex.exec(code)) !== null) {
+                  const [_, varName, varValue] = match;
+                  try {
+                    // Parse the value, handling different types
+                    const value =
+                      varValue.startsWith("{") || varValue.startsWith("[")
+                        ? JSON.parse(varValue.replace(/(\w+):/g, '"$1":'))
+                        : varValue.replace(/['"]/g, "");
+                    localVariables[varName] = value;
+                  } catch (e) {
+                    localVariables[varName] = varValue; // Store as string if parsing fails
+                  }
                 }
-              }
 
-              const wordUntilPosition = model.getWordUntilPosition(position);
-              const range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: wordUntilPosition.startColumn,
-                endColumn: wordUntilPosition.endColumn,
-              };
+                const wordUntilPosition = model.getWordUntilPosition(position);
+                const range = {
+                  startLineNumber: position.lineNumber,
+                  endLineNumber: position.lineNumber,
+                  startColumn: wordUntilPosition.startColumn,
+                  endColumn: wordUntilPosition.endColumn,
+                };
 
-              const getObjectKeys = (
-                obj: any,
-                prefix = "",
-              ): Array<{
-                label: string;
-                insertText: string;
-                kind: any;
-                range: any;
-              }> =>
-                Object.entries(obj).flatMap(([key, value]) =>
+                const getObjectKeys = (
+                  obj: any,
+                  prefix = "",
+                ): Array<{
+                  label: string;
+                  insertText: string;
+                  kind: any;
+                  range: any;
+                }> =>
+                  Object.entries(obj).flatMap(([key, value]) =>
+                    typeof value === "object"
+                      ? [
+                          {
+                            label: prefix + key,
+                            insertText: prefix + key,
+                            kind: monacoInstance.languages.CompletionItemKind
+                              .Property,
+                            range,
+                          },
+                          ...getObjectKeys(value, `${prefix}${key}.`),
+                        ]
+                      : [
+                          {
+                            label: prefix + key,
+                            insertText: prefix + key,
+                            kind: monacoInstance.languages.CompletionItemKind
+                              .Property,
+                            range,
+                          },
+                        ],
+                  );
+
+                // Get suggestions for each local variable
+                const localVariableSuggestions = Object.entries(
+                  localVariables,
+                ).flatMap(([varName, value]) =>
                   typeof value === "object"
-                    ? [
-                        {
-                          label: prefix + key,
-                          insertText: prefix + key,
-                          kind: monacoInstance.languages.CompletionItemKind
-                            .Property,
-                          range,
-                        },
-                        ...getObjectKeys(value, `${prefix}${key}.`),
-                      ]
+                    ? getObjectKeys(value, `${varName}.`)
                     : [
                         {
-                          label: prefix + key,
-                          insertText: prefix + key,
+                          label: varName,
+                          insertText: varName,
                           kind: monacoInstance.languages.CompletionItemKind
-                            .Property,
+                            .Variable,
                           range,
                         },
                       ],
                 );
 
-              const requestSuggestions = getObjectKeys(
-                requestStructure,
-                "request.",
-              );
+                // Add suggestVariable suggestions
+                const suggestVariableSuggestions = suggestVariable
+                  ? getObjectKeys(suggestVariable)
+                  : [];
 
-              // Get suggestions for each local variable
-              const localVariableSuggestions = Object.entries(
-                localVariables,
-              ).flatMap(([varName, value]) =>
-                typeof value === "object"
-                  ? getObjectKeys(value, `${varName}.`)
-                  : [
-                      {
-                        label: varName,
-                        insertText: varName,
-                        kind: monacoInstance.languages.CompletionItemKind
-                          .Variable,
-                        range,
-                      },
-                    ],
-              );
-
-              // Add suggestVariable suggestions
-              const suggestVariableSuggestions = suggestVariable
-                ? getObjectKeys(suggestVariable)
-                : [];
-
-              // Ensure scriptKeys is always an array and filter out invalid values
-              const validScriptKeys = (scriptKeys || []).filter(key => true);
-
-              const functionSuggestions = validScriptKeys.map(fn => ({
-                label: fn,
-                kind: monacoInstance.languages.CompletionItemKind.Function,
-                insertText: fn,
-                detail: "Function",
-                documentation: `Function: ${fn}`,
-                range,
-              }));
-
-              return {
-                suggestions: [
-                  ...requestSuggestions,
+                // Combine all suggestions
+                const allSuggestions = [
                   ...localVariableSuggestions,
                   ...suggestVariableSuggestions,
-                  ...functionSuggestions,
-                ],
-              };
-            } catch (e) {
-              console.error("Error providing completions:", e);
-              return { suggestions: [] };
-            }
-          },
-        });
+                ];
+
+                // Remove duplicates using a Set
+                const uniqueSuggestions = Array.from(
+                  new Map(
+                    allSuggestions.map(suggestion => [
+                      `${suggestion.label}:${suggestion.insertText}`, // Use label and insertText as the unique key
+                      suggestion,
+                    ]),
+                  ).values(),
+                );
+                // Ensure scriptKeys is always an array and filter out invalid values
+                const validScriptKeys = (scriptKeys || []).filter(key => true);
+
+                const functionSuggestions = validScriptKeys.map(fn => ({
+                  label: fn,
+                  kind: monacoInstance.languages.CompletionItemKind.Function,
+                  insertText: fn,
+                  detail: "Function",
+                  documentation: `Function: ${fn}`,
+                  range,
+                }));
+
+                return {
+                  suggestions: [...uniqueSuggestions, ...functionSuggestions],
+                };
+              } catch (e) {
+                console.error("Error providing completions:", e);
+                return { suggestions: [] };
+              }
+            },
+          });
       }
+      return () => {
+        monoRef?.current?.dispose();
+      };
     }, [monacoInstance, scriptKeys, suggestVariable]);
 
     useEffect(() => {
