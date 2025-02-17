@@ -1,4 +1,4 @@
-import { UniversalWebSocket } from "@/lib/tauri&web.ts";
+import { fetchCurrentIP, UniversalWebSocket } from "@/lib/tauri&web.ts";
 
 export class WSS {
   private ws: UniversalWebSocket;
@@ -8,6 +8,10 @@ export class WSS {
   }
 
   static async getConnection(url: string): Promise<WSS> {
+    let ip = await fetchCurrentIP();
+    ip = ip?.replace("http", "ws");
+    ip = ip?.replace("https", "wss");
+    url = ip ? `${ip}${url}` : url;
     return new WSS(await UniversalWebSocket.connect(url));
   }
 

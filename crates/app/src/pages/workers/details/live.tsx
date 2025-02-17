@@ -1,20 +1,20 @@
-import { Invocation, Terminal, WsMessage, OplogEntry } from "@/types/worker.ts";
-import { useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { useParams } from "react-router-dom";
-import { WSS } from "@/service/wss";
-import { API } from "@/service";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { RotateCw, X, Search } from "lucide-react";
-import { formatTimestampInDateTimeFormat } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDebounce } from "@/hooks/debounce"; // Import the debounce hook
+import { formatTimestampInDateTimeFormat } from "@/lib/utils";
+import { API } from "@/service";
+import { WSS } from "@/service/wss";
+import { Invocation, OplogEntry, Terminal, WsMessage } from "@/types/worker.ts";
+import { RotateCw, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function WorkerLive() {
   const { componentId = "", workerName = "" } = useParams();
@@ -38,7 +38,7 @@ export default function WorkerLive() {
       const initWebSocket = async () => {
         try {
           const ws = await WSS.getConnection(
-            `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`,
+            `/v1/components/${componentId}/workers/${workerName}/connect`,
           );
           wsRef.current = ws;
 

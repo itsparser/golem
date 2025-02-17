@@ -1,4 +1,7 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRelativeTime } from "@/lib/utils";
 import { API } from "@/service";
+import { WSS } from "@/service/wss";
 import {
   Invocation,
   OplogEntry,
@@ -6,13 +9,10 @@ import {
   Worker,
   WsMessage,
 } from "@/types/worker.ts";
+import { Activity, ActivityIcon, Clock, Cog, LayoutGrid } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Activity, Clock, Cog, LayoutGrid, ActivityIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvocationsChart } from "./widgets/invocationCharts";
-import { formatRelativeTime } from "@/lib/utils";
-import { WSS } from "@/service/wss";
 
 export default function WorkerDetails() {
   const { componentId = "", workerName = "" } = useParams();
@@ -36,7 +36,7 @@ export default function WorkerDetails() {
       await getopLog();
       const initWebSocket = async () => {
         try {
-          const url = `ws://localhost:9881/v1/components/${componentId}/workers/${workerName}/connect`;
+          const url = `/v1/components/${componentId}/workers/${workerName}/connect`;
           const ws = await WSS.getConnection(url);
           wsRef.current = ws;
 
