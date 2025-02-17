@@ -201,6 +201,15 @@ const CreateRoute = () => {
             );
             form.setValue("binding.workerName", route.binding.workerName || "");
             form.setValue("binding.response", route.binding.response || "");
+            if (
+              route.binding.corsPreflight &&
+              route.binding.bindingType === "cors-preflight"
+            ) {
+              form.setValue(
+                "binding.response",
+                JSON.stringify(route.binding.corsPreflight) || "",
+              );
+            }
             form.setValue(
               "binding.idempotencyKey",
               route.binding.idempotencyKey || "",
@@ -354,7 +363,7 @@ const CreateRoute = () => {
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select a component" />
+                                <SelectValue placeholder="Select a Binding Type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>

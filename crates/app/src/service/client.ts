@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { toast } from "@/hooks/use-toast";
-import { fetchData, updateIP } from "@/lib/tauri&web.ts";
-import { ENDPOINT } from "@/service/endpoints.ts";
-import { parseErrorResponse } from "@/service/error-handler.ts";
-import { Api } from "@/types/api.ts";
-import { Component, ComponentList } from "@/types/component.ts";
-import { Plugin } from "@/types/plugin";
+import {toast} from "@/hooks/use-toast";
+import {fetchData, updateIP} from "@/lib/tauri&web.ts";
+import {ENDPOINT} from "@/service/endpoints.ts";
+import {parseErrorResponse} from "@/service/error-handler.ts";
+import {Api} from "@/types/api.ts";
+import {Component, ComponentList} from "@/types/component.ts";
+import {Plugin} from "@/types/plugin";
 
 export class Service {
   public baseUrl: string;
