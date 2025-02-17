@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,9 @@ export default function APISettings() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { apiName, version } = useParams();
+  const [queryParams] = useSearchParams();
+  const reload = queryParams.get("reload");
+
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showConfirmAllDialog, setShowConfirmAllDialog] = useState(false);
@@ -84,7 +87,7 @@ export default function APISettings() {
           description: "All routes have been deleted successfully.",
           duration: 3000,
         });
-        navigate(`/apis/${apiName}/version/${version}?reload=${true}`);
+        navigate(`/apis/${apiName}/version/${version}?reload=${!reload}`);
         setShowConfirmAllRoutes(false);
       }
     } finally {

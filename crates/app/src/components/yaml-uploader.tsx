@@ -1,17 +1,23 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
-import {Button} from "@/components/ui/button";
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,} from "@/components/ui/dialog";
-import {Input} from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input.tsx";
 import * as yaml from "js-yaml";
-import {Upload} from "lucide-react";
-import {useEffect, useState} from "react";
-import {YamlEditor} from "./yaml-editor";
-import {API} from "@/service";
-import {Api} from "@/types/api.ts";
-import {useNavigate, useParams, useSearchParams} from "react-router-dom";
-import {ENDPOINT} from "@/service/endpoints.ts";
+import { Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { YamlEditor } from "./yaml-editor";
+import { API } from "@/service";
+import { Api } from "@/types/api.ts";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { ENDPOINT } from "@/service/endpoints.ts";
 
 export default function YamlUploader() {
   const { apiName, version } = useParams();
@@ -19,7 +25,9 @@ export default function YamlUploader() {
   const [queryParams] = useSearchParams();
   const path = queryParams.get("path");
   const method = queryParams.get("method");
+  const reload = queryParams.get("reload");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [yamlContent, setYamlContent] = useState<string>("");
   const [fileName, setFileName] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
@@ -60,13 +68,12 @@ export default function YamlUploader() {
       yaml.load(content);
       setYamlContent(content);
     } catch (error) {
-      console.error("Invalid YAML file:", error);
+      setError("Invalid YAML file.");
       // You might want to show an error toast or message here
     }
   };
 
   const onSubmit = async (payload: any) => {
-    console.log("selectedApi", payload);
     try {
       setIsSubmitting(true);
 
@@ -79,7 +86,7 @@ export default function YamlUploader() {
         payload,
         { "Content-Type": "application/yaml" },
       ).then(() => {
-        window.location.reload();
+        navigate(`/apis/${apiName}/version/${version}?reload=${!reload}`);
       });
     } catch (error) {
       console.error("Failed to create route:", error);
@@ -88,12 +95,115 @@ export default function YamlUploader() {
     }
   };
 
+  function validateYamlContent(yamlString: string): {
+    isValid: boolean;
+    errors: ValidationError[];
+  } {
+    let parsedData: any;
+    const errors: ValidationError[] = [];
+
+    // Step 1: Parse YAML to JSON
+    try {
+      parsedData = yaml.load(yamlString);
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: ["Invalid YAML format."],
+      };
+    }
+
+    // Step 2: Validate main API structure
+    if (!parsedData.id || typeof parsedData.id !== "string") {
+      errors.push("Invalid or missing 'id' field.");
+    }
+
+    if (!parsedData.version || typeof parsedData.version !== "string") {
+      errors.push("Invalid or missing 'version' field.");
+    }
+
+    if (typeof parsedData.draft !== "boolean") {
+      errors.push("Invalid or missing 'draft' field.");
+    }
+
+    if (!Array.isArray(parsedData.routes)) {
+      errors.push("Invalid or missing 'routes' array.");
+    } else {
+      // Step 3: Validate each route
+      parsedData.routes.forEach((route: any, index: number) => {
+        const routePath = `routes[${index}]`;
+
+        if (
+          !route.method ||
+          ![
+            "Get",
+            "Post",
+            "Put",
+            "Delete",
+            "Patch",
+            "Head",
+            "Options",
+            "Trace",
+            "Connect",
+          ].includes(route.method)
+        ) {
+          errors.push("Invalid HTTP method.");
+        }
+
+        if (!route.path || typeof route.path !== "string") {
+          errors.push("Invalid or missing 'path' field.");
+        }
+
+        if (!route.binding || typeof route.binding !== "object") {
+          errors.push("Invalid or missing 'binding' object.");
+        } else {
+          const { bindingType, componentId, response } = route.binding;
+
+          if (
+            !["default", "file-server", "cors-preflight"].includes(bindingType)
+          ) {
+            errors.push("Invalid 'bindingType'.");
+          }
+
+          if (bindingType === "cors-preflight") {
+            if (!componentId || typeof componentId !== "object") {
+              errors.push(
+                "Missing 'componentId' for 'cors-preflight' binding.",
+              );
+            } else {
+              if (
+                !componentId.componentId ||
+                typeof componentId.componentId !== "string"
+              ) {
+                errors.push("Invalid 'componentId'.");
+              }
+
+              if (typeof componentId.version !== "number") {
+                errors.push("Invalid 'componentId.version'.");
+              }
+            }
+
+            if (!response || typeof response !== "string") {
+              errors.push("Missing 'response' for 'cors-preflight' binding.");
+            }
+          }
+        }
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
   const handleSubmit = async () => {
     try {
+      const { isValid, errors } = validateYamlContent(yamlContent);
+      if (!isValid) {
+        setError(errors.join("\n"));
+        return;
+      }
       setIsSubmitting(true);
-
-      // Validate YAML before submitting
-      yaml.load(yamlContent);
 
       onSubmit(yamlContent);
 
@@ -130,9 +240,23 @@ export default function YamlUploader() {
             />
           </div>
           <>
-            <YamlEditor value={yamlContent} onChange={setYamlContent} />
+            <YamlEditor
+              value={yamlContent}
+              onChange={e => {
+                setError(null);
+                setYamlContent(e);
+              }}
+            />
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setError(null);
+                  setIsOpen(false);
+                  setYamlContent("");
+                }}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSubmit} disabled={isSubmitting}>

@@ -8,6 +8,9 @@ import ErrorBoundary from "@/components/errorBoundary";
 import { Dashboard } from "@/pages/dashboard";
 import FileManager from "@/pages/components/details/file.tsx";
 import WorkerInfo from "@/pages/workers/details/info.tsx";
+import WorkerInvoke from "@/pages/workers/details/invoke.tsx";
+import ComponentInvoke from "@/pages/components/details/invoke.tsx";
+
 
 // Lazy load route components for code splitting and performance improvement
 // Lazy-loading improves initial load times by loading components only when needed.
@@ -41,7 +44,6 @@ const WorkerEnvironments = lazy(
   () => import("@/pages/workers/details/environments"),
 );
 const WorkerManage = lazy(() => import("@/pages/workers/details/manage"));
-const WorkerInvoke = lazy(() => import("@/pages/workers/details/invoke"));
 const WorkerLive = lazy(() => import("@/pages/workers/details/live"));
 const CreatePlugin = lazy(() => import("@/pages/plugin/create"));
 const PluginView = lazy(() =>
@@ -60,7 +62,6 @@ const ApiLayout = lazy(() =>
     default: module.ApiLayout,
   })),
 );
-const ComponentInvoke = lazy(() => import("@/pages/components/details/invoke"));
 const Plugins = lazy(() => import("@/pages/components/details/plugin"));
 const ComponentLayout = lazy(() =>
   import("@/pages/components/details/component-layout").then(module => ({

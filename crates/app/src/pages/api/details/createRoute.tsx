@@ -114,6 +114,7 @@ const CreateRoute = () => {
   const [queryParams] = useSearchParams();
   const path = queryParams.get("path");
   const method = queryParams.get("method");
+  const reload = queryParams.get("reload");
 
   const [isEdit, setIsEdit] = useState(false);
   const [activeApiDetails, setActiveApiDetails] = useState<Api | null>(null);
@@ -252,14 +253,13 @@ const CreateRoute = () => {
         route => !(route.path === path && route.method === method),
       );
       selectedApi.routes.push(values);
-      console.log("selectedApi", selectedApi);
       await API.putApi(
         activeApiDetails.id,
         activeApiDetails.version,
         selectedApi,
       ).then(() => {
         navigate(
-          `/apis/${apiName}/version/${version}/routes?path=${values.path}&method=${values.method}`,
+          `/apis/${apiName}/version/${version}/routes?path=${values.path}&method=${values.method}&reload=${!reload}`,
         );
       });
     } catch (error) {
@@ -268,6 +268,7 @@ const CreateRoute = () => {
         type: "manual",
         message: "Failed to create route. Please try again.",
       });
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -379,95 +380,87 @@ const CreateRoute = () => {
                       )}
                     />
                   </div>
-                  {form.watch("binding.bindingType") !== "cors-preflight" && (
-                    <>
-                      <h3 className="text-lg font-medium pt-10">
-                        Worker Binding
-                      </h3>
-                      <FormDescription>
-                        Bind this endpoint to a specific worker function.
-                      </FormDescription>
-                      <div className="grid grid-cols-2 gap-4 mt-4">
-                        <FormField
-                          control={form.control}
-                          name="binding.componentId.componentId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel required>Component</FormLabel>
-                              <Select
-                                onValueChange={componentId => {
-                                  form.setValue(
-                                    "binding.componentId.componentId",
-                                    componentId,
-                                  );
-                                  loadResponseSuggestions(componentId, "0");
-                                }}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a component" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.values(componentList).map(
-                                    (data: ComponentList) => (
-                                      <SelectItem
-                                        value={data.componentId || ""}
-                                        key={data.componentName}
-                                      >
-                                        {data.componentName}
-                                      </SelectItem>
-                                    ),
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <h3 className="text-lg font-medium pt-10">Worker Binding</h3>
+                  <FormDescription>
+                    Bind this endpoint to a specific worker function.
+                  </FormDescription>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="binding.componentId.componentId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Component</FormLabel>
+                          <Select
+                            onValueChange={componentId => {
+                              form.setValue(
+                                "binding.componentId.componentId",
+                                componentId,
+                              );
+                              loadResponseSuggestions(componentId, "0");
+                            }}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a component" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Object.values(componentList).map(
+                                (data: ComponentList) => (
+                                  <SelectItem
+                                    value={data.componentId || ""}
+                                    key={data.componentName}
+                                  >
+                                    {data.componentName}
+                                  </SelectItem>
+                                ),
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                        <FormField
-                          control={form.control}
-                          name="binding.componentId.version"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel required>Version</FormLabel>
-                              <Select
-                                onValueChange={onVersionChange}
-                                value={String(field.value)}
-                                disabled={
-                                  !form.watch("binding.componentId.componentId")
-                                }
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select version">
-                                      {" "}
-                                      v{field.value}{" "}
-                                    </SelectValue>
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {form.watch("binding.componentId") &&
-                                    componentList[
-                                      form.watch(
-                                        "binding.componentId.componentId",
-                                      )
-                                    ]?.versionList?.map((v: number) => (
-                                      <SelectItem value={String(v)} key={v}>
-                                        v{v}
-                                      </SelectItem>
-                                    ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </>
-                  )}
+                    <FormField
+                      control={form.control}
+                      name="binding.componentId.version"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>Version</FormLabel>
+                          <Select
+                            onValueChange={onVersionChange}
+                            value={String(field.value)}
+                            disabled={
+                              !form.watch("binding.componentId.componentId")
+                            }
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select version">
+                                  {" "}
+                                  v{field.value}{" "}
+                                </SelectValue>
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {form.watch("binding.componentId") &&
+                                componentList[
+                                  form.watch("binding.componentId.componentId")
+                                ]?.versionList?.map((v: number) => (
+                                  <SelectItem value={String(v)} key={v}>
+                                    v{v}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   {filterMethod(form.watch("binding.bindingType")).length >
                     0 && (
                     <div className="grid grid-cols-3 gap-4 mt-4">
@@ -694,7 +687,7 @@ const CreateRoute = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating...
+                        {isEdit ? "Editing..." : "Creating..."}
                       </>
                     ) : (
                       <div>{isEdit ? "Edit Route" : "Create Route"}</div>

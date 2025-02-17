@@ -2,8 +2,12 @@ import { cn } from "@/lib/utils";
 import { API } from "@/service";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface HealthStatus {
   status: "healthy" | "unhealthy";
@@ -52,30 +56,29 @@ export function ServerStatus() {
     );
   }
 
-  const statusContent = status && status?.status[0].toUpperCase() + status?.status.slice(1);
+  const statusContent =
+    status && status?.status[0].toUpperCase() + status?.status.slice(1);
 
   return (
     <TooltipProvider>
-    <Tooltip>
-    <TooltipTrigger>
-    <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-1.5 text-sm",
-        status?.status === "healthy" ? "text-green-500" : "text-red-500",
-      )}
-    >
-      {status?.status === "healthy" ? (
-        <CheckCircle2 className="h-4 w-4" />
-      ) : (
-        <AlertCircle className="h-4 w-4" />
-      )}
-      <span>
-        {statusContent}
-      </span>
-    </div>
-    </TooltipTrigger>
-    <TooltipContent>Server is {statusContent}</TooltipContent>
-  </Tooltip>
-  </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger>
+          <div
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 text-sm",
+              status?.status === "healthy" ? "text-green-500" : "text-red-500",
+            )}
+          >
+            {status?.status === "healthy" ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <AlertCircle className="h-4 w-4" />
+            )}
+            <span>{statusContent}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>Server is {statusContent}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

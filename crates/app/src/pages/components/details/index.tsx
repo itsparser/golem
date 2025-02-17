@@ -70,7 +70,7 @@ export const ComponentDetails = () => {
   }
 
   if (!component) {
-    return <div className="p-8">Loading component data...</div>;
+    return null;
   }
 
   return (

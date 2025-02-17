@@ -141,6 +141,7 @@ export const ApiRoute = () => {
   const [queryParams] = useSearchParams();
   const path = queryParams.get("path");
   const method = queryParams.get("method");
+  const reload = queryParams.get("reload");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,7 +167,7 @@ export const ApiRoute = () => {
       }
     };
     fetchData();
-  }, [apiName, version, path, method]);
+  }, [apiName, version, path, method, reload]);
 
   const routeToQuery = () => {
     navigate(
@@ -176,11 +177,11 @@ export const ApiRoute = () => {
 
   const handleDelete = () => {
     if (apiName) {
-      API.getApi(apiName).then((response: Api[]) => {
+      API.getApi(apiName).then(async response => {
         const currentApi = response.find(api => api.version === version);
         if (currentApi) {
           currentApi.routes = currentApi.routes.filter(
-            route => route.path !== path! && route.method !== method!,
+            route => !(route.path === path && route.method === method),
           );
           API.putApi(apiName, version!, currentApi).then(() => {
             navigate(`/apis/${apiName}/version/${version}`);
@@ -226,7 +227,7 @@ export const ApiRoute = () => {
                     variant="ghost"
                     size="sm"
                     className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
-                    onClick={() => handleDelete()}
+                    onClick={handleDelete}
                   >
                     <Trash2Icon className="h-4 w-4 mr-1" />
                     Delete

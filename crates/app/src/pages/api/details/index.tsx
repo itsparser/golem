@@ -8,10 +8,12 @@ import { Api, RouteRequestData } from "@/types/api";
 import { Deployment } from "@/types/deployments.ts";
 import { Globe, LayoutGrid, Plus, Route } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 const APIDetails = () => {
   const { apiName, version } = useParams();
+  const [queryParams] = useSearchParams();
+  const reload = queryParams.get("reload");
   const navigate = useNavigate();
   const [activeApiDetails, setActiveApiDetails] = useState({} as Api);
 
@@ -37,7 +39,7 @@ const APIDetails = () => {
         setDeployments(result);
       });
     }
-  }, [apiName, version]);
+  }, [apiName, version, reload]);
 
   const routeToQuery = (route: RouteRequestData) => {
     navigate(
