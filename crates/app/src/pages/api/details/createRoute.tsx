@@ -85,7 +85,7 @@ function filterMethod(type: string) {
   if (type === "default") {
     return ["Get", "Post", "Put", "Delete", "Patch"];
   } else if (type === "cors-preflight") {
-    return ["OPTIONS", "HEAD", "TRACE", "CONNECT"];
+    return ["Options", "Head", "Trace", "Connect"];
   }
   return [];
 }
@@ -332,90 +332,6 @@ const CreateRoute = () => {
                 className="space-y-8"
               >
                 <div>
-                  <h3 className="text-lg font-medium">Worker Binding</h3>
-                  <FormDescription>
-                    Bind this endpoint to a specific worker function.
-                  </FormDescription>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <FormField
-                      control={form.control}
-                      name="binding.componentId.componentId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel required>Component</FormLabel>
-                          <Select
-                            onValueChange={componentId => {
-                              form.setValue(
-                                "binding.componentId.componentId",
-                                componentId,
-                              );
-                              loadResponseSuggestions(componentId, "0");
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a component" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Object.values(componentList).map(
-                                (data: ComponentList) => (
-                                  <SelectItem
-                                    value={data.componentId || ""}
-                                    key={data.componentName}
-                                  >
-                                    {data.componentName}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="binding.componentId.version"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel required>Version</FormLabel>
-                          <Select
-                            onValueChange={onVersionChange}
-                            value={String(field.value)}
-                            disabled={
-                              !form.watch("binding.componentId.componentId")
-                            }
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select version">
-                                  {" "}
-                                  v{field.value}{" "}
-                                </SelectValue>
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {form.watch("binding.componentId") &&
-                                componentList[
-                                  form.watch("binding.componentId.componentId")
-                                ]?.versionList?.map((v: number) => (
-                                  <SelectItem value={String(v)} key={v}>
-                                    v{v}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div>
                   <h3 className="text-lg font-medium">HTTP Endpoint</h3>
                   <FormDescription>
                     Each API Route must have a unique Method + Path combination.
@@ -454,6 +370,95 @@ const CreateRoute = () => {
                       )}
                     />
                   </div>
+                  {form.watch("binding.bindingType") !== "cors-preflight" && (
+                    <>
+                      <h3 className="text-lg font-medium pt-10">
+                        Worker Binding
+                      </h3>
+                      <FormDescription>
+                        Bind this endpoint to a specific worker function.
+                      </FormDescription>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <FormField
+                          control={form.control}
+                          name="binding.componentId.componentId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel required>Component</FormLabel>
+                              <Select
+                                onValueChange={componentId => {
+                                  form.setValue(
+                                    "binding.componentId.componentId",
+                                    componentId,
+                                  );
+                                  loadResponseSuggestions(componentId, "0");
+                                }}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a component" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {Object.values(componentList).map(
+                                    (data: ComponentList) => (
+                                      <SelectItem
+                                        value={data.componentId || ""}
+                                        key={data.componentName}
+                                      >
+                                        {data.componentName}
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="binding.componentId.version"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel required>Version</FormLabel>
+                              <Select
+                                onValueChange={onVersionChange}
+                                value={String(field.value)}
+                                disabled={
+                                  !form.watch("binding.componentId.componentId")
+                                }
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select version">
+                                      {" "}
+                                      v{field.value}{" "}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {form.watch("binding.componentId") &&
+                                    componentList[
+                                      form.watch(
+                                        "binding.componentId.componentId",
+                                      )
+                                    ]?.versionList?.map((v: number) => (
+                                      <SelectItem value={String(v)} key={v}>
+                                        v{v}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
                   {filterMethod(form.watch("binding.bindingType")).length >
                     0 && (
                     <div className="grid grid-cols-3 gap-4 mt-4">
@@ -526,8 +531,9 @@ const CreateRoute = () => {
                     </div>
                   )}
                 </div>
-                {form.watch("binding.bindingType") != "cors-preflight" && (
-                  <div>
+
+                <div>
+                  {form.watch("binding.bindingType") != "cors-preflight" && (
                     <FormField
                       control={form.control}
                       name="binding.workerName"
@@ -585,87 +591,87 @@ const CreateRoute = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="binding.response"
-                      render={({ field }) => (
-                        <FormItem className="mt-4">
-                          <FormLabel required>
-                            <span className="">
-                              Response
-                              <Popover
-                                open={isPopoverOpen}
-                                onOpenChange={setIsPopoverOpen}
-                              >
-                                <PopoverTrigger asChild>
-                                  <button
-                                    className="p-1 hover:bg-muted rounded-full transition-colors"
-                                    aria-label="Show interpolation info"
-                                    onClick={togglePopover}
-                                  >
-                                    <Info className="w-4 h-4 text-muted-foreground" />
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                  className={`${
-                                    responseSuggestions.length === 0
-                                      ? "max-w-[450px]"
-                                      : "w-[450px]"
-                                  }  p-4`}
-                                  align="start"
-                                  sideOffset={5}
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="binding.response"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel required>
+                          <span className="">
+                            Response
+                            <Popover
+                              open={isPopoverOpen}
+                              onOpenChange={setIsPopoverOpen}
+                            >
+                              <PopoverTrigger asChild>
+                                <button
+                                  className="p-1 hover:bg-muted rounded-full transition-colors"
+                                  aria-label="Show interpolation info"
+                                  onClick={togglePopover}
                                 >
-                                  {responseSuggestions.length > 0 ? (
-                                    <div>
-                                      <h3 className="text-[13px] font-medium text-card-foreground mb-4 border-b pb-2">
-                                        Available Functions
-                                      </h3>
-                                      <div className="space-y-3 overflow-y-auto max-h-[300px]">
-                                        {responseSuggestions.map(row => (
-                                          <div
-                                            key={row}
-                                            className="flex items-center justify-between"
-                                            onClick={e => {
-                                              e.stopPropagation();
-                                              navigator.clipboard.writeText(
-                                                `${row} `,
-                                              );
-                                              toast({
-                                                title: "Copied to clipboard",
-                                                duration: 3000,
-                                              });
-                                              setIsPopoverOpen(false);
-                                            }}
-                                          >
-                                            <span className="text-[12px] min-h-[20px] font-mono text-muted-foreground hover:border-b cursor-pointer">
-                                              {row}
-                                            </span>
-                                          </div>
-                                        ))}
-                                      </div>
+                                  <Info className="w-4 h-4 text-muted-foreground" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className={`${
+                                  responseSuggestions.length === 0
+                                    ? "max-w-[450px]"
+                                    : "w-[450px]"
+                                }  p-4`}
+                                align="start"
+                                sideOffset={5}
+                              >
+                                {responseSuggestions.length > 0 ? (
+                                  <div>
+                                    <h3 className="text-[13px] font-medium text-card-foreground mb-4 border-b pb-2">
+                                      Available Functions
+                                    </h3>
+                                    <div className="space-y-3 overflow-y-auto max-h-[300px]">
+                                      {responseSuggestions.map(row => (
+                                        <div
+                                          key={row}
+                                          className="flex items-center justify-between"
+                                          onClick={e => {
+                                            e.stopPropagation();
+                                            navigator.clipboard.writeText(
+                                              `${row} `,
+                                            );
+                                            toast({
+                                              title: "Copied to clipboard",
+                                              duration: 3000,
+                                            });
+                                            setIsPopoverOpen(false);
+                                          }}
+                                        >
+                                          <span className="text-[12px] min-h-[20px] font-mono text-muted-foreground hover:border-b cursor-pointer">
+                                            {row}
+                                          </span>
+                                        </div>
+                                      ))}
                                     </div>
-                                  ) : (
-                                    <div className="text-center text-muted-foreground">
-                                      No component version selected
-                                    </div>
-                                  )}
-                                </PopoverContent>
-                              </Popover>
-                            </span>
-                          </FormLabel>
-                          <FormControl>
-                            <RibEditor
-                              {...field}
-                              scriptKeys={responseSuggestions}
-                              suggestVariable={{ request: variableSuggestions }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+                                  </div>
+                                ) : (
+                                  <div className="text-center text-muted-foreground">
+                                    No component version selected
+                                  </div>
+                                )}
+                              </PopoverContent>
+                            </Popover>
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <RibEditor
+                            {...field}
+                            scriptKeys={responseSuggestions}
+                            suggestVariable={{ request: variableSuggestions }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <div className="flex justify-end space-x-3">
                   <Button
                     type="button"

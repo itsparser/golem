@@ -35,6 +35,7 @@ export interface GatewayBindingData {
   workerName?: string;
   idempotencyKey?: string;
   response?: string;
+  corsPreflight?: HttpCors;
 }
 
 export interface HttpCors {

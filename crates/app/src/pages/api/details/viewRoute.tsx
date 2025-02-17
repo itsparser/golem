@@ -2,6 +2,7 @@ import { CheckIcon, CopyIcon, Edit2Icon, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import { CorsDisplay } from "@/components/cors-display";
 import ErrorBoundary from "@/components/errorBoundary.tsx";
 import { HTTP_METHOD_COLOR } from "@/components/nav-route";
 import { RibEditor } from "@/components/rib-editor";
@@ -155,6 +156,7 @@ export const ApiRoute = () => {
           const route = selectedApi.routes.find(
             route => route.path === path && route.method === method,
           );
+          console.log("route", route);
           setCurrentRoute(route || ({} as RouteRequestData));
         } else {
           navigate(`/apis/${apiName}/version/${version}`);
@@ -300,6 +302,23 @@ export const ApiRoute = () => {
                   disabled={true}
                 />
               </div>
+            )}
+
+            {/* Cors Section */}
+            {currentRoute?.binding?.corsPreflight && (
+              <CorsDisplay cors={currentRoute?.binding?.corsPreflight} />
+              // <div className="mb-6">
+              //   <div className="flex items-center gap-2 mb-2">
+              //     <h2 className="text-gray-800 dark:text-gray-200">Response</h2>
+              //     <span className="text-blue-600 dark:text-blue-400 text-sm border border-blue-300 dark:border-blue-500/30 rounded px-2 py-0.5">
+              //       Rib
+              //     </span>
+              //   </div>
+              //   <RibEditor
+              //     value={currentRoute?.binding?.response}
+              //     disabled={true}
+              //   />
+              // </div>
             )}
           </CardContent>
         </Card>

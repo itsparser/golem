@@ -63,9 +63,7 @@ export function ServerStatus() {
         <AlertCircle className="h-4 w-4" />
       )}
       <span>
-        {status?.status === "healthy"
-          ? "Server is healthy"
-          : "Server is unhealthy"}
+        {status && status?.status[0].toUpperCase() + status?.status.slice(1)}
       </span>
     </div>
   );

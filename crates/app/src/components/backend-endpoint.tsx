@@ -119,8 +119,7 @@ export function BackendEndpointInput() {
         <DialogHeader>
           <DialogTitle>Backend Endpoint</DialogTitle>
           <DialogDescription>
-            Set the backend endpoint for your application. Current endpoint:{" "}
-            {endpoint}
+            Set the backend endpoint for your application.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
