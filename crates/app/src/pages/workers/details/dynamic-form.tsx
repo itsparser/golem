@@ -49,8 +49,8 @@ export const nonStringPrimitives = [
   "U32",
   "U16",
   "U8",
-  "bool",
-  "enum",
+  "Bool",
+  "Enum",
 ];
 
 export const DynamicForm = ({
@@ -126,7 +126,7 @@ export const DynamicForm = ({
             )
           ) {
             value = Number.parseInt(value);
-          } else if (field.typ.type === "bool") {
+          } else if (field.typ.type === "Bool") {
             value = Boolean(value);
           }
         }
@@ -171,7 +171,7 @@ export const DynamicForm = ({
             )
           ) {
             result.push(Number.parseInt(value));
-          } else if (field.typ.type === "bool") {
+          } else if (field.typ.type === "Bool") {
             result.push(Boolean(value));
           } else {
             result.push(value);

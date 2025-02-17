@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils";
 import { API } from "@/service";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 interface HealthStatus {
   status: "healthy" | "unhealthy";
@@ -50,7 +52,12 @@ export function ServerStatus() {
     );
   }
 
+  const statusContent = status && status?.status[0].toUpperCase() + status?.status.slice(1);
+
   return (
+    <TooltipProvider>
+    <Tooltip>
+    <TooltipTrigger>
     <div
       className={cn(
         "flex items-center gap-2 px-3 py-1.5 text-sm",
@@ -63,8 +70,12 @@ export function ServerStatus() {
         <AlertCircle className="h-4 w-4" />
       )}
       <span>
-        {status && status?.status[0].toUpperCase() + status?.status.slice(1)}
+        {statusContent}
       </span>
     </div>
+    </TooltipTrigger>
+    <TooltipContent>Server is {statusContent}</TooltipContent>
+  </Tooltip>
+  </TooltipProvider>
   );
 }
