@@ -87,6 +87,7 @@ export const DynamicForm = ({
       return acc;
     }, {} as FormData);
     setFormData(initialData);
+    setErrors({});
   };
 
   const handleInputChange = (name: string, value: unknown) => {
@@ -111,8 +112,13 @@ export const DynamicForm = ({
           field.typ.type !== "Str" &&
           field.typ.type !== "Chr"
         ) {
-          const sanitizedValue = sanitizeInput(value);
-          value = JSON.parse(sanitizedValue);
+          try {
+            const sanitizedValue = sanitizeInput(value);
+            value = JSON.parse(sanitizedValue);
+          } catch (error) {
+            validationErrors[field.name] = `${field.name} is not a valid JSON`;
+            return null;
+          }
         } else if (
           ["S64", "S32", "S16", "S8", "U64", "U32", "U16", "U8"].includes(
             field.typ.type,

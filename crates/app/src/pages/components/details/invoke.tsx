@@ -384,14 +384,18 @@ function SectionCard({
   };
 
   const onSubmit = () => {
-    const sanitizedValue = sanitizeInput(value);
-    const parsedValue = JSON.parse(sanitizedValue);
-    const validationErrors = validateForm(parsedValue);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-    } else {
-      onInvoke(parsedValue);
-    }
+    try {
+      const sanitizedValue = sanitizeInput(value);
+      const parsedValue = JSON.parse(sanitizedValue);
+      const validationErrors = validateForm(parsedValue);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+      } else {
+        onInvoke(parsedValue);
+      }
+    } catch (error) {
+      setErrors({ "root": "Invalid JSON format" });
+    } 
   };
 
   const validateForm = (parsedValue: any[]): Record<string, string> => {
@@ -497,7 +501,10 @@ function SectionCard({
         <div className="flex gap-4 justify-end mt-4">
           <Button
             variant="outline"
-            onClick={onReset}
+            onClick={() => {
+              onReset();
+              setErrors({});
+            }}
             className="text-primary hover:bg-primary/10 hover:text-primary"
           >
             <TimerReset className="h-4 w-4 mr-1" />

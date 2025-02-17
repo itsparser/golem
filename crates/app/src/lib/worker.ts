@@ -336,6 +336,14 @@ export function validateJsonStructure(
 ): string | null {
   const { type, fields, cases, names, inner } = field.typ;
 
+  const isInteger = (num: number) => Number.isInteger(num);
+  const isUnsigned = (num: number) => num >= 0 && isInteger(num);
+  const fitsBitSize = (num: number, bits: number, signed: boolean) => {
+    const min = signed ? -(2 ** (bits - 1)) : 0;
+    const max = signed ? 2 ** (bits - 1) - 1 : 2 ** bits - 1;
+    return num >= min && num <= max;
+  };
+
   switch (type) {
     case "Str":
     case "Chr":
@@ -352,18 +360,32 @@ export function validateJsonStructure(
 
     case "F64":
     case "F32":
-    case "U64":
-    case "S64":
-    case "U32":
-    case "S32":
-    case "U16":
-    case "S16":
-    case "U8":
-    case "S8":
       if (typeof data !== "number") {
         return `Expected a number for field "${field.name}", but got ${typeof data}`;
       }
       break;
+
+    case "U64":
+    case "U32":
+    case "U16":
+    case "U8": {
+      const bitSize = parseInt(type.slice(1), 10);
+      if (typeof data !== "number" || !isUnsigned(data) || !fitsBitSize(data, bitSize, false)) {
+        return `Expected an unsigned ${bitSize}-bit integer for field "${field.name}", but got ${data}`;
+      }
+      break;
+    }
+
+    case "S64":
+    case "S32":
+    case "S16":
+    case "S8": {
+      const bitSize = parseInt(type.slice(1), 10);
+      if (typeof data !== "number" || !isInteger(data) || !fitsBitSize(data, bitSize, true)) {
+        return `Expected a signed ${bitSize}-bit integer for field "${field.name}", but got ${data}`;
+      }
+      break;
+    }
 
     case "Record": {
       if (typeof data !== "object" || data === null || Array.isArray(data)) {
@@ -398,10 +420,7 @@ export function validateJsonStructure(
       }
       if (inner) {
         for (const item of data) {
-          const error = validateJsonStructure(item, {
-            ...field,
-            typ: inner,
-          });
+          const error = validateJsonStructure(item, { ...field, typ: inner });
           if (error) return error;
         }
       }
@@ -410,10 +429,7 @@ export function validateJsonStructure(
 
     case "Option": {
       if (data !== null && data !== undefined) {
-        const error = validateJsonStructure(data, {
-          ...field,
-          typ: field.typ.inner!,
-        });
+        const error = validateJsonStructure(data, { ...field, typ: field.typ.inner! });
         if (error) return error;
       }
       break;
@@ -447,14 +463,10 @@ export function validateJsonStructure(
         return `Expected variant to be one of [${caseNames.join(", ")}] for field "${field.name}"`;
       }
       const selectedCaseField = cases.find(
-        (c): c is { name: string; typ: Typ } =>
-          typeof c !== "string" && c.name === selectedCase,
+        (c): c is { name: string; typ: Typ } => typeof c !== "string" && c.name === selectedCase,
       );
       if (selectedCaseField) {
-        const error = validateJsonStructure(
-          data[selectedCase],
-          selectedCaseField,
-        );
+        const error = validateJsonStructure(data[selectedCase], selectedCaseField);
         if (error) return error;
       }
       break;
@@ -465,11 +477,7 @@ export function validateJsonStructure(
         return `Expected an object for field "${field.name}", but got ${typeof data}`;
       }
       if (data.ok !== null && data.ok !== undefined) {
-        const error = validateJsonStructure(data.ok, {
-          ...field,
-          typ: field.typ.ok!,
-          name: "",
-        });
+        const error = validateJsonStructure(data.ok, { ...field, typ: field.typ.ok!, name: "" });
         if (error) return error;
       }
       if (data.err !== null && data.err !== undefined) {
