@@ -287,7 +287,6 @@ export const DynamicForm = ({
   const renderField = (field: FieldType): React.ReactNode => {
     const { name, typ } = field;
     const isOptional = typ.type === "Option";
-    const isPrimitive = nonStringPrimitives.includes(typ.type);
     const dataType = typ.type;
 
     const parsedType = parseTooltipTypesData({
@@ -310,29 +309,28 @@ export const DynamicForm = ({
             <div className="text-emerald-400 inline-flex items-center mr-2">
               :{dataType}
             </div>
-            {!isPrimitive && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className="p-1 hover:bg-muted rounded-full transition-colors"
-                    aria-label="Show interpolation info"
-                  >
-                    <Info className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-[500px] font-mono text-[13px] bg-zinc-900 border-zinc-700 text-zinc-100 p-0 max-h-[500px] overflow-scroll"
-                  side="right"
-                  sideOffset={5}
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="p-1 hover:bg-muted rounded-full transition-colors"
+                  aria-label="Show interpolation info"
                 >
-                  <CodeBlock
-                    text={JSON.stringify(parsedType?.[0], null, 2)}
-                    language="json"
-                    theme={dracula}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
+                  <Info className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-[500px] font-mono text-[13px] bg-zinc-900 border-zinc-700 text-zinc-100 p-0 max-h-[500px] overflow-scroll"
+                side="right"
+                sideOffset={5}
+              >
+                <CodeBlock
+                  text={JSON.stringify(parsedType?.[0], null, 2)}
+                  language="json"
+                  theme={dracula}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </Label>
         <div className="py-2">

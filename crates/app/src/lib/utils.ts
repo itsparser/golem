@@ -236,31 +236,28 @@ export function parseTypeForTooltip(typ: Typ | undefined): {
       };
     }
     case "Tuple": {
-      const elements = (typ.fields || []).map(element =>
+      const elements = (typ.fields || []).map((element) =>
         parseTypeForTooltip(element.typ),
       );
       return {
-        short: `tuple<${elements.map(e => e.short).join(", ")}>`,
-        full: `(${elements.map(e => e.full).join(", ")})`,
+        short: `tuple<${elements.map((e) => e.short).join(", ")}>`,
+        full: `(${elements.map((e) => e.full).join(", ")})`,
       };
     }
     case "Record": {
-      const result: Record<string, unknown> = {};
-      (typ.fields || []).forEach(field => {
+      const fields = (typ.fields || []).map((field) => {
         const parsed = parseTypeForTooltip(field.typ);
-        result[field.name] = parsed.full;
+        return `"${field.name}": ${parsed.full}`;
       });
       return {
         short: "record",
-        full: JSON.stringify(result, null, 2),
+        full: `{\n  ${fields.join(",\n  ")}\n}`,
       };
     }
     case "Variant": {
-      const cases = ((typ.cases as Case[]) || []).map(c => {
+      const cases = ((typ.cases as Case[]) || []).map((c) => {
         const parsed = parseTypeForTooltip(c.typ);
-        return `${c.name.charAt(0).toUpperCase() + c.name.slice(1)}(${
-          parsed.full
-        })`;
+        return `${c.name.charAt(0).toUpperCase() + c.name.slice(1)}(${parsed.full})`;
       });
       return {
         short: "variant",
@@ -269,7 +266,7 @@ export function parseTypeForTooltip(typ: Typ | undefined): {
     }
     case "Enum": {
       const cases = ((typ.cases as string[]) || []).map(
-        c => c.charAt(0).toUpperCase() + c.slice(1),
+        (c) => c.charAt(0).toUpperCase() + c.slice(1),
       );
       return {
         short: "enum",

@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { CircleSlash, Clock } from "lucide-react";
 import { WorkerStatus as IWorkerStatus } from "@/types/worker.ts";
 import * as React from "react";
 import { Label, Pie, PieChart } from "recharts";
@@ -94,28 +94,37 @@ export function WorkerStatus({
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <Separator className="m-4 mx-auto" />
-        <CardContent className="flex-1 pb-0">
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto aspect-square max-h-[250px]"
-          >
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="key"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                <Label content={renderChartLabel} />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
-        </CardContent>
+        {pieData.length === 0 || pieData.every(item => item.value === 0) ? (
+          <CardContent className="flex-1 pb-0 flex items-center justify-center">
+            <div className="flex flex-col items-center text-muted-foreground">
+              <CircleSlash className="w-10 h-10" />
+              <p className="mt-2 text-sm">No worker data available</p>
+            </div>
+          </CardContent>
+        ) : (
+          <CardContent className="flex-1 pb-0">
+            <ChartContainer
+              config={chartConfig}
+              className="mx-auto aspect-square max-h-[250px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="key"
+                  innerRadius={60}
+                  strokeWidth={5}
+                >
+                  <Label content={renderChartLabel} />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+        )}
       </Card>
     </ErrorBoundary>
   );
