@@ -17,7 +17,7 @@ git clone https://github.com/golemcloud/golem.git
 2. Install the dependencies:
 
 ```bash
-cd golem/crates/webapp
+cd golem/app/desktop
 npm install
 ```
 
