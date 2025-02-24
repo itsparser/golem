@@ -6,8 +6,7 @@ struct Storage {
 }
 #[tauri::command]
 fn update_backend_ip(new_ip: String, store: State<Storage>) -> Result<(), String> {
-    // Save the new IP as a JSON value under the key "backend_ip"
-    // store.
+    // Save the new IP as a JSON value under the key "backend_ip" store.
     println!("Updated backend IP to: {}", new_ip);
     *store.backend_url.lock().unwrap() = new_ip;
     Ok(())
